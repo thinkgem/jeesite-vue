@@ -3,7 +3,10 @@
 <p align="center">
  <img alt="JeeSite" src="https://jeesite.com/assets/images/logo.png" width="120" height="120" style="margin-bottom: 10px;">
 </p>
-<h3 align="center" style="margin:30px 0 30px;font-weight:bold;font-size:30px;">JeeSite Vue3 前端框架</h3>
+<h3 align="center" style="margin:30px 0 30px;font-weight:bold;font-size:30px;">
+  JeeSite Vue3 前端框架<br>Turborepo、Monorepo、pnpm<br>
+  基于该架构，已完成重构，敬请期待...<br>快速构建、模块化、代码复用、高效管理
+</h3>
 <p align="center">
  <a href="https://v3.cn.vuejs.org/" target="__blank"><img alt="TypeScript-Vue3" src="https://img.shields.io/badge/TypeScript-Vue3-green.svg"></a>
  <a href="https://www.antdv.com/" target="__blank"><img alt="Ant Design Vue-4.2" src="https://img.shields.io/badge/Ant Design Vue-4.2-blue.svg"></a>
@@ -231,8 +234,8 @@ VITE_GLOB_API_URL_PREFIX = /js
 
   // 导入当前用到的对象，部分省略
   import { ref, unref, computed } from 'vue';
-  import { officeTreeData } from '/@/api/sys/office';
-  import { areaTreeData } from '/@/api/sys/area';
+  import { officeTreeData } from '@jeesite/core/api/sys/office';
+  import { areaTreeData } from '@jeesite/core/api/sys/area';
 
   // 页面事件定义
   const emit = defineEmits(['success', 'register']);
@@ -683,7 +686,6 @@ VITE_GLOB_API_URL_PREFIX = /js
 4. 高级折叠表单和个性化本地存储
 5. 表格个性化设置参数本地存储
 6. 租户管理功能、租户切换
-7. 动态设置页面字体大小
-8. 消息推送、消息提醒
-9. 语言国际化、本地化
-10. 更多功能详见文档
+7. 消息推送、消息提醒
+8. 语言国际化、本地化
+9. 更多功能详见文档
