@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "bootstrap": "pnpm install",
+    "bootstrap": "pnpm install --frozen-lockfile",
     "serve": "npm run dev",
     "dev": "cross-env VITE_CJS_IGNORE_WARNING=true vite dev",
     "preinstall": "npx only-allow pnpm",
