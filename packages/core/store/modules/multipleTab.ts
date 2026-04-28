@@ -142,7 +142,7 @@ export const useMultipleTabStore = defineStore('app-multiple-tab', {
         this.tabList.push(route);
       }
       await this.updateCacheTab();
-      cacheTab && Persistent.setLocal(MULTIPLE_TABS_KEY, this.tabList);
+      cacheTab && Persistent.setLocal(MULTIPLE_TABS_KEY, this.tabList, true);
     },
 
     async closeTab(tab: RouteLocationNormalized, router: Router) {
