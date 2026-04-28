@@ -4,7 +4,7 @@
   </Card>
 </template>
 <script lang="ts" setup>
-  import { Ref, ref, watch } from 'vue';
+  import { Ref, ref, shallowRef, watch } from 'vue';
   import { Card } from 'ant-design-vue';
   import { useECharts } from '@jeesite/core/hooks/web/useECharts';
 
@@ -20,7 +20,7 @@
     },
   });
 
-  const chartRef = ref<HTMLDivElement | null>(null);
+  const chartRef = shallowRef<HTMLDivElement | null>(null);
   const { setOptions } = useECharts(chartRef as Ref<HTMLDivElement>);
   watch(
     () => props.loading,
@@ -37,30 +37,47 @@
         radar: {
           radius: '60%',
           splitNumber: 8,
+          axisTick: {
+            show: false,
+          },
+          splitLine: {
+            lineStyle: {
+              color: [
+                'rgba(238, 197, 102, 0.1)',
+                'rgba(238, 197, 102, 0.2)',
+                'rgba(238, 197, 102, 0.4)',
+                'rgba(238, 197, 102, 0.6)',
+                'rgba(238, 197, 102, 0.8)',
+                'rgba(238, 197, 102, 1)',
+              ].reverse(),
+            },
+          },
+          splitArea: {
+            show: false,
+          },
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(238, 197, 102, 0.5)',
+            },
+          },
           indicator: [
             {
-              name: '2017',
-              max: 100,
+              name: '2016',
             },
             {
               name: '2017',
-              max: 100,
             },
             {
               name: '2018',
-              max: 100,
             },
             {
               name: '2019',
-              max: 100,
             },
             {
               name: '2020',
-              max: 100,
             },
             {
               name: '2021',
-              max: 100,
             },
           ],
         },

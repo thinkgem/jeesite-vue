@@ -4,13 +4,13 @@
   </Card>
 </template>
 <script lang="ts" setup>
-  import { onMounted, Ref, ref } from 'vue';
+  import { onMounted, Ref, ref, shallowRef } from 'vue';
   import { Card } from 'ant-design-vue';
   import { useECharts } from '@jeesite/core/hooks/web/useECharts';
   import type { EChartsOption } from 'echarts';
 
   const loading = ref(true);
-  const chartRef = ref<HTMLDivElement | null>(null);
+  const chartRef = shallowRef<HTMLDivElement | null>(null);
   const { setOptions } = useECharts(chartRef as Ref<HTMLDivElement>);
 
   onMounted(() => {
@@ -23,30 +23,47 @@
       radar: {
         radius: '60%',
         splitNumber: 8,
+        axisTick: {
+          show: false,
+        },
+        splitLine: {
+          lineStyle: {
+            color: [
+              'rgba(238, 197, 102, 0.1)',
+              'rgba(238, 197, 102, 0.2)',
+              'rgba(238, 197, 102, 0.4)',
+              'rgba(238, 197, 102, 0.6)',
+              'rgba(238, 197, 102, 0.8)',
+              'rgba(238, 197, 102, 1)',
+            ].reverse(),
+          },
+        },
+        splitArea: {
+          show: false,
+        },
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(238, 197, 102, 0.5)',
+          },
+        },
         indicator: [
           {
             name: '电脑',
-            max: 100,
           },
           {
             name: '充电器',
-            max: 100,
           },
           {
             name: '耳机',
-            max: 100,
           },
           {
             name: '手机',
-            max: 100,
           },
           {
             name: 'Ipad',
-            max: 100,
           },
           {
             name: '耳机',
-            max: 100,
           },
         ],
       },

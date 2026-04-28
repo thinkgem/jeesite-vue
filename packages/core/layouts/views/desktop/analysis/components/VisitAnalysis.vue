@@ -4,13 +4,13 @@
   </Skeleton>
 </template>
 <script lang="ts" setup>
-  import { onMounted, ref, Ref } from 'vue';
+  import { onMounted, ref, Ref, shallowRef } from 'vue';
   import { Skeleton } from 'ant-design-vue';
   import { useECharts } from '@jeesite/core/hooks/web/useECharts';
   import type { EChartsOption } from 'echarts';
 
   const loading = ref(true);
-  const chartRef = ref<HTMLDivElement | null>(null);
+  const chartRef = shallowRef<HTMLDivElement | null>(null);
   const { setOptions } = useECharts(chartRef as Ref<HTMLDivElement>);
 
   onMounted(() => {
@@ -75,7 +75,7 @@
           },
         },
       ],
-      grid: { left: '1%', right: '1%', top: '2  %', bottom: 0, containLabel: true },
+      grid: { left: '1%', right: '1%', top: '2%', bottom: 0 },
       series: [
         {
           smooth: true,
