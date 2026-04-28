@@ -115,7 +115,7 @@
         return disabled;
       });
 
-      function getShow(): { isShow: boolean; isIfShow: boolean } {
+      const getShow = computed((): { isShow: boolean; isIfShow: boolean } => {
         const { show, ifShow } = props.schema;
         const { showAdvancedButton } = props.formProps;
         const itemIsAdvanced = showAdvancedButton
@@ -141,7 +141,7 @@
         }
         isShow = isShow && itemIsAdvanced;
         return { isShow, isIfShow };
-      }
+      });
 
       const getRules = computed((): Rule[] => {
         const { rules: defRules = [], component, rulesMessageJoinLabel, label, dynamicRules, required } = props.schema;
@@ -196,7 +196,7 @@
 
         if (requiredRuleIndex !== -1) {
           const rule = rules[requiredRuleIndex];
-          const { isShow } = getShow();
+          const { isShow } = unref(getShow);
           if (!isShow) {
             rule.required = false;
           }
@@ -394,8 +394,8 @@
         }
       });
 
-      const getColItem = computed(() => {
-        const { colProps = {}, colSlot, renderColContent, component } = props.schema;
+      const getColProps = computed(() => {
+        const { colProps = {}, component } = props.schema;
         if (!componentMap.has(component)) {
           return null;
         }
@@ -409,27 +409,36 @@
         if (!realColProps.sm) {
           realColProps.sm = realColProps.md || realColProps.xs || 24;
         }
+        return realColProps;
+      });
 
-        const { isIfShow, isShow } = getShow();
+      const getColContent = computed(() => {
+        // console.log('getColContent', props.schema.field);
 
-        const getContent = () => {
-          return colSlot
-            ? getSlot(slots, colSlot, unref(getValues))
-            : renderColContent
-              ? renderColContent(unref(getValues))
-              : unref(getFormItem);
-        };
+        const { colSlot, renderColContent } = props.schema;
+        return colSlot
+          ? getSlot(slots, colSlot, unref(getValues))
+          : renderColContent
+            ? renderColContent(unref(getValues))
+            : unref(getFormItem);
+      });
+
+      return () => {
+        const colProps = unref(getColProps);
+        if (!colProps) {
+          return null;
+        }
+
+        const { isIfShow, isShow } = unref(getShow);
 
         return (
           isIfShow && (
-            <Col {...realColProps} v-show={isShow}>
-              {getContent()}
+            <Col {...colProps} v-show={isShow}>
+              {unref(getColContent)}
             </Col>
           )
         );
-      });
-
-      return () => unref(getColItem);
+      };
     },
   });
 </script>
