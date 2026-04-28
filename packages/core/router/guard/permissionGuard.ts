@@ -16,15 +16,14 @@ const whitePathList: PageEnum[] = [LOGIN_PATH, MOD_PWD_PAGE];
 export function createPermissionGuard(router: Router) {
   const userStore = useUserStoreWithOut();
   const permissionStore = usePermissionStoreWithOut();
-  router.beforeEach(async (to, from, next) => {
+  router.beforeEach(async (to, from) => {
     if (
       from.path === ROOT_PATH &&
       to.path === HOME_PATH &&
       userStore.getUserInfo.homePath &&
       userStore.getUserInfo.homePath !== HOME_PATH
     ) {
-      next(userStore.getUserInfo.homePath);
-      return;
+      return userStore.getUserInfo.homePath;
     }
 
     // const token = userStore.getToken;
@@ -49,24 +48,21 @@ export function createPermissionGuard(router: Router) {
           console.error(error);
         }
       }
-      next();
       return;
     }
 
     // force modify password
     if (userStore.getPageCacheByKey('modifyPasswordMsg')) {
-      next({
+      return {
         path: MOD_PWD_PAGE,
         replace: true,
-      });
-      return;
+      };
     }
 
     // token does not exist
     if (!token) {
       // You can access without permission. You need to set the routing meta.ignoreAuth to true
       if (to.meta.ignoreAuth) {
-        next();
         return;
       }
 
@@ -81,8 +77,7 @@ export function createPermissionGuard(router: Router) {
           redirect: to.path,
         };
       }
-      next(redirectData);
-      return;
+      return redirectData;
     }
 
     // Jump to the 404 page after processing the login
@@ -92,8 +87,7 @@ export function createPermissionGuard(router: Router) {
       to.fullPath !== (userStore.getUserInfo.homePath || HOME_PATH)
     ) {
       // 如果用户定义的 desktopUrl 是非法路径，就跳转到 404，防止无法进入系统
-      next('/404/' + (userStore.getUserInfo.homePath || HOME_PATH));
-      return;
+      return '/404/' + (userStore.getUserInfo.homePath || HOME_PATH);
     }
 
     // get userinfo while last fetch time is empty
@@ -114,13 +108,11 @@ export function createPermissionGuard(router: Router) {
         if (to.path !== '/' && to.path !== LOGIN_PATH) {
           path = path + '?redirect=' + to.fullPath;
         }
-        next(path);
-        return;
+        return path;
       }
     }
 
     if (permissionStore.getIsDynamicAddedRoute) {
-      next();
       return;
     }
 
@@ -136,12 +128,12 @@ export function createPermissionGuard(router: Router) {
 
     if (to.name === PAGE_NOT_FOUND_ROUTE.name) {
       // 动态添加路由后，此处应当重定向到fullPath，否则会加载404页面内容
-      next({ path: to.fullPath, replace: true, query: to.query });
+      return { path: to.fullPath, replace: true, query: to.query };
     } else {
       const redirectPath = (from.query.redirect || to.path) as string;
       const redirect = decodeURIComponent(redirectPath);
       const nextData = to.path === redirect ? { ...to, replace: true } : { path: redirect };
-      next(nextData);
+      return nextData;
     }
   });
 }
