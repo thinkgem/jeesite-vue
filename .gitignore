@@ -35,10 +35,15 @@ vite.config.ts.timestamp*
 *.sw?
 *.iml
 .pnpm-store
+.vscode
+
+# AI agents
 .agents
 .claude
+.codebuddy
+.codex
+.comate
 .copilot
 .cursor
 .trae
-.vscode
 .windsurf
