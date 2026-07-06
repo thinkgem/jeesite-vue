@@ -220,7 +220,7 @@
         }
 
         if (!children || children.length === 0) {
-          if (!hover) handleMenuClick(path, item);
+          if (!hover) handleMenuClick(path);
           childrenMenus.value = [];
           closeMenu();
           return;
@@ -255,12 +255,29 @@
         }
       }
 
-      function handleMenuClick(path: string, item: any) {
-        if (item.target === '_blank') {
+      function handleMenuClick(path: string) {
+        const menus = unref(childrenMenus);
+        const item = findMenuItem(menus, path);
+        if (item && item.target === '_blank') {
           window.open(path);
         } else {
           go(path);
         }
+      }
+
+      function findMenuItem(items: any[], key: string): any | null {
+        for (const item of items) {
+          if (item.path === key) {
+            return item;
+          }
+          if (item.children && item.children.length > 0) {
+            const found = findMenuItem(item.children, key);
+            if (found) {
+              return found;
+            }
+          }
+        }
+        return null;
       }
 
       function handleClickOutside() {
@@ -275,7 +292,7 @@
             onMouseenter: () => handleModuleClick(item.path, getItem, true),
             onClick: async () => {
               const children = await getChildrenMenus(item.path);
-              if (item.path && (!children || children.length === 0)) handleMenuClick(item.path, getItem);
+              if (item.path && (!children || children.length === 0)) handleMenuClick(item.path);
             },
           };
         }
