@@ -17,11 +17,14 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent } from 'vue';
+<script lang="ts" setup name="CollapseHeader">
   import { BasicArrow, BasicTitle } from '@jeesite/core/components/Basic';
 
-  const props = {
+  defineOptions({
+    inheritAttrs: false,
+  });
+
+  const props = defineProps({
     prefixCls: { type: String },
     helpMessage: {
       type: [Array, String] as PropType<string[] | string>,
@@ -30,12 +33,7 @@
     title: { type: String },
     show: { type: Boolean },
     canExpan: { type: Boolean },
-  };
-
-  export default defineComponent({
-    components: { BasicArrow, BasicTitle },
-    inheritAttrs: false,
-    props,
-    emits: ['expand'],
   });
+
+  const emit = defineEmits(['expand']);
 </script>

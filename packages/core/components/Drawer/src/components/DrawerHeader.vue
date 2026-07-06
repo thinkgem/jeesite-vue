@@ -17,29 +17,22 @@
     </span>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent } from 'vue';
+<script lang="ts" setup name="BasicDrawerHeader">
   import { Icon } from '@jeesite/core/components/Icon';
   import { BasicTitle } from '@jeesite/core/components/Basic';
   import { propTypes } from '@jeesite/core/utils/propTypes';
 
-  export default defineComponent({
-    name: 'BasicDrawerHeader',
-    components: { Icon, BasicTitle },
-    props: {
-      isDetail: propTypes.bool,
-      showDetailBack: propTypes.bool,
-      title: propTypes.string,
-    },
-    emits: ['close'],
-    setup(_, { emit }) {
-      function handleClose() {
-        emit('close');
-      }
-
-      return { handleClose };
-    },
+  const props = defineProps({
+    isDetail: propTypes.bool,
+    showDetailBack: propTypes.bool,
+    title: propTypes.string,
   });
+
+  const emit = defineEmits(['close']);
+
+  function handleClose() {
+    emit('close');
+  }
 </script>
 
 <style lang="less">

@@ -22,43 +22,26 @@
     </Dropdown>
   </Tooltip>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="SizeSetting">
   import type { SizeType } from '../../types/table';
-  import { defineComponent, ref } from 'vue';
+  import { ref } from 'vue';
   import { Tooltip, Dropdown, Menu } from 'antdv-next';
   import { ColumnHeightOutlined } from '@antdv-next/icons';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { useTableContext } from '../../hooks/useTableContext';
   import { getPopupContainer } from '@jeesite/core/utils';
 
-  export default defineComponent({
-    name: 'SizeSetting',
-    components: {
-      ColumnHeightOutlined,
-      Tooltip,
-      Dropdown,
-      Menu,
-      MenuItem: Menu.Item,
-    },
-    setup() {
-      const table = useTableContext();
-      const { t } = useI18n();
+  const MenuItem = Menu.Item;
 
-      const selectedKeysRef = ref<SizeType[]>([table.getSize()]);
+  const table = useTableContext();
+  const { t } = useI18n();
 
-      function handleTitleClick({ key }: { key: SizeType } | any) {
-        selectedKeysRef.value = [key];
-        table.setProps({
-          size: key,
-        });
-      }
+  const selectedKeysRef = ref<SizeType[]>([table.getSize()]);
 
-      return {
-        handleTitleClick,
-        selectedKeysRef,
-        getPopupContainer,
-        t,
-      };
-    },
-  });
+  function handleTitleClick({ key }: { key: SizeType } | any) {
+    selectedKeysRef.value = [key];
+    table.setProps({
+      size: key,
+    });
+  }
 </script>

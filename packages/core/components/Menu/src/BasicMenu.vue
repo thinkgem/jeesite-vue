@@ -21,7 +21,7 @@
 </template>
 <script lang="ts" setup name="BasicMenu">
   import type { MenuState } from './types';
-  import { computed, defineComponent, reactive, ref, toRefs, unref, watch } from 'vue';
+  import { computed, reactive, ref, toRefs, unref, watch } from 'vue';
   import { Menu } from 'antdv-next';
   import BasicSubMenuItem from './components/BasicSubMenuItem.vue';
   import { MenuModeEnum, MenuTypeEnum } from '@jeesite/core/enums/menuEnum';

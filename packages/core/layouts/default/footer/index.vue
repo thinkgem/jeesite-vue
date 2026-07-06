@@ -11,10 +11,12 @@
   </Footer>
 </template>
 
-<script lang="ts">
-  import { computed, defineComponent, unref, ref, shallowRef } from 'vue';
+<script lang="ts" setup name="LayoutFooter">
+  import { computed, unref, ref, shallowRef } from 'vue';
   import { LayoutFooter } from 'antdv-next';
   import { Icon } from '@jeesite/core/components/Icon';
+
+  const Footer = LayoutFooter;
 
   import { DOC_URL, GITHUB_URL, SITE_URL } from '@jeesite/core/settings/siteSetting';
   import { openWindow } from '@jeesite/core/utils';
@@ -24,37 +26,21 @@
   import { useRouter } from 'vue-router';
   import { useLayoutHeight } from '../content/useContentViewHeight';
 
-  export default defineComponent({
-    name: 'LayoutFooter',
-    components: { Footer: LayoutFooter, Icon },
-    setup() {
-      const { t } = useI18n();
-      const { getShowFooter } = useRootSetting();
-      const { currentRoute } = useRouter();
+  const { t } = useI18n();
+  const { getShowFooter } = useRootSetting();
+  const { currentRoute } = useRouter();
 
-      const footerRef = shallowRef<InstanceType<typeof LayoutFooter>>();
-      const { setFooterHeight } = useLayoutHeight();
+  const footerRef = shallowRef<InstanceType<typeof LayoutFooter>>();
+  const { setFooterHeight } = useLayoutHeight();
 
-      const getShowLayoutFooter = computed(() => {
-        if (unref(getShowFooter)) {
-          const footerEl = unref(footerRef)?.$el;
-          setFooterHeight(footerEl?.offsetHeight || 0);
-        } else {
-          setFooterHeight(0);
-        }
-        return unref(getShowFooter) && !unref(currentRoute).meta?.hiddenFooter;
-      });
-
-      return {
-        getShowLayoutFooter,
-        t,
-        DOC_URL,
-        GITHUB_URL,
-        SITE_URL,
-        openWindow,
-        footerRef,
-      };
-    },
+  const getShowLayoutFooter = computed(() => {
+    if (unref(getShowFooter)) {
+      const footerEl = unref(footerRef)?.$el;
+      setFooterHeight(footerEl?.offsetHeight || 0);
+    } else {
+      setFooterHeight(0);
+    }
+    return unref(getShowFooter) && !unref(currentRoute).meta?.hiddenFooter;
   });
 </script>
 <style lang="less">

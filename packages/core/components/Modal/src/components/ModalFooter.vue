@@ -19,35 +19,30 @@
     <slot name="appendFooter"></slot>
   </div>
 </template>
-<script lang="ts">
-  import { computed, defineComponent } from 'vue';
+<script lang="ts" setup name="BasicModalFooter">
+  import { computed } from 'vue';
   import { Icon } from '@jeesite/core/components/Icon';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { usePermission } from '@jeesite/core/hooks/web/usePermission';
 
   import { basicProps } from '../props';
-  export default defineComponent({
-    name: 'BasicModalFooter',
-    components: { Icon },
-    props: basicProps,
-    emits: ['ok', 'cancel'],
-    setup(props, { emit }) {
-      const { t } = useI18n();
-      const { hasPermission } = usePermission();
 
-      const getOkAuth = computed(() => {
-        return hasPermission(props.okAuth);
-      });
+  const props = defineProps(basicProps);
 
-      function handleOk(e: Event) {
-        emit('ok', e);
-      }
+  const emit = defineEmits(['ok', 'cancel']);
 
-      function handleCancel(e: Event) {
-        emit('cancel', e);
-      }
+  const { t } = useI18n();
+  const { hasPermission } = usePermission();
 
-      return { t, getOkAuth, handleOk, handleCancel };
-    },
+  const getOkAuth = computed(() => {
+    return hasPermission(props.okAuth);
   });
+
+  function handleOk(e: Event) {
+    emit('ok', e);
+  }
+
+  function handleCancel(e: Event) {
+    emit('cancel', e);
+  }
 </script>

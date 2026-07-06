@@ -9,18 +9,14 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent } from 'vue';
+<script lang="ts" setup name="PageFooter">
   import { useMenuSetting } from '@jeesite/core/hooks/setting/useMenuSetting';
 
-  export default defineComponent({
-    name: 'PageFooter',
+  defineOptions({
     inheritAttrs: false,
-    setup() {
-      const { getCalcContentWidth } = useMenuSetting();
-      return { getCalcContentWidth };
-    },
   });
+
+  const { getCalcContentWidth } = useMenuSetting();
 </script>
 <style lang="less">
   .jeesite-page-footer {

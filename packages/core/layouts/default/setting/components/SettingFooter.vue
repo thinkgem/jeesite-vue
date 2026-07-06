@@ -16,8 +16,8 @@
     </a-button>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, unref } from 'vue';
+<script lang="ts" setup name="SettingFooter">
+  import { unref } from 'vue';
 
   import { CopyOutlined, RedoOutlined } from '@antdv-next/icons';
 
@@ -35,55 +35,43 @@
   import { Persistent } from '@jeesite/core/utils/cache/persistent';
   import defaultSetting from '@jeesite/core/settings/projectSetting';
 
-  export default defineComponent({
-    name: 'SettingFooter',
-    components: { CopyOutlined, RedoOutlined },
-    setup() {
-      // const permissionStore = usePermissionStore();
-      const { t } = useI18n();
-      const { createSuccessModal, createMessage } = useMessage();
-      // const tabStore = useMultipleTabStore();
-      // const userStore = useUserStore();
-      const appStore = useAppStore();
+  // const permissionStore = usePermissionStore();
+  const { t } = useI18n();
+  const { createSuccessModal, createMessage } = useMessage();
+  // const tabStore = useMultipleTabStore();
+  // const userStore = useUserStore();
+  const appStore = useAppStore();
 
-      function handleCopy() {
-        const { isSuccessRef } = useCopyToClipboard(JSON.stringify(unref(appStore.getProjectConfig), null, 2));
-        unref(isSuccessRef) &&
-          createSuccessModal({
-            title: t('layout.setting.operatingTitle'),
-            content: t('layout.setting.operatingContent'),
-          });
-      }
-      function handleResetSetting() {
-        try {
-          appStore.setProjectConfig(defaultSetting);
-          const { colorWeak, grayMode } = defaultSetting;
-          // updateTheme(themeColor);
-          updateColorWeak(colorWeak);
-          updateGrayMode(grayMode);
-          createMessage.success(t('layout.setting.resetSuccess'));
-        } catch (error: any) {
-          createMessage.error(error);
-        }
-        location.reload();
-      }
+  function handleCopy() {
+    const { isSuccessRef } = useCopyToClipboard(JSON.stringify(unref(appStore.getProjectConfig), null, 2));
+    unref(isSuccessRef) &&
+      createSuccessModal({
+        title: t('layout.setting.operatingTitle'),
+        content: t('layout.setting.operatingContent'),
+      });
+  }
+  function handleResetSetting() {
+    try {
+      appStore.setProjectConfig(defaultSetting);
+      const { colorWeak, grayMode } = defaultSetting;
+      // updateTheme(themeColor);
+      updateColorWeak(colorWeak);
+      updateGrayMode(grayMode);
+      createMessage.success(t('layout.setting.resetSuccess'));
+    } catch (error: any) {
+      createMessage.error(error);
+    }
+    location.reload();
+  }
 
-      function handleClearAndRedo() {
-        Persistent.clearAll(true);
-        // appStore.resetAllState();
-        // tabStore.resetState();
-        // permissionStore.resetState();
-        // userStore.resetState();
-        location.reload();
-      }
-      return {
-        t,
-        handleCopy,
-        handleResetSetting,
-        handleClearAndRedo,
-      };
-    },
-  });
+  function handleClearAndRedo() {
+    Persistent.clearAll(true);
+    // appStore.resetAllState();
+    // tabStore.resetState();
+    // permissionStore.resetState();
+    // userStore.resetState();
+    location.reload();
+  }
 </script>
 <style lang="less">
   .jeesite-setting-footer {

@@ -1,5 +1,5 @@
-<script lang="ts">
-  import { defineComponent, computed, unref } from 'vue';
+<script lang="ts" setup name="LayoutFeatures">
+  import { computed, unref } from 'vue';
   import { BackTop } from 'antdv-next';
 
   import { useRootSetting } from '@jeesite/core/hooks/setting/useRootSetting';
@@ -11,44 +11,33 @@
 
   import { useFullContent } from '@jeesite/core/hooks/web/useFullContent';
 
-  export default defineComponent({
-    name: 'LayoutFeatures',
-    components: {
-      ABackTop: BackTop,
-      LayoutLockPage: createAsyncComponent(() => import('@jeesite/core/layouts/views/lock/index.vue')),
-      SettingDrawer: createAsyncComponent(() => import('@jeesite/core/layouts/default/setting/index.vue')),
-      SessionTimeoutLogin: createAsyncComponent(
-        () => import('@jeesite/core/layouts/views/login/SessionTimeoutLogin.vue'),
-      ),
-    },
-    setup() {
-      const { getUseOpenBackTop, getShowSettingButton, getSettingButtonPosition } = useRootSetting();
-      const userStore = useUserStoreWithOut();
-      const { getShowHeader } = useHeaderSetting();
-      const { getFullContent } = useFullContent();
+  const LayoutLockPage = createAsyncComponent(() => import('@jeesite/core/layouts/views/lock/index.vue'));
+  const SettingDrawer = createAsyncComponent(() => import('@jeesite/core/layouts/default/setting/index.vue'));
+  const SessionTimeoutLogin = createAsyncComponent(
+    () => import('@jeesite/core/layouts/views/login/SessionTimeoutLogin.vue'),
+  );
+  const ABackTop = BackTop;
 
-      const getIsSessionTimeout = computed(() => userStore.getSessionTimeout);
+  const { getUseOpenBackTop, getShowSettingButton, getSettingButtonPosition } = useRootSetting();
+  const userStore = useUserStoreWithOut();
+  const { getShowHeader } = useHeaderSetting();
+  const { getFullContent } = useFullContent();
 
-      const getIsFixedSettingDrawer = computed(() => {
-        if (!unref(getShowSettingButton)) {
-          return false;
-        }
-        const settingButtonPosition = unref(getSettingButtonPosition);
+  const getIsSessionTimeout = computed(() => userStore.getSessionTimeout);
 
-        if (settingButtonPosition === SettingButtonPositionEnum.AUTO) {
-          return !unref(getShowHeader) || unref(getFullContent);
-        }
-        return settingButtonPosition === SettingButtonPositionEnum.FIXED;
-      });
+  const getIsFixedSettingDrawer = computed(() => {
+    if (!unref(getShowSettingButton)) {
+      return false;
+    }
+    const settingButtonPosition = unref(getSettingButtonPosition);
 
-      return {
-        getTarget: () => document.body,
-        getUseOpenBackTop,
-        getIsFixedSettingDrawer,
-        getIsSessionTimeout,
-      };
-    },
+    if (settingButtonPosition === SettingButtonPositionEnum.AUTO) {
+      return !unref(getShowHeader) || unref(getFullContent);
+    }
+    return settingButtonPosition === SettingButtonPositionEnum.FIXED;
   });
+
+  const getTarget = () => document.body;
 </script>
 
 <template>

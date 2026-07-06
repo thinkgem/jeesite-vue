@@ -13,8 +13,8 @@
     />
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, PropType, computed } from 'vue';
+<script lang="ts" setup name="SwitchItem">
+  import { PropType, computed } from 'vue';
 
   import { Switch } from 'antdv-next';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
@@ -22,42 +22,32 @@
   import { baseHandler } from '../handler';
   import { HandlerEnum } from '../enum';
 
-  export default defineComponent({
-    name: 'SwitchItem',
-    components: { Switch, BasicHelp },
-    props: {
-      event: {
-        type: Number as PropType<HandlerEnum>,
-      },
-      disabled: {
-        type: Boolean,
-      },
-      title: {
-        type: String,
-      },
-      helpMessage: {
-        type: String,
-      },
-      def: {
-        type: Boolean,
-      },
+  const props = defineProps({
+    event: {
+      type: Number as PropType<HandlerEnum>,
     },
-    setup(props) {
-      const { t } = useI18n();
-
-      const getBindValue = computed(() => {
-        return props.def ? { checked: props.def } : {};
-      });
-      function handleChange(e: any) {
-        props.event && baseHandler(props.event, e);
-      }
-      return {
-        t,
-        handleChange,
-        getBindValue,
-      };
+    disabled: {
+      type: Boolean,
+    },
+    title: {
+      type: String,
+    },
+    helpMessage: {
+      type: String,
+    },
+    def: {
+      type: Boolean,
     },
   });
+
+  const { t } = useI18n();
+
+  const getBindValue = computed(() => {
+    return props.def ? { checked: props.def } : {};
+  });
+  function handleChange(e: any) {
+    props.event && baseHandler(props.event, e);
+  }
 </script>
 <style lang="less">
   .jeesite-setting-switch-item {

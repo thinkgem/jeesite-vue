@@ -9,33 +9,25 @@
     />
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, PropType } from 'vue';
+<script lang="ts" setup name="InputNumberItem">
+  import { PropType } from 'vue';
 
   import { InputNumber } from 'antdv-next';
   import { baseHandler } from '../handler';
   import { HandlerEnum } from '../enum';
 
-  export default defineComponent({
-    name: 'InputNumberItem',
-    components: { InputNumber },
-    props: {
-      event: {
-        type: Number as PropType<HandlerEnum>,
-      },
-      title: {
-        type: String,
-      },
+  const props = defineProps({
+    event: {
+      type: Number as PropType<HandlerEnum>,
     },
-    setup(props) {
-      function handleChange(e) {
-        props.event && baseHandler(props.event, e);
-      }
-      return {
-        handleChange,
-      };
+    title: {
+      type: String,
     },
   });
+
+  function handleChange(e) {
+    props.event && baseHandler(props.event, e);
+  }
 </script>
 <style lang="less">
   .jeesite-setting-input-number-item {

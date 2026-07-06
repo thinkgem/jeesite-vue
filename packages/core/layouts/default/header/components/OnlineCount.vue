@@ -5,8 +5,8 @@
     </Badge>
   </Tooltip>
 </template>
-<script lang="ts">
-  import { defineComponent, onMounted, ref } from 'vue';
+<script lang="ts" setup name="JeeSiteOnlineCount">
+  import { onMounted, ref } from 'vue';
   import { Tooltip, Badge } from 'antdv-next';
   import { Icon } from '@jeesite/core/components/Icon';
 
@@ -17,55 +17,42 @@
 
   import { useRouter } from 'vue-router';
 
-  export default defineComponent({
-    name: 'JeeSiteOnlineCount',
-    components: { Icon, Tooltip, Badge },
+  const { t } = useI18n();
+  const { push } = useRouter();
+  const { hasPermission } = usePermission();
+  const { createConfirm } = useMessage();
 
-    setup() {
-      const { t } = useI18n();
-      const { push } = useRouter();
-      const { hasPermission } = usePermission();
-      const { createConfirm } = useMessage();
+  const count = ref<number>(0);
 
-      const count = ref<number>(0);
-
-      async function refreshOnlineCount() {
-        const data = await onlineCount();
-        if (data && data.message) {
-          if (data.result == 'false' || data.result == 'login') {
-            if ((window as any).rocInt) clearInterval((window as any).rocInt);
-            if ((window as any).ppmInt) clearInterval((window as any).ppmInt);
-          }
-          createConfirm({
-            title: t('sys.api.errorTip'),
-            content: data.message,
-            iconType: 'info',
-            onOk() {
-              location.reload();
-            },
-          });
-          return;
-        }
-        let num = Number(data || 0);
-        count.value = num !== num ? 0 : num;
+  async function refreshOnlineCount() {
+    const data = await onlineCount();
+    if (data && data.message) {
+      if (data.result == 'false' || data.result == 'login') {
+        if ((window as any).rocInt) clearInterval((window as any).rocInt);
+        if ((window as any).ppmInt) clearInterval((window as any).ppmInt);
       }
-
-      onMounted(async () => {
-        await refreshOnlineCount(); // 先执行一次
-        (window as any).rocInt = setInterval(refreshOnlineCount, 180000); // 3分钟执行一次
+      createConfirm({
+        title: t('sys.api.errorTip'),
+        content: data.message,
+        iconType: 'info',
+        onOk() {
+          location.reload();
+        },
       });
+      return;
+    }
+    let num = Number(data || 0);
+    count.value = num !== num ? 0 : num;
+  }
 
-      function handleToOnlineList() {
-        if (hasPermission('sys:online:view')) {
-          push('/sys/online/list');
-        }
-      }
-
-      return {
-        t,
-        count,
-        handleToOnlineList,
-      };
-    },
+  onMounted(async () => {
+    await refreshOnlineCount(); // 先执行一次
+    (window as any).rocInt = setInterval(refreshOnlineCount, 180000); // 3分钟执行一次
   });
+
+  function handleToOnlineList() {
+    if (hasPermission('sys:online:view')) {
+      push('/sys/online/list');
+    }
+  }
 </script>

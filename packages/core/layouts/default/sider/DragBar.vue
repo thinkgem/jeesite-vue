@@ -1,40 +1,31 @@
 <template>
   <div :class="getClass" :style="getDragBarStyle"></div>
 </template>
-<script lang="ts">
-  import { defineComponent, computed, unref } from 'vue';
+<script lang="ts" setup name="DargBar">
+  import { computed, unref } from 'vue';
 
   import { useMenuSetting } from '@jeesite/core/hooks/setting/useMenuSetting';
 
-  export default defineComponent({
-    name: 'DargBar',
-    props: {
-      mobile: Boolean,
-    },
-    setup(props) {
-      const { getMiniWidthNumber, getCollapsed, getCanDrag } = useMenuSetting();
+  const props = defineProps({
+    mobile: Boolean,
+  });
 
-      const getDragBarStyle = computed(() => {
-        if (unref(getCollapsed)) {
-          return { left: `${unref(getMiniWidthNumber)}px` };
-        }
-        return {};
-      });
+  const { getMiniWidthNumber, getCollapsed, getCanDrag } = useMenuSetting();
 
-      const getClass = computed(() => {
-        return [
-          'jeesite-darg-bar',
-          {
-            ['jeesite-darg-bar--hide']: !unref(getCanDrag) || props.mobile,
-          },
-        ];
-      });
+  const getDragBarStyle = computed(() => {
+    if (unref(getCollapsed)) {
+      return { left: `${unref(getMiniWidthNumber)}px` };
+    }
+    return {};
+  });
 
-      return {
-        getDragBarStyle,
-        getClass,
-      };
-    },
+  const getClass = computed(() => {
+    return [
+      'jeesite-darg-bar',
+      {
+        ['jeesite-darg-bar--hide']: !unref(getCanDrag) || props.mobile,
+      },
+    ];
   });
 </script>
 <style lang="less">

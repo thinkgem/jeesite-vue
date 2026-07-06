@@ -5,21 +5,13 @@
     </template>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, unref, computed } from 'vue';
+<script lang="ts" setup name="FrameLayout">
+  import { unref, computed } from 'vue';
   import FramePage from '@jeesite/core/layouts/iframe/FramePage.vue';
 
   import { useFrameKeepAlive } from './useFrameKeepAlive';
 
-  export default defineComponent({
-    name: 'FrameLayout',
-    components: { FramePage },
-    setup() {
-      const { getFramePages, hasRenderFrame, showIframe } = useFrameKeepAlive();
+  const { getFramePages, hasRenderFrame, showIframe } = useFrameKeepAlive();
 
-      const showFrame = computed(() => unref(getFramePages).length > 0);
-
-      return { getFramePages, hasRenderFrame, showIframe, showFrame };
-    },
-  });
+  const showFrame = computed(() => unref(getFramePages).length > 0);
 </script>

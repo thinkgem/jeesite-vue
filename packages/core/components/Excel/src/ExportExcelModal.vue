@@ -3,15 +3,16 @@
     <BasicForm :labelWidth="100" :schemas="schemas" :showActionButtonGroup="false" @register="registerForm" />
   </BasicModal>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="ExportExcelModal">
   import type { ExportModalResult } from './typing';
-  import { defineComponent } from 'vue';
   import { BasicModal, useModalInner } from '@jeesite/core/components/Modal';
   import { BasicForm, FormSchema, useForm } from '@jeesite/core/components/Form';
 
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
 
   const { t } = useI18n();
+
+  const emit = defineEmits(['success', 'register']);
 
   const schemas: FormSchema[] = [
     {
@@ -52,30 +53,17 @@
       },
     },
   ];
-  export default defineComponent({
-    components: { BasicModal, BasicForm },
-    emits: ['success', 'register'],
-    setup(_, { emit }) {
-      const [registerForm, { validateFields }] = useForm();
-      const [registerModal, { closeModal }] = useModalInner();
 
-      async function handleOk() {
-        const res = (await validateFields()) as ExportModalResult;
-        const { filename, bookType } = res;
-        emit('success', {
-          filename: `${filename.split('.').shift()}.${bookType}`,
-          bookType,
-        });
-        closeModal();
-      }
+  const [registerForm, { validateFields }] = useForm();
+  const [registerModal, { closeModal }] = useModalInner();
 
-      return {
-        schemas,
-        handleOk,
-        registerForm,
-        registerModal,
-        t,
-      };
-    },
-  });
+  async function handleOk() {
+    const res = (await validateFields()) as ExportModalResult;
+    const { filename, bookType } = res;
+    emit('success', {
+      filename: `${filename.split('.').shift()}.${bookType}`,
+      bookType,
+    });
+    closeModal();
+  }
 </script>

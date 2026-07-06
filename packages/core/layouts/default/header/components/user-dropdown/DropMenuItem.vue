@@ -7,26 +7,22 @@
     </span>
   </MenuItem>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="DropdownMenuItem">
   import { Menu } from 'antdv-next';
 
-  import { computed, defineComponent, getCurrentInstance } from 'vue';
+  import { computed, getCurrentInstance } from 'vue';
 
   import Icon from '@jeesite/core/components/Icon';
   import { propTypes } from '@jeesite/core/utils/propTypes';
 
-  export default defineComponent({
-    name: 'DropdownMenuItem',
-    components: { MenuItem: Menu.Item, Icon },
-    props: {
-      value: propTypes.string,
-      text: propTypes.string,
-      icon: propTypes.string,
-    },
-    setup(props) {
-      const instance = getCurrentInstance();
-      const itemKey = computed(() => props.value || instance?.vnode?.props?.value);
-      return { itemKey };
-    },
+  const MenuItem = Menu.Item;
+
+  const props = defineProps({
+    value: propTypes.string,
+    text: propTypes.string,
+    icon: propTypes.string,
   });
+
+  const instance = getCurrentInstance();
+  const itemKey = computed(() => props.value || instance?.vnode?.props?.value);
 </script>

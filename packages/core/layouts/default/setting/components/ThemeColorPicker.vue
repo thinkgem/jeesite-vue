@@ -16,37 +16,29 @@
     </template>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, PropType } from 'vue';
+<script lang="ts" setup name="ThemeColorPicker">
+  import { PropType } from 'vue';
   import { CheckOutlined } from '@antdv-next/icons';
 
   import { baseHandler } from '../handler';
   import { HandlerEnum } from '../enum';
 
-  export default defineComponent({
-    name: 'ThemeColorPicker',
-    components: { CheckOutlined },
-    props: {
-      colorList: {
-        type: Array as PropType<string[]>,
-        defualt: [],
-      },
-      event: {
-        type: Number as PropType<HandlerEnum>,
-      },
-      def: {
-        type: String,
-      },
+  const props = defineProps({
+    colorList: {
+      type: Array as PropType<string[]>,
+      defualt: [],
     },
-    setup(props) {
-      function handleClick(color: string) {
-        props.event && baseHandler(props.event, color);
-      }
-      return {
-        handleClick,
-      };
+    event: {
+      type: Number as PropType<HandlerEnum>,
+    },
+    def: {
+      type: String,
     },
   });
+
+  function handleClick(color: string) {
+    props.event && baseHandler(props.event, color);
+  }
 </script>
 <style lang="less">
   .jeesite-setting-theme-picker {

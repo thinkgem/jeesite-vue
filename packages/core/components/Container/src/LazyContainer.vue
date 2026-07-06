@@ -9,9 +9,9 @@
     </div>
   </transition-group>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="LazyContainer">
   import { PropType, shallowRef } from 'vue';
-  import { defineComponent, reactive, onMounted, ref, toRef, toRefs } from 'vue';
+  import { reactive, onMounted, toRef, toRefs } from 'vue';
   import { Skeleton } from 'antdv-next';
   import { useTimeoutFn } from '@jeesite/core/hooks/core/useTimeout';
   import { useIntersectionObserver } from '@jeesite/core/hooks/event/useIntersectionObserver';
@@ -22,7 +22,11 @@
     intersectionObserverInstance: IntersectionObserver | null;
   }
 
-  const props = {
+  defineOptions({
+    inheritAttrs: false,
+  });
+
+  const props = defineProps({
     /**
      * Waiting time, if the time is specified, whether open or not, it will be automatically loaded after the specified time
      */
@@ -45,7 +49,7 @@
     direction: {
       type: String,
       default: 'vertical',
-      validator: (v) => ['vertical', 'horizontal'].includes(v),
+      validator: (v: string) => ['vertical', 'horizontal'].includes(v),
     },
     /**
      * The label name of the outer container that wraps the component
@@ -56,83 +60,74 @@
      * transition name
      */
     transitionName: { type: String, default: 'lazy-container' },
-  };
-
-  export default defineComponent({
-    name: 'LazyContainer',
-    components: { Skeleton },
-    inheritAttrs: false,
-    props,
-    emits: ['init'],
-    setup(props, { emit }) {
-      const elRef = shallowRef();
-      const state = reactive<State>({
-        isInit: false,
-        loading: false,
-        intersectionObserverInstance: null,
-      });
-
-      onMounted(() => {
-        immediateInit();
-        initIntersectionObserver();
-      });
-
-      // If there is a set delay time, it will be executed immediately
-      function immediateInit() {
-        const { timeout } = props;
-        timeout &&
-          useTimeoutFn(() => {
-            init();
-          }, timeout);
-      }
-
-      function init() {
-        state.loading = true;
-
-        useTimeoutFn(() => {
-          if (state.isInit) return;
-          state.isInit = true;
-          emit('init');
-        }, props.maxWaitingTime || 80);
-      }
-
-      function initIntersectionObserver() {
-        const { timeout, direction, threshold } = props;
-        if (timeout) return;
-        // According to the scrolling direction to construct the viewport margin, used to load in advance
-        let rootMargin = '0px';
-        switch (direction) {
-          case 'vertical':
-            rootMargin = `${threshold} 0px`;
-            break;
-          case 'horizontal':
-            rootMargin = `0px ${threshold}`;
-            break;
-        }
-
-        try {
-          const { stop, observer } = useIntersectionObserver({
-            rootMargin,
-            target: toRef(elRef.value, '$el'),
-            onIntersect: (entries: any[]) => {
-              const isIntersecting = entries[0].isIntersecting || entries[0].intersectionRatio;
-              if (isIntersecting) {
-                init();
-                if (observer) {
-                  stop();
-                }
-              }
-            },
-            root: toRef(props, 'viewport'),
-          });
-        } catch (e) {
-          init();
-        }
-      }
-      return {
-        elRef,
-        ...toRefs(state),
-      };
-    },
   });
+
+  const emit = defineEmits(['init']);
+
+  const elRef = shallowRef();
+  const state = reactive<State>({
+    isInit: false,
+    loading: false,
+    intersectionObserverInstance: null,
+  });
+
+  const { isInit, loading } = toRefs(state);
+
+  onMounted(() => {
+    immediateInit();
+    initIntersectionObserver();
+  });
+
+  // If there is a set delay time, it will be executed immediately
+  function immediateInit() {
+    const { timeout } = props;
+    timeout &&
+      useTimeoutFn(() => {
+        init();
+      }, timeout);
+  }
+
+  function init() {
+    state.loading = true;
+
+    useTimeoutFn(() => {
+      if (state.isInit) return;
+      state.isInit = true;
+      emit('init');
+    }, props.maxWaitingTime || 80);
+  }
+
+  function initIntersectionObserver() {
+    const { timeout, direction, threshold } = props;
+    if (timeout) return;
+    // According to the scrolling direction to construct the viewport margin, used to load in advance
+    let rootMargin = '0px';
+    switch (direction) {
+      case 'vertical':
+        rootMargin = `${threshold} 0px`;
+        break;
+      case 'horizontal':
+        rootMargin = `0px ${threshold}`;
+        break;
+    }
+
+    try {
+      const { stop, observer } = useIntersectionObserver({
+        rootMargin,
+        target: toRef(elRef.value, '$el'),
+        onIntersect: (entries: any[]) => {
+          const isIntersecting = entries[0].isIntersecting || entries[0].intersectionRatio;
+          if (isIntersecting) {
+            init();
+            if (observer) {
+              stop();
+            }
+          }
+        },
+        root: toRef(props, 'viewport'),
+      });
+    } catch (e) {
+      init();
+    }
+  }
 </script>

@@ -3,38 +3,33 @@
     <Spin v-bind="$attrs" :description="tip" :size="size" :spinning="loading" />
   </section>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="Loading">
   import { PropType } from 'vue';
-  import { defineComponent } from 'vue';
   import { Spin } from 'antdv-next';
   import { SizeEnum } from '@jeesite/core/enums/sizeEnum';
 
-  export default defineComponent({
-    name: 'Loading',
-    components: { Spin },
-    props: {
-      tip: {
-        type: String as PropType<string>,
-        default: '',
+  const props = defineProps({
+    tip: {
+      type: String as PropType<string>,
+      default: '',
+    },
+    size: {
+      type: String as PropType<SizeEnum>,
+      default: SizeEnum.LARGE,
+      validator: (v: SizeEnum): boolean => {
+        return [SizeEnum.DEFAULT, SizeEnum.SMALL, SizeEnum.LARGE].includes(v);
       },
-      size: {
-        type: String as PropType<SizeEnum>,
-        default: SizeEnum.LARGE,
-        validator: (v: SizeEnum): boolean => {
-          return [SizeEnum.DEFAULT, SizeEnum.SMALL, SizeEnum.LARGE].includes(v);
-        },
-      },
-      absolute: {
-        type: Boolean as PropType<boolean>,
-        default: false,
-      },
-      loading: {
-        type: Boolean as PropType<boolean>,
-        default: false,
-      },
-      background: {
-        type: String as PropType<string>,
-      },
+    },
+    absolute: {
+      type: Boolean as PropType<boolean>,
+      default: false,
+    },
+    loading: {
+      type: Boolean as PropType<boolean>,
+      default: false,
+    },
+    background: {
+      type: String as PropType<string>,
     },
   });
 </script>

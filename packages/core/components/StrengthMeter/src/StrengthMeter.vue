@@ -19,58 +19,48 @@
   </div>
 </template>
 
-<script lang="ts">
-  import { defineComponent, computed, ref, watch, unref, watchEffect } from 'vue';
+<script lang="ts" setup name="StrengthMeter">
+  import { computed, ref, watch, unref, watchEffect } from 'vue';
   import { Input } from 'antdv-next';
   import { zxcvbn } from '@zxcvbn-ts/core';
   import { propTypes } from '@jeesite/core/utils/propTypes';
 
-  const props = {
+  const InputPassword = Input.Password;
+
+  const props = defineProps({
     value: propTypes.string,
     showInput: propTypes.bool.def(true),
     disabled: propTypes.bool,
-  };
-
-  export default defineComponent({
-    name: 'StrengthMeter',
-    components: { InputPassword: Input.Password },
-    props,
-    emits: ['score-change', 'change', 'update:value'],
-    setup(props, { emit }) {
-      const innerValueRef = ref('');
-
-      const getPasswordStrength = computed(() => {
-        const { disabled } = props;
-        if (disabled) return -1;
-        const innerValue = unref(innerValueRef);
-        const score = innerValue ? zxcvbn(unref(innerValueRef)).score : -1;
-        emit('score-change', score);
-        return score;
-      });
-
-      function handleChange(e: ChangeEvent) {
-        innerValueRef.value = e.target.value || '';
-      }
-
-      watchEffect(() => {
-        innerValueRef.value = props.value || '';
-      });
-
-      watch(
-        () => unref(innerValueRef),
-        (val) => {
-          emit('update:value', val);
-          emit('change', val);
-        },
-      );
-
-      return {
-        getPasswordStrength,
-        handleChange,
-        innerValueRef,
-      };
-    },
   });
+
+  const emit = defineEmits(['score-change', 'change', 'update:value']);
+
+  const innerValueRef = ref('');
+
+  const getPasswordStrength = computed(() => {
+    const { disabled } = props;
+    if (disabled) return -1;
+    const innerValue = unref(innerValueRef);
+    const score = innerValue ? zxcvbn(unref(innerValueRef)).score : -1;
+    emit('score-change', score);
+    return score;
+  });
+
+  function handleChange(e: ChangeEvent) {
+    innerValueRef.value = e.target.value || '';
+  }
+
+  watchEffect(() => {
+    innerValueRef.value = props.value || '';
+  });
+
+  watch(
+    () => unref(innerValueRef),
+    (val) => {
+      emit('update:value', val);
+      emit('change', val);
+    },
+  );
 </script>
 <style lang="less">
   .jeesite-strength-meter {

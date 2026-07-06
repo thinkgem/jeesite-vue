@@ -11,51 +11,42 @@
     />
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, PropType, computed } from 'vue';
+<script lang="ts" setup name="SelectItem">
+  import { PropType, computed } from 'vue';
 
   import { Select } from 'antdv-next';
   import { baseHandler } from '../handler';
   import { HandlerEnum } from '../enum';
 
-  export default defineComponent({
-    name: 'SelectItem',
-    components: { Select },
-    props: {
-      event: {
-        type: Number as PropType<HandlerEnum>,
-      },
-      disabled: {
-        type: Boolean,
-      },
-      title: {
-        type: String,
-      },
-      def: {
-        type: [String, Number] as PropType<string | number>,
-      },
-      initValue: {
-        type: [String, Number] as PropType<string | number>,
-      },
-      options: {
-        type: Array as PropType<LabelValueOptions>,
-        default: () => [],
-      },
+  const props = defineProps({
+    event: {
+      type: Number as PropType<HandlerEnum>,
     },
-    setup(props) {
-      const getBindValue = computed(() => {
-        return props.def ? { value: props.def, defaultValue: props.initValue || props.def } : {};
-      });
-
-      function handleChange(e: any) {
-        props.event && baseHandler(props.event, e);
-      }
-      return {
-        handleChange,
-        getBindValue,
-      };
+    disabled: {
+      type: Boolean,
+    },
+    title: {
+      type: String,
+    },
+    def: {
+      type: [String, Number] as PropType<string | number>,
+    },
+    initValue: {
+      type: [String, Number] as PropType<string | number>,
+    },
+    options: {
+      type: Array as PropType<LabelValueOptions>,
+      default: () => [],
     },
   });
+
+  const getBindValue = computed(() => {
+    return props.def ? { value: props.def, defaultValue: props.initValue || props.def } : {};
+  });
+
+  function handleChange(e: any) {
+    props.event && baseHandler(props.event, e);
+  }
 </script>
 <style lang="less">
   .jeesite-setting-select-item {

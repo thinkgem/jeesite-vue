@@ -13,51 +13,40 @@
     </Tooltip>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, computed } from 'vue';
+<script lang="ts" setup name="ModalClose">
+  import { computed } from 'vue';
   import { Icon } from '@jeesite/core/components/Icon';
   import { Tooltip } from 'antdv-next';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
 
-  export default defineComponent({
-    name: 'ModalClose',
-    components: { Tooltip, Icon },
-    props: {
-      canFullscreen: { type: Boolean, default: true },
-      fullScreen: { type: Boolean },
-    },
-    emits: ['cancel', 'fullscreen'],
-    setup(props, { emit }) {
-      const { t } = useI18n();
-
-      const getClass = computed(() => {
-        return [
-          'jeesite-basic-modal-close',
-          'jeesite-basic-modal-close--custom',
-          {
-            ['jeesite-basic-modal-close--can-full']: props.canFullscreen,
-          },
-        ];
-      });
-
-      function handleCancel(e: Event) {
-        emit('cancel', e);
-      }
-
-      function handleFullScreen(e: Event) {
-        e?.stopPropagation();
-        e?.preventDefault();
-        emit('fullscreen');
-      }
-
-      return {
-        t,
-        getClass,
-        handleCancel,
-        handleFullScreen,
-      };
-    },
+  const props = defineProps({
+    canFullscreen: { type: Boolean, default: true },
+    fullScreen: { type: Boolean },
   });
+
+  const emit = defineEmits(['cancel', 'fullscreen']);
+
+  const { t } = useI18n();
+
+  const getClass = computed(() => {
+    return [
+      'jeesite-basic-modal-close',
+      'jeesite-basic-modal-close--custom',
+      {
+        ['jeesite-basic-modal-close--can-full']: props.canFullscreen,
+      },
+    ];
+  });
+
+  function handleCancel(e: Event) {
+    emit('cancel', e);
+  }
+
+  function handleFullScreen(e: Event) {
+    e?.stopPropagation();
+    e?.preventDefault();
+    emit('fullscreen');
+  }
 </script>
 <style lang="less">
   .jeesite-basic-modal-close {

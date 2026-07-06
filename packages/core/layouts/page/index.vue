@@ -24,8 +24,8 @@
   <FrameLayout v-if="getCanEmbedIFramePage" />
 </template>
 
-<script lang="ts">
-  import { computed, defineComponent, unref } from 'vue';
+<script lang="ts" setup name="PageLayout">
+  import { computed, unref } from 'vue';
 
   import FrameLayout from '@jeesite/core/layouts/iframe/index.vue';
 
@@ -37,34 +37,19 @@
 
   import { useMultipleTabStore } from '@jeesite/core/store/modules/multipleTab';
 
-  export default defineComponent({
-    name: 'PageLayout',
-    components: { FrameLayout },
-    setup() {
-      const { getShowMultipleTab } = useMultipleTabSetting();
-      const tabStore = useMultipleTabStore();
+  const { getShowMultipleTab } = useMultipleTabSetting();
+  const tabStore = useMultipleTabStore();
 
-      const { getOpenKeepAlive, getCanEmbedIFramePage } = useRootSetting();
+  const { getOpenKeepAlive, getCanEmbedIFramePage } = useRootSetting();
 
-      const { getBasicTransition, getEnableTransition } = useTransitionSetting();
+  const { getBasicTransition, getEnableTransition } = useTransitionSetting();
 
-      const openCache = computed(() => unref(getOpenKeepAlive) && unref(getShowMultipleTab));
+  const openCache = computed(() => unref(getOpenKeepAlive) && unref(getShowMultipleTab));
 
-      const getCaches = computed((): string[] => {
-        if (!unref(getOpenKeepAlive)) {
-          return [];
-        }
-        return tabStore.getCachedTabList;
-      });
-
-      return {
-        getTransitionName,
-        openCache,
-        getEnableTransition,
-        getBasicTransition,
-        getCaches,
-        getCanEmbedIFramePage,
-      };
-    },
+  const getCaches = computed((): string[] => {
+    if (!unref(getOpenKeepAlive)) {
+      return [];
+    }
+    return tabStore.getCachedTabList;
   });
 </script>

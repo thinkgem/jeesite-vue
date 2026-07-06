@@ -13,9 +13,7 @@
   <MixSider v-else-if="getIsMixSidebar" />
   <Sider v-else />
 </template>
-<script lang="ts">
-  import { defineComponent } from 'vue';
-
+<script lang="ts" setup name="SiderWrapper">
   import Sider from './LayoutSider.vue';
   import MixSider from './MixSider.vue';
   import { Drawer } from 'antdv-next';
@@ -23,22 +21,14 @@
   import { useAppInject } from '@jeesite/core/hooks/web/useAppInject';
   import { useMenuSetting } from '@jeesite/core/hooks/setting/useMenuSetting';
 
-  export default defineComponent({
-    name: 'SiderWrapper',
-    components: { Sider, Drawer, MixSider },
-    setup() {
-      const { getIsMobile } = useAppInject();
-      const { setMenuSetting, getCollapsed, getMenuWidth, getIsMixSidebar } = useMenuSetting();
+  const { getIsMobile } = useAppInject();
+  const { setMenuSetting, getCollapsed, getMenuWidth, getIsMixSidebar } = useMenuSetting();
 
-      function handleClose() {
-        setMenuSetting({
-          collapsed: true,
-        });
-      }
-
-      return { getIsMobile, getCollapsed, handleClose, getMenuWidth, getIsMixSidebar };
-    },
-  });
+  function handleClose() {
+    setMenuSetting({
+      collapsed: true,
+    });
+  }
 </script>
 <style lang="less">
   .jeesite-layout-sider-wrapper {

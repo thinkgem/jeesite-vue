@@ -4,19 +4,14 @@
     <slot name="appendHeader"></slot>
   </BasicTitle>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="BasicModalHeader">
   import type { PropType } from 'vue';
-  import { defineComponent } from 'vue';
   import { BasicTitle } from '@jeesite/core/components/Basic';
 
-  export default defineComponent({
-    name: 'BasicModalHeader',
-    components: { BasicTitle },
-    props: {
-      helpMessage: {
-        type: [String, Array] as PropType<string | string[]>,
-      },
-      title: { type: String },
+  const props = defineProps({
+    helpMessage: {
+      type: [String, Array] as PropType<string | string[]>,
     },
+    title: { type: String },
   });
 </script>

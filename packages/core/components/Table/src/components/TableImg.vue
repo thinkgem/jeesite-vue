@@ -22,13 +22,15 @@
     </PreviewGroup>
   </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="TableImage">
   import type { CSSProperties } from 'vue';
-  import { defineComponent, computed } from 'vue';
+  import { computed } from 'vue';
   import { Image, Badge } from 'antdv-next';
   import { propTypes } from '@jeesite/core/utils/propTypes';
 
-  const props = {
+  const PreviewGroup = Image.PreviewGroup;
+
+  const props = defineProps({
     imgList: propTypes.arrayOf(propTypes.string),
     size: propTypes.number.def(40),
     // 是否简单显示（只显示第一张图片）
@@ -39,21 +41,12 @@
     margin: propTypes.number.def(4),
     // src前缀，将会附加在imgList中每一项之前
     srcPrefix: propTypes.string.def(''),
-  };
+  });
 
-  export default defineComponent({
-    name: 'TableImage',
-    components: { Image, PreviewGroup: Image.PreviewGroup, Badge },
-    props,
-    setup(props) {
-      const getWrapStyle = computed((): CSSProperties => {
-        const { size } = props;
-        const s = `${size}px`;
-        return { height: s, width: s };
-      });
-
-      return { getWrapStyle };
-    },
+  const getWrapStyle = computed((): CSSProperties => {
+    const { size } = props;
+    const s = `${size}px`;
+    return { height: s, width: s };
   });
 </script>
 <style lang="less">

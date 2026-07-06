@@ -18,31 +18,25 @@
     </template>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, PropType } from 'vue';
+<script lang="ts" setup name="MenuTypePicker">
+  import { PropType } from 'vue';
 
   import { Tooltip } from 'antdv-next';
 
-  import { menuTypeList } from '../enum';
-  export default defineComponent({
-    name: 'MenuTypePicker',
-    components: { Tooltip },
-    props: {
-      menuTypeList: {
-        type: Array as PropType<ReturnType<typeof menuTypeList>>,
-        defualt: () => [],
-      },
-      handler: {
-        type: Function as PropType<Fn>,
-        default: () => ({}),
-      },
-      def: {
-        type: String,
-        default: '',
-      },
+  import { menuTypeList as getMenuTypeList } from '../enum';
+
+  defineProps({
+    menuTypeList: {
+      type: Array as PropType<ReturnType<typeof getMenuTypeList>>,
+      default: () => [],
     },
-    setup() {
-      return {};
+    handler: {
+      type: Function as PropType<Fn>,
+      default: () => ({}),
+    },
+    def: {
+      type: String,
+      default: '',
     },
   });
 </script>

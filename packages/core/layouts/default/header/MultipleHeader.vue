@@ -5,8 +5,8 @@
     <MultipleTabs v-if="getShowTabs" v-show="getShowTabs2" />
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, unref, computed, CSSProperties } from 'vue';
+<script lang="ts" setup name="LayoutMultipleHeader">
+  import { unref, computed, CSSProperties } from 'vue';
 
   import LayoutHeader from './index.vue';
   import MultipleTabs from '../tabs/index.vue';
@@ -23,86 +23,68 @@
   const TABS_HEIGHT = 32;
   const TABS_HEIGHT_LARGE = 37;
 
-  export default defineComponent({
-    name: 'LayoutMultipleHeader',
-    components: { LayoutHeader, MultipleTabs },
-    setup() {
-      const { setHeaderHeight } = useLayoutHeight();
+  const { setHeaderHeight } = useLayoutHeight();
 
-      const { getCalcContentWidth, getSplit } = useMenuSetting();
-      const { getIsMobile } = useAppInject();
-      const { getFixed, getShowInsetHeaderRef, getShowFullHeaderRef, getHeaderTheme, getShowHeader } =
-        useHeaderSetting();
+  const { getCalcContentWidth, getSplit } = useMenuSetting();
+  const { getIsMobile } = useAppInject();
+  const { getFixed, getShowInsetHeaderRef, getShowFullHeaderRef, getHeaderTheme, getShowHeader } = useHeaderSetting();
 
-      const { getFullContent } = useFullContent();
+  const { getFullContent } = useFullContent();
 
-      const { getShowMultipleTab, getTabsStyle } = useMultipleTabSetting();
-      const tabStore = useMultipleTabStore();
+  const { getShowMultipleTab, getTabsStyle } = useMultipleTabSetting();
+  const tabStore = useMultipleTabStore();
 
-      const getShowTabs = computed(() => {
-        return unref(getShowMultipleTab) && !unref(getFullContent);
-      });
+  const getShowTabs = computed(() => {
+    return unref(getShowMultipleTab) && !unref(getFullContent);
+  });
 
-      const getShowTabs2 = computed(() => {
-        return tabStore.getTabList.length > 1;
-      });
+  const getShowTabs2 = computed(() => {
+    return tabStore.getTabList.length > 1;
+  });
 
-      const getIsShowPlaceholderDom = computed(() => {
-        return unref(getFixed) || unref(getShowFullHeaderRef);
-      });
+  const getIsShowPlaceholderDom = computed(() => {
+    return unref(getFixed) || unref(getShowFullHeaderRef);
+  });
 
-      const getWrapStyle = computed((): CSSProperties => {
-        const style: CSSProperties = {};
-        if (unref(getFixed)) {
-          style.width = unref(getIsMobile) ? '100%' : unref(getCalcContentWidth);
-        }
-        if (unref(getShowFullHeaderRef)) {
-          style.top = `${HEADER_HEIGHT}px`;
-        }
-        return style;
-      });
+  const getWrapStyle = computed((): CSSProperties => {
+    const style: CSSProperties = {};
+    if (unref(getFixed)) {
+      style.width = unref(getIsMobile) ? '100%' : unref(getCalcContentWidth);
+    }
+    if (unref(getShowFullHeaderRef)) {
+      style.top = `${HEADER_HEIGHT}px`;
+    }
+    return style;
+  });
 
-      const getIsFixed = computed(() => {
-        return unref(getFixed) || unref(getShowFullHeaderRef);
-      });
+  const getIsFixed = computed(() => {
+    return unref(getFixed) || unref(getShowFullHeaderRef);
+  });
 
-      const getPlaceholderDomStyle = computed((): CSSProperties => {
-        let height = 0;
-        if ((unref(getShowFullHeaderRef) || !unref(getSplit)) && unref(getShowHeader) && !unref(getFullContent)) {
-          height += HEADER_HEIGHT;
-        }
-        if (unref(getShowMultipleTab) && !unref(getFullContent) && unref(getShowTabs2)) {
-          if (unref(getTabsStyle) == '3') {
-            height += TABS_HEIGHT_LARGE;
-          } else {
-            height += TABS_HEIGHT;
-          }
-        }
-        setHeaderHeight(height);
-        return {
-          height: `${height}px`,
-        };
-      });
+  const getPlaceholderDomStyle = computed((): CSSProperties => {
+    let height = 0;
+    if ((unref(getShowFullHeaderRef) || !unref(getSplit)) && unref(getShowHeader) && !unref(getFullContent)) {
+      height += HEADER_HEIGHT;
+    }
+    if (unref(getShowMultipleTab) && !unref(getFullContent) && unref(getShowTabs2)) {
+      if (['3', '4', '5'].includes(unref(getTabsStyle))) {
+        height += TABS_HEIGHT_LARGE;
+      } else {
+        height += TABS_HEIGHT;
+      }
+    }
+    setHeaderHeight(height);
+    return {
+      height: `${height}px`,
+    };
+  });
 
-      const getClass = computed(() => {
-        return [
-          'jeesite-layout-multiple-header',
-          `jeesite-layout-multiple-header--${unref(getHeaderTheme)}`,
-          { ['jeesite-layout-multiple-header--fixed']: unref(getIsFixed) },
-        ];
-      });
-
-      return {
-        getClass,
-        getPlaceholderDomStyle,
-        getIsFixed,
-        getWrapStyle,
-        getIsShowPlaceholderDom,
-        getShowTabs,
-        getShowTabs2,
-        getShowInsetHeaderRef,
-      };
-    },
+  const getClass = computed(() => {
+    return [
+      'jeesite-layout-multiple-header',
+      `jeesite-layout-multiple-header--${unref(getHeaderTheme)}`,
+      { ['jeesite-layout-multiple-header--fixed']: unref(getIsFixed) },
+    ];
   });
 </script>
 <style lang="less">

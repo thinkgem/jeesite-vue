@@ -1,6 +1,6 @@
 <template>
   <div :class="getClass">
-    <div class="jeesite-cropper-avatar-image-wrapper" :style="getImageWrapperStyle" @click="openModal">
+    <div class="jeesite-cropper-avatar-image-wrapper" :style="getImageWrapperStyle" @click="handleOpenModal">
       <div class="jeesite-cropper-avatar-image-mask" :style="getImageWrapperStyle">
         <Icon
           icon="i-ant-design:cloud-upload-outlined"
@@ -11,7 +11,7 @@
       </div>
       <img :src="sourceValue" v-if="sourceValue" alt="avatar" />
     </div>
-    <a-button class="jeesite-cropper-avatar-upload-btn" @click="openModal" v-if="showBtn" v-bind="btnProps">
+    <a-button class="jeesite-cropper-avatar-upload-btn" @click="handleOpenModal" v-if="showBtn" v-bind="btnProps">
       {{ btnText ? btnText : t('component.cropper.selectImage') }}
     </a-button>
     <CopperModal
@@ -22,8 +22,8 @@
     />
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent, computed, CSSProperties, unref, ref, watchEffect, watch, PropType } from 'vue';
+<script lang="ts" setup name="CropperAvatar">
+  import { computed, CSSProperties, unref, ref, watchEffect, watch, PropType } from 'vue';
   import CopperModal from './CopperModal.vue';
   import { useModal } from '@jeesite/core/components/Modal';
   // import { useMessage } from '@jeesite/core/hooks/web/useMessage';
@@ -31,65 +31,54 @@
   import type { ButtonProps } from '@jeesite/core/components/Button';
   import { Icon } from '@jeesite/core/components/Icon';
 
-  export default defineComponent({
-    name: 'CropperAvatar',
-    components: { CopperModal, Icon },
-    props: {
-      width: { type: [String, Number], default: '200px' },
-      value: { type: String },
-      showBtn: { type: Boolean, default: true },
-      btnProps: { type: Object as PropType<ButtonProps> },
-      btnText: { type: String, default: '' },
-      uploadApi: {
-        type: Function as PropType<({ file, name }: { file: Blob; name: string }) => Promise<void>>,
-      },
-    },
-    emits: ['update:value', 'change'],
-    setup(props, { emit, expose }) {
-      const sourceValue = ref(props.value || '');
-      const [register, { openModal, closeModal }] = useModal();
-      // const { createMessage } = useMessage();
-      const { t } = useI18n();
-
-      const getClass = computed(() => ['jeesite-cropper-avatar']);
-
-      const getWidth = computed(() => `${props.width}`.replace(/px/, '') + 'px');
-
-      const getIconWidth = computed(() => parseInt(`${props.width}`.replace(/px/, '')) / 2 + 'px');
-
-      const getImageWrapperStyle = computed((): CSSProperties => ({ width: unref(getWidth), height: unref(getWidth) }));
-
-      watchEffect(() => {
-        sourceValue.value = props.value || '';
-      });
-
-      watch(
-        () => sourceValue.value,
-        (v: string) => {
-          emit('update:value', v);
-        },
-      );
-
-      function handleUploadSuccess({ source }) {
-        sourceValue.value = source;
-        emit('change', source);
-        // createMessage.success(t('component.cropper.uploadSuccess'));
-      }
-
-      expose({ openModal: openModal.bind(null, true), closeModal });
-
-      return {
-        t,
-        register,
-        openModal: openModal as any,
-        getIconWidth,
-        sourceValue,
-        getClass,
-        getImageWrapperStyle,
-        handleUploadSuccess,
-      };
+  const props = defineProps({
+    width: { type: [String, Number], default: '200px' },
+    value: { type: String },
+    showBtn: { type: Boolean, default: true },
+    btnProps: { type: Object as PropType<ButtonProps> },
+    btnText: { type: String, default: '' },
+    uploadApi: {
+      type: Function as PropType<({ file, name }: { file: Blob; name: string }) => Promise<void>>,
     },
   });
+
+  const emit = defineEmits(['update:value', 'change']);
+
+  const sourceValue = ref(props.value || '');
+  const [register, { openModal, closeModal }] = useModal();
+  // const { createMessage } = useMessage();
+  const { t } = useI18n();
+
+  function handleOpenModal() {
+    openModal(true);
+  }
+
+  const getClass = computed(() => ['jeesite-cropper-avatar']);
+
+  const getWidth = computed(() => `${props.width}`.replace(/px/, '') + 'px');
+
+  const getIconWidth = computed(() => parseInt(`${props.width}`.replace(/px/, '')) / 2 + 'px');
+
+  const getImageWrapperStyle = computed((): CSSProperties => ({ width: unref(getWidth), height: unref(getWidth) }));
+
+  watchEffect(() => {
+    sourceValue.value = props.value || '';
+  });
+
+  watch(
+    () => sourceValue.value,
+    (v: string) => {
+      emit('update:value', v);
+    },
+  );
+
+  function handleUploadSuccess({ source }) {
+    sourceValue.value = source;
+    emit('change', source);
+    // createMessage.success(t('component.cropper.uploadSuccess'));
+  }
+
+  defineExpose({ openModal: openModal.bind(null, true), closeModal });
 </script>
 
 <style lang="less">

@@ -10,8 +10,8 @@
     </Badge>
   </Tooltip>
 </template>
-<script lang="ts">
-  import { defineComponent, computed } from 'vue';
+<script lang="ts" setup name="ErrorAction">
+  import { computed } from 'vue';
   import { Tooltip, Badge } from 'antdv-next';
   import { Icon } from '@jeesite/core/components/Icon';
 
@@ -21,28 +21,15 @@
 
   import { useRouter } from 'vue-router';
 
-  export default defineComponent({
-    name: 'ErrorAction',
-    components: { Icon, Tooltip, Badge },
+  const { t } = useI18n();
+  const { push } = useRouter();
+  const errorLogStore = useErrorLogStore();
 
-    setup() {
-      const { t } = useI18n();
-      const { push } = useRouter();
-      const errorLogStore = useErrorLogStore();
+  const getCount = computed(() => errorLogStore.getErrorLogListCount);
 
-      const getCount = computed(() => errorLogStore.getErrorLogListCount);
-
-      function handleToErrorList() {
-        push(PageEnum.ERROR_LOG_PAGE).then(() => {
-          errorLogStore.setErrorLogListCount(0);
-        });
-      }
-
-      return {
-        t,
-        getCount,
-        handleToErrorList,
-      };
-    },
-  });
+  function handleToErrorList() {
+    push(PageEnum.ERROR_LOG_PAGE).then(() => {
+      errorLogStore.setErrorLogListCount(0);
+    });
+  }
 </script>
