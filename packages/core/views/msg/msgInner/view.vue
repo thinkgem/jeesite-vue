@@ -11,7 +11,7 @@
     <BasicForm @register="registerForm">
       <template #readList="{ model, field }">
         <span v-for="(e, i) in model[field]" :key="i">
-          <Tag color="blue" :title="e.receiveUserCode">{{ e.receiveUserName }}</Tag>
+          <Tag color="blue" :title="e.receiveUserCode" class="mr-2 my-1">{{ e.receiveUserName }}</Tag>
         </span>
         <span v-if="model[field] == 0">
           <Tag>{{ t('还没有人阅读') }}</Tag>
@@ -19,7 +19,7 @@
       </template>
       <template #unReadList="{ model, field }">
         <span v-for="(e, i) in model[field]" :key="i">
-          <Tag color="purple" :title="e.receiveUserCode">{{ e.receiveUserName }}</Tag>
+          <Tag color="purple" :title="e.receiveUserCode" class="mr-2 my-1">{{ e.receiveUserName }}</Tag>
         </span>
         <span v-if="model[field] == 0">
           <Tag>{{ t('没有了') }}</Tag>
