@@ -9,7 +9,7 @@
     :showFooter="true"
     :okText="t('发布')"
     :okAuth="'msg:msgInner:edit'"
-    :showOkBtn="!record.status || record.status == '9'"
+    :showOkBtn="getShowOkBtn"
     @register="registerDrawer"
     @ok="handleSubmit('0')"
     width="70%"
@@ -19,12 +19,7 @@
       <span> {{ getTitle.value }} </span>
     </template>
     <template #centerFooter>
-      <a-button
-        color="success"
-        v-if="!record.status || record.status == '9'"
-        :loading="confirmLoading"
-        @click="handleSubmit('9')"
-      >
+      <a-button color="success" v-if="getShowOkBtn" :loading="confirmLoading" @click="handleSubmit('9')">
         <Icon icon="i-ant-design:save-outlined" />
         {{ t('草稿') }}
       </a-button>
@@ -248,6 +243,10 @@
     onReceiversChange(record.value.receiveType, record.value.receiveCodes, record.value.receiveNames);
     await setFieldsValue(record.value);
     setDrawerProps({ loading: false });
+  });
+
+  const getShowOkBtn = computed(() => {
+    return !record.value.status || record.value.status == '9';
   });
 
   const confirmLoading = computed(() => {
