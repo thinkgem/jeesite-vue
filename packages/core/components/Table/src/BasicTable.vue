@@ -158,7 +158,9 @@
   watchEffect(() => {
     unref(isFixedHeightPage) &&
       props.canResize &&
-      warn("'canResize' of BasicTable may not work in PageWrapper with 'fixedHeight' (especially in hot updates)");
+      console.log(
+        "'canResize' of BasicTable may not work in PageWrapper with 'fixedHeight' (especially in hot updates)",
+      );
   });
 
   const { getLoading, setLoading } = useLoading(getProps);
