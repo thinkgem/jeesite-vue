@@ -57,7 +57,7 @@ function initTabPage() {
       // const params = (paramStr && paramStr != '' ? qs.parse(paramStr) : {});
       const name = encryptByMd5(url).substring(5, 15);
       const route = {
-        meta: { frameSrc: url, title },
+        meta: { frameSrc: url, title: String(title) },
         path: path + '/' + name,
         name: 'JeeSite' + name,
         url,
