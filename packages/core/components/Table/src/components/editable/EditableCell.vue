@@ -221,6 +221,7 @@
   function handleEdit() {
     if (unref(getRowEditable) || unref(props.column?.editRow)) return;
     ruleMessage.value = '';
+    ruleOpen.value = false;
     isEdit.value = true;
     nextTick(() => {
       const el = unref(elRef);
@@ -429,14 +430,14 @@
   const getPopoverProps = computed(() => {
     const className = props.column.className ? ' ' + props.column.className + '-popover' : '';
     return {
-      overlayClassName: 'edit-cell-rule-popover' + className,
+      classes: { root: 'edit-cell-rule-popover' + className },
       open: !!(unref(ruleMessage) && unref(ruleOpen)),
-      //...(getPopupContainer ? { getPopupContainer } : {}),
+      'onUpdate:open': (val: boolean) => {
+        ruleOpen.value = val;
+      },
       placement: 'right',
       autoAdjustOverflow: false,
-      getPopupContainer: (trigger: HTMLElement | any) => {
-        return trigger?.parentElement;
-      },
+      getPopupContainer: () => unref(table?.wrapRef.value) ?? document.body,
     } as any;
   });
 
@@ -498,16 +499,13 @@
   }
 
   .edit-cell-rule-popover {
-    left: 50px !important;
+    .ant-popover-container {
+      padding: 5px 8px !important;
+    }
 
-    .ant-popover-inner {
-      padding: 0 !important;
-
-      &-content {
-        padding: 4px 8px 4px 2px;
-        color: @error-color !important;
-        // border: 1px solid @error-color;
-      }
+    .ant-popover-content {
+      color: @error-color !important;
+      // border: 1px solid @error-color;
     }
   }
 
