@@ -487,7 +487,7 @@
       border-radius: 10px;
 
       .ant-table {
-        .ant-table-container {
+        &.ant-table-bordered .ant-table-container {
           border-bottom-left-radius: 8px !important;
           border-bottom-right-radius: 8px !important;
           border: 1px solid @table-border-color !important;
