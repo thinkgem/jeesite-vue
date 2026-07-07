@@ -47,7 +47,7 @@
       // jee site iframe query
       let src = props.frame?.meta?.frameSrc || '';
       let search = window.location.search;
-      if (search && search != '') {
+      if (!src.includes('?') && search && search != '') {
         src += search;
       }
       const path = window.location.pathname.replace(/\/\//g, '/');
