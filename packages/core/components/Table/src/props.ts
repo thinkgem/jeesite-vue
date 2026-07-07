@@ -151,6 +151,7 @@ export const basicProps = {
       (data: { record: Recordable; index: number; key: string | number; value: any }) => Promise<any>
     >,
   },
+  showHeader: propTypes.bool.def(true),
   size: {
     type: String as PropType<SizeType>,
     default: DEFAULT_SIZE,
