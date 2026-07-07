@@ -20,7 +20,7 @@
 </template>
 <script lang="ts" setup name="MenuItem">
   import { PropType, useSlots } from 'vue';
-  import { defineComponent, ref, computed, unref, getCurrentInstance, watch } from 'vue';
+  import { ref, computed, unref, getCurrentInstance, watch } from 'vue';
   import { propTypes } from '@jeesite/core/utils/propTypes';
   import { useMenuItem } from './useMenu';
   import { Badge, Tooltip } from 'antdv-next';
@@ -89,8 +89,8 @@
         const { list, uidList } = getParentList();
         active.value = true;
         list.forEach((item) => {
-          if (item.proxy) {
-            (item.proxy as any).active = true;
+          if ((item as any).setupState) {
+            (item as any).setupState.active = true;
           }
         });
 
@@ -105,4 +105,6 @@
   const getDemoMode = computed(() => {
     return userStore.getPageCacheByKey('demoMode');
   });
+
+  defineExpose({ active });
 </script>

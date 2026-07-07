@@ -4,26 +4,16 @@
   </ul>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup name="Menu">
   import type { PropType } from 'vue';
   import type { SubMenuProvider } from './types';
-  import {
-    defineComponent,
-    ref,
-    computed,
-    onMounted,
-    watchEffect,
-    watch,
-    nextTick,
-    getCurrentInstance,
-    provide,
-  } from 'vue';
+  import { ref, computed, onMounted, watchEffect, watch, nextTick, getCurrentInstance, provide } from 'vue';
 
   import { propTypes } from '@jeesite/core/utils/propTypes';
   import { createSimpleRootMenuContext } from './useSimpleMenuContext';
   import { mitt } from '@jeesite/core/utils/mitt';
 
-  const props = {
+  const props = defineProps({
     theme: propTypes.oneOf(['light', 'dark']).def('light'),
     activeName: propTypes.oneOfType([propTypes.string, propTypes.number]),
     openNames: {
@@ -39,118 +29,111 @@
       type: Array as PropType<(string | number)[]>,
       default: () => [],
     },
-  };
+  });
 
-  export default defineComponent({
-    name: 'Menu',
-    props,
-    emits: ['select', 'open-change'],
-    setup(props, { emit }) {
-      const rootMenuEmitter = mitt<any>();
-      const instance = getCurrentInstance();
+  const emit = defineEmits(['select', 'open-change']);
 
-      const currentActiveName = ref<string | number>('');
-      const openedNames = ref<(string | number)[]>([]);
+  const rootMenuEmitter = mitt<any>();
+  const instance = getCurrentInstance();
 
-      const isRemoveAllPopup = ref(false);
+  const currentActiveName = ref<string | number>('');
+  const openedNames = ref<(string | number)[]>([]);
 
-      createSimpleRootMenuContext({
-        rootMenuEmitter: rootMenuEmitter,
-        activeName: currentActiveName,
-      });
+  const isRemoveAllPopup = ref(false);
 
-      const getClass = computed(() => {
-        const { theme } = props;
-        return [
-          'jeesite-menu',
-          `jeesite-menu-${theme}`,
-          'jeesite-menu-vertical',
-          {
-            ['jeesite-menu-collapse']: props.collapse,
-          },
-        ];
-      });
+  createSimpleRootMenuContext({
+    rootMenuEmitter: rootMenuEmitter,
+    activeName: currentActiveName,
+  });
 
-      watchEffect(() => {
-        openedNames.value = props.openNames;
-      });
+  const getClass = computed(() => {
+    const { theme } = props;
+    return [
+      'jeesite-menu',
+      `jeesite-menu-${theme}`,
+      'jeesite-menu-vertical',
+      {
+        ['jeesite-menu-collapse']: props.collapse,
+      },
+    ];
+  });
 
-      watchEffect(() => {
-        if (props.activeName) {
-          currentActiveName.value = props.activeName;
-        }
-      });
+  watchEffect(() => {
+    openedNames.value = props.openNames;
+  });
 
-      watch(
-        () => props.openNames,
-        () => {
-          nextTick(() => {
-            updateOpened();
-          });
-        },
-      );
+  watchEffect(() => {
+    if (props.activeName) {
+      currentActiveName.value = props.activeName;
+    }
+  });
 
-      function updateOpened() {
-        rootMenuEmitter.emit('on-update-opened', openedNames.value);
-      }
-
-      function addSubMenu(name: string | number) {
-        if (openedNames.value.includes(name)) return;
-        openedNames.value.push(name);
+  watch(
+    () => props.openNames,
+    () => {
+      nextTick(() => {
         updateOpened();
-      }
-
-      function removeSubMenu(name: string | number) {
-        openedNames.value = openedNames.value.filter((item) => item !== name);
-        updateOpened();
-      }
-
-      function removeAll() {
-        openedNames.value = [];
-        updateOpened();
-      }
-
-      function sliceIndex(index: number) {
-        if (index === -1) return;
-        openedNames.value = openedNames.value.slice(0, index + 1);
-        updateOpened();
-      }
-
-      provide<SubMenuProvider>(`subMenu:${instance?.uid}`, {
-        addSubMenu,
-        removeSubMenu,
-        getOpenNames: () => openedNames.value,
-        removeAll,
-        isRemoveAllPopup,
-        sliceIndex,
-        level: 0,
-        props: props as any,
       });
-
-      onMounted(() => {
-        openedNames.value = !props.collapse ? [...props.openNames] : [];
-        updateOpened();
-        rootMenuEmitter.on('on-menu-item-select', ({ name, item }) => {
-          currentActiveName.value = name;
-
-          nextTick(() => {
-            props.collapse && removeAll();
-          });
-          emit('select', name, item);
-        });
-
-        rootMenuEmitter.on('open-name-change', ({ name, opened }) => {
-          if (opened && !openedNames.value.includes(name)) {
-            openedNames.value.push(name);
-          } else if (!opened) {
-            const index = openedNames.value.findIndex((item) => item === name);
-            index !== -1 && openedNames.value.splice(index, 1);
-          }
-        });
-      });
-
-      return { getClass, openedNames };
     },
+  );
+
+  function updateOpened() {
+    rootMenuEmitter.emit('on-update-opened', openedNames.value);
+  }
+
+  function addSubMenu(name: string | number) {
+    if (openedNames.value.includes(name)) return;
+    openedNames.value.push(name);
+    updateOpened();
+  }
+
+  function removeSubMenu(name: string | number) {
+    openedNames.value = openedNames.value.filter((item) => item !== name);
+    updateOpened();
+  }
+
+  function removeAll() {
+    openedNames.value = [];
+    updateOpened();
+  }
+
+  function sliceIndex(index: number) {
+    if (index === -1) return;
+    openedNames.value = openedNames.value.slice(0, index + 1);
+    updateOpened();
+  }
+
+  provide<SubMenuProvider>(`subMenu:${instance?.uid}`, {
+    addSubMenu,
+    removeSubMenu,
+    getOpenNames: () => openedNames.value,
+    removeAll,
+    isRemoveAllPopup,
+    sliceIndex,
+    level: 0,
+    props: props as any,
+  });
+
+  onMounted(() => {
+    openedNames.value = !props.collapse ? [...props.openNames] : [];
+    updateOpened();
+    rootMenuEmitter.on('on-menu-item-select', ({ name, item }) => {
+      currentActiveName.value = name;
+
+      nextTick(() => {
+        props.collapse && removeAll();
+      });
+      emit('select', name, item);
+    });
+
+    rootMenuEmitter.on('open-name-change', ({ name, opened }) => {
+      if (opened && !openedNames.value.includes(name)) {
+        openedNames.value.push(name);
+      } else if (!opened) {
+        const index = openedNames.value.findIndex((item) => item === name);
+        index !== -1 && openedNames.value.splice(index, 1);
+      }
+    });
   });
 </script>
 <style lang="less">

@@ -3,28 +3,16 @@
     <PageLayout />
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent } from 'vue';
+<script lang="ts" setup name="LayoutContent">
   import PageLayout from '@jeesite/core/layouts/page/index.vue';
   import { useRootSetting } from '@jeesite/core/hooks/setting/useRootSetting';
   import { useTransitionSetting } from '@jeesite/core/hooks/setting/useTransitionSetting';
   import { useContentViewHeight } from './useContentViewHeight';
 
-  export default defineComponent({
-    name: 'LayoutContent',
-    components: { PageLayout },
-    setup() {
-      const { getOpenPageLoading } = useTransitionSetting();
-      const { getLayoutContentMode, getPageLoading } = useRootSetting();
+  const { getOpenPageLoading } = useTransitionSetting();
+  const { getLayoutContentMode, getPageLoading } = useRootSetting();
 
-      useContentViewHeight();
-      return {
-        getOpenPageLoading,
-        getLayoutContentMode,
-        getPageLoading,
-      };
-    },
-  });
+  useContentViewHeight();
 </script>
 <style lang="less">
   .jeesite-layout-content {

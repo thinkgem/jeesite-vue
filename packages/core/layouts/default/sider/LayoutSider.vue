@@ -21,10 +21,10 @@
     <DragBar ref="dragBarRef" />
   </Sider>
 </template>
-<script lang="ts">
-  import { computed, defineComponent, ref, unref, CSSProperties, h, shallowRef } from 'vue';
+<script lang="ts" setup name="LayoutSideBar">
+  import { computed, ref, unref, CSSProperties, h, shallowRef } from 'vue';
 
-  import { Layout, LayoutSider } from 'antdv-next';
+  import { LayoutSider } from 'antdv-next';
   import LayoutMenu from '../menu/index.vue';
   import LayoutTrigger from '@jeesite/core/layouts/default/trigger/index.vue';
 
@@ -36,93 +36,68 @@
 
   import DragBar from './DragBar.vue';
 
-  export default defineComponent({
-    name: 'LayoutSideBar',
-    components: { Sider: LayoutSider, LayoutMenu, DragBar, LayoutTrigger },
-    setup() {
-      const dragBarRef = shallowRef<ElRef>(null);
-      const sideRef = shallowRef<ElRef>(null);
+  const Sider = LayoutSider;
 
-      const {
-        getCollapsed,
-        getMenuWidth,
-        getSplit,
-        getMenuTheme,
-        getRealWidth,
-        getMenuHidden,
-        getMenuFixed,
-        getIsMixMode,
-        toggleCollapsed,
-      } = useMenuSetting();
+  const dragBarRef = shallowRef<ElRef>(null);
+  const sideRef = shallowRef<ElRef>(null);
 
-      const { getIsMobile } = useAppInject();
+  const {
+    getCollapsed,
+    getMenuWidth,
+    getSplit,
+    getMenuTheme,
+    getRealWidth,
+    getMenuHidden,
+    getMenuFixed,
+    getIsMixMode,
+    toggleCollapsed,
+  } = useMenuSetting();
 
-      const { getTriggerAttr, getShowTrigger } = useTrigger(getIsMobile);
+  const { getIsMobile } = useAppInject();
 
-      useDragLine(sideRef, dragBarRef);
+  const { getTriggerAttr, getShowTrigger } = useTrigger(getIsMobile);
 
-      const { getCollapsedWidth, onBreakpointChange } = useSiderEvent();
+  useDragLine(sideRef, dragBarRef);
 
-      const getMode = computed(() => {
-        return unref(getSplit) ? MenuModeEnum.INLINE : null;
-      });
+  const { getCollapsedWidth, onBreakpointChange } = useSiderEvent();
 
-      const getSplitType = computed(() => {
-        return unref(getSplit) ? MenuSplitTyeEnum.LEFT : MenuSplitTyeEnum.NONE;
-      });
-
-      const showClassSideBarRef = computed(() => {
-        return unref(getSplit) ? !unref(getMenuHidden) : true;
-      });
-
-      const getSiderClass = computed(() => {
-        return [
-          'jeesite-layout-sideBar',
-          {
-            ['jeesite-layout-sideBar--fixed']: unref(getMenuFixed),
-            ['jeesite-layout-sideBar--mix']: unref(getIsMixMode) && !unref(getIsMobile),
-          },
-        ];
-      });
-
-      const getHiddenDomStyle = computed((): CSSProperties => {
-        const width = `${unref(getRealWidth)}px`;
-        return {
-          width: width,
-          overflow: 'hidden',
-          flex: `0 0 ${width}`,
-          maxWidth: width,
-          minWidth: width,
-          transition: 'all 0.2s',
-        };
-      });
-
-      // 在此处使用计算量可能会导致sider异常
-      // andv 更新后，如果trigger插槽可用，则此处代码可废弃
-      const getTrigger = h(LayoutTrigger);
-
-      return {
-        sideRef,
-        dragBarRef,
-        getIsMobile,
-        getHiddenDomStyle,
-        getSiderClass,
-        getTrigger,
-        getTriggerAttr,
-        getCollapsedWidth,
-        getMenuFixed,
-        showClassSideBarRef,
-        getMenuWidth,
-        getCollapsed,
-        getMenuTheme,
-        onBreakpointChange,
-        getMode,
-        getSplitType,
-        getShowTrigger,
-        toggleCollapsed,
-      };
-    },
+  const getMode = computed(() => {
+    return unref(getSplit) ? MenuModeEnum.INLINE : null;
   });
+
+  const getSplitType = computed(() => {
+    return unref(getSplit) ? MenuSplitTyeEnum.LEFT : MenuSplitTyeEnum.NONE;
+  });
+
+  const showClassSideBarRef = computed(() => {
+    return unref(getSplit) ? !unref(getMenuHidden) : true;
+  });
+
+  const getSiderClass = computed(() => {
+    return [
+      'jeesite-layout-sideBar',
+      {
+        ['jeesite-layout-sideBar--fixed']: unref(getMenuFixed),
+        ['jeesite-layout-sideBar--mix']: unref(getIsMixMode) && !unref(getIsMobile),
+      },
+    ];
+  });
+
+  const getHiddenDomStyle = computed((): CSSProperties => {
+    const width = `${unref(getRealWidth)}px`;
+    return {
+      width: width,
+      overflow: 'hidden',
+      flex: `0 0 ${width}`,
+      maxWidth: width,
+      minWidth: width,
+      transition: 'all 0.2s',
+    };
+  });
+
+  // 在此处使用计算量可能会导致sider异常
+  // antdv 更新后，如果trigger插槽可用，则此处代码可废弃
+  const getTrigger = h(LayoutTrigger);
 </script>
 <style lang="less">
   .ant-layout .ant-layout-sider.jeesite-layout-sideBar {
@@ -140,11 +115,6 @@
       height: calc(100% - @header-height);
     }
 
-    // &.ant-layout-sider-light {
-    //   // border-right: 1px solid @border-color-base;
-    //   box-shadow: 1px 0 0 0 @header-light-bottom-border-color;
-    // }
-
     &.ant-layout-sider-dark {
       background-color: @sider-dark-bg-color;
 
@@ -160,8 +130,6 @@
     }
 
     &:not(.ant-layout-sider-dark) {
-      // box-shadow: 2px 0 8px 0 rgba(29, 35, 41, 0.05);
-
       .ant-layout-sider-trigger {
         color: @text-color-base;
         border-top: 1px solid @header-light-bottom-border-color;

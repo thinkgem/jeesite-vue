@@ -24,57 +24,47 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="BasicTableHeader">
   import type { TableSetting, ColumnChangeParam, TableActionType } from '../types/table';
   import type { PropType } from 'vue';
-  import { defineComponent } from 'vue';
-  // import { Divider } from 'antdv-next';
   import TableSettingComponent from './settings/index.vue';
   import TableTitle from './TableTitle.vue';
   import TableSelectionBar from '../components/TableSelectionBar.vue';
 
-  export default defineComponent({
-    name: 'BasicTableHeader',
-    components: {
-      // Divider,
-      TableTitle,
-      TableSetting: TableSettingComponent,
-      TableSelectionBar,
+  const TableSetting = TableSettingComponent;
+
+  const props = defineProps({
+    title: {
+      type: [Function, String] as PropType<string | ((data: Recordable) => string)>,
     },
-    props: {
-      title: {
-        type: [Function, String] as PropType<string | ((data: Recordable) => string)>,
-      },
-      tableSetting: {
-        type: Object as PropType<TableSetting>,
-      },
-      showTableSetting: {
-        type: Boolean,
-      },
-      titleHelpMessage: {
-        type: [String, Array] as PropType<string | string[]>,
-        default: '',
-      },
-      showSelectionBar: {
-        type: Boolean,
-        default: false,
-      },
-      clearSelectedRowKeys: {
-        type: Function as PropType<TableActionType['clearSelectedRowKeys']>,
-      },
-      count: {
-        type: Number,
-        default: 0,
-      },
+    tableSetting: {
+      type: Object as PropType<TableSetting>,
     },
-    emits: ['columns-change'],
-    setup(props, { emit }) {
-      function handleColumnChange(data: ColumnChangeParam[]) {
-        emit('columns-change', data);
-      }
-      return { props, handleColumnChange };
+    showTableSetting: {
+      type: Boolean,
+    },
+    titleHelpMessage: {
+      type: [String, Array] as PropType<string | string[]>,
+      default: '',
+    },
+    showSelectionBar: {
+      type: Boolean,
+      default: false,
+    },
+    clearSelectedRowKeys: {
+      type: Function as PropType<TableActionType['clearSelectedRowKeys']>,
+    },
+    count: {
+      type: Number,
+      default: 0,
     },
   });
+
+  const emit = defineEmits(['columns-change']);
+
+  function handleColumnChange(data: ColumnChangeParam[]) {
+    emit('columns-change', data);
+  }
 </script>
 <style lang="less">
   .jeesite-basic-table-header {

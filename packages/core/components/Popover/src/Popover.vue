@@ -44,107 +44,88 @@
     </template>
   </Popover>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="BasicPopover">
   import { computed, PropType, ref } from 'vue';
   import type { DropMenu } from './typing';
 
-  import { defineComponent } from 'vue';
   import { Popover, Popconfirm, Menu } from 'antdv-next';
   import { Icon } from '@jeesite/core/components/Icon';
   import { omit } from 'lodash-es';
   import { isFunction } from '@jeesite/core/utils/is';
 
-  export default defineComponent({
-    name: 'BasicPopover',
-    components: {
-      Popover,
-      Menu,
-      MenuItem: Menu.Item,
-      MenuDivider: Menu.Divider,
-      Icon,
-      Popconfirm,
-    },
-    props: {
-      popconfirm: Boolean,
-      /**
-       * the trigger mode which executes the drop-down action
-       * @default ['hover']
-       * @type string[]
-       */
-      trigger: {
-        type: [Array] as PropType<('contextMenu' | 'click' | 'hover')[]>,
-        default: () => {
-          return ['contextMenu'];
-        },
-      },
-      dropMenuList: {
-        type: Array as PropType<(DropMenu & Recordable)[]>,
-        default: () => [],
-      },
-      selectedKeys: {
-        type: Array as PropType<string[]>,
-        default: () => [],
-      },
-      placement: {
-        type: String as PropType<
-          | 'left'
-          | 'right'
-          | 'bottom'
-          | 'top'
-          | 'bottomRight'
-          | 'bottomLeft'
-          | 'topLeft'
-          | 'topRight'
-          | 'leftTop'
-          | 'leftBottom'
-          | 'rightTop'
-          | 'rightBottom'
-        >,
-        default: 'left',
-      },
-      menuMode: {
-        type: String as PropType<'horizontal' | 'vertical' | 'inline'>,
-        default: 'horizontal',
+  const MenuItem = Menu.Item;
+  const MenuDivider = Menu.Divider;
+
+  const props = defineProps({
+    popconfirm: Boolean,
+    trigger: {
+      type: [Array] as PropType<('contextMenu' | 'click' | 'hover')[]>,
+      default: () => {
+        return ['contextMenu'];
       },
     },
-    emits: ['menuEvent'],
-    setup(props, { emit }) {
-      const open = ref(false);
-
-      function handleClickMenu(item: DropMenu, _info?: any) {
-        // 如果 _info 是原生事件（PointerEvent/MouseE/vent），说明是第一次调用，跳过
-        // 只有当 _info 是 MenuInfo 对象时才处理
-        if (_info && !_info.key && !_info.keyPath) {
-          // console.log('Skipping native event');
-          return;
-        }
-
-        if (!item['popConfirm']) {
-          open.value = false;
-        }
-        const { event } = item;
-        const menu = props.dropMenuList.find((item) => `${item.event}` === `${event}`);
-        emit('menuEvent', menu);
-        item.onClick?.();
-      }
-
-      const getPopConfirmAttrs = computed(() => {
-        return (attrs) => {
-          const originAttrs = omit(attrs, ['confirm', 'cancel', 'icon']);
-          if (!attrs.onConfirm && attrs.confirm && isFunction(attrs.confirm)) originAttrs['onConfirm'] = attrs.confirm;
-          if (!attrs.onCancel && attrs.cancel && isFunction(attrs.cancel)) originAttrs['onCancel'] = attrs.cancel;
-          return originAttrs;
-        };
-      });
-
-      return {
-        open,
-        handleClickMenu,
-        getPopConfirmAttrs,
-        getAttr: (key: string | number) => ({ key }),
-      };
+    dropMenuList: {
+      type: Array as PropType<(DropMenu & Recordable)[]>,
+      default: () => [],
+    },
+    selectedKeys: {
+      type: Array as PropType<string[]>,
+      default: () => [],
+    },
+    placement: {
+      type: String as PropType<
+        | 'left'
+        | 'right'
+        | 'bottom'
+        | 'top'
+        | 'bottomRight'
+        | 'bottomLeft'
+        | 'topLeft'
+        | 'topRight'
+        | 'leftTop'
+        | 'leftBottom'
+        | 'rightTop'
+        | 'rightBottom'
+      >,
+      default: 'left',
+    },
+    menuMode: {
+      type: String as PropType<'horizontal' | 'vertical' | 'inline'>,
+      default: 'horizontal',
     },
   });
+
+  const emit = defineEmits(['menuEvent']);
+
+  const open = ref(false);
+
+  function handleClickMenu(item: DropMenu, _info?: any) {
+    // 如果 _info 是原生事件（PointerEvent/MouseE/vent），说明是第一次调用，跳过
+    // 只有当 _info 是 MenuInfo 对象时才处理
+    if (_info && !_info.key && !_info.keyPath) {
+      // console.log('Skipping native event');
+      return;
+    }
+
+    if (!item['popConfirm']) {
+      open.value = false;
+    }
+    const { event } = item;
+    const menu = props.dropMenuList.find((item) => `${item.event}` === `${event}`);
+    emit('menuEvent', menu);
+    item.onClick?.();
+  }
+
+  const getPopConfirmAttrs = computed(() => {
+    return (attrs) => {
+      const originAttrs = omit(attrs, ['confirm', 'cancel', 'icon']);
+      if (!attrs.onConfirm && attrs.confirm && isFunction(attrs.confirm)) originAttrs['onConfirm'] = attrs.confirm;
+      if (!attrs.onCancel && attrs.cancel && isFunction(attrs.cancel)) originAttrs['onCancel'] = attrs.cancel;
+      return originAttrs;
+    };
+  });
+
+  const getAttr = (key: string | number) => ({ key });
 </script>
 <style lang="less">
   .ant-popover.jeesite-basic-popover {

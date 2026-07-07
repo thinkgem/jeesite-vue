@@ -93,19 +93,8 @@
     </Popover>
   </Tooltip>
 </template>
-<script lang="ts">
-  import {
-    defineComponent,
-    ref,
-    reactive,
-    toRefs,
-    watchEffect,
-    nextTick,
-    unref,
-    computed,
-    watch,
-    shallowRef,
-  } from 'vue';
+<script lang="ts" setup name="ColumnSetting">
+  import { ref, reactive, toRefs, watchEffect, nextTick, unref, computed, watch, shallowRef, useAttrs } from 'vue';
   import { Tooltip, Popover, Checkbox, CheckboxGroup, Divider } from 'antdv-next';
   import { SettingOutlined, DragOutlined } from '@antdv-next/icons';
   import { Icon } from '@jeesite/core/components/Icon';
@@ -134,279 +123,234 @@
     fixed?: boolean | 'left' | 'right' | 'start' | 'end';
   }
 
-  export default defineComponent({
-    name: 'ColumnSetting',
-    components: {
-      SettingOutlined,
-      Popover,
-      Tooltip,
-      Checkbox,
-      CheckboxGroup,
-      DragOutlined,
-      ScrollContainer,
-      Divider,
-      Icon,
-    },
-    emits: ['columns-change'],
+  const emit = defineEmits(['columns-change']);
+  const attrs = useAttrs();
 
-    setup(_, { emit, attrs }) {
-      const { t } = useI18n();
+  const { t } = useI18n();
+  const { showMessage } = useMessage();
 
-      const table = useTableContext();
+  const table = useTableContext();
 
-      const defaultRowSelection = omit(
-        table.getDefaultRowSelection && table.getDefaultRowSelection(),
-        'selectedRowKeys',
-      );
-      const columnListRef = shallowRef<InstanceType<typeof CheckboxGroup>>();
-      const cacheCheckIndex = ref<boolean>(true);
-      const cacheCheckSelect = ref<boolean>(false);
-      const cacheCheckList = ref<string[]>([]);
-      const cacheCheckOptions = ref<Options[]>([]);
-      let isInitSortable = false;
+  const defaultRowSelection = omit(table.getDefaultRowSelection && table.getDefaultRowSelection(), 'selectedRowKeys');
+  const columnListRef = shallowRef<InstanceType<typeof CheckboxGroup>>();
+  const cacheCheckIndex = ref<boolean>(true);
+  const cacheCheckSelect = ref<boolean>(false);
+  const cacheCheckList = ref<string[]>([]);
+  const cacheCheckOptions = ref<Options[]>([]);
+  const customFlag = ref<boolean>(false);
+  let isInitSortable = false;
 
-      const state = reactive<State>({
-        checkAll: true,
-        checkIndex: true,
-        checkSelect: false,
-        checkOptions: [],
-        checkedList: [],
-        fixedList: [],
-      });
-
-      watchEffect(() => {
-        setTimeout(() => {
-          // const columns = table.getColumns(); // 去掉长度判断，如果初始化状态没有列，就不会显示设置列
-          if (/*columns.length && */ !state.isInit) {
-            init();
-          }
-        }, 500);
-      });
-
-      watch([() => unref(table?.getProps)?.showIndexColumn, () => unref(table?.getProps)?.rowSelection], () => {
-        const values = unref(table?.getProps) || {};
-        state.checkIndex = !!values?.showIndexColumn;
-        state.checkSelect = !!values?.rowSelection;
-      });
-
-      const isTreeTable = computed(() => unref(table?.getProps)?.isTreeTable);
-
-      function getColumns() {
-        const ret: Options[] = [];
-        table.getColumns({ ignoreIndex: true, ignoreAction: true }).forEach((item) => {
-          ret.push({
-            label: item.title as string /* || (item.customTitle as string)*/,
-            value: (item.dataIndex_ || item.title) as string,
-            ...item,
-          });
-        });
-        return ret;
-      }
-
-      function init() {
-        const values = unref(table?.getProps) || {};
-        cacheCheckIndex.value = !!values.showIndexColumn;
-        cacheCheckSelect.value = !!values.rowSelection;
-
-        const columns = getColumns();
-
-        const checkList = table
-          .getColumns({ ignoreIndex: true, ignoreAction: true })
-          .map((item) => {
-            if (item.defaultHidden) {
-              return '';
-            }
-            return item.dataIndex_ || item.title;
-          })
-          .filter(Boolean) as string[];
-
-        if (!state.checkOptions.length) {
-          state.checkOptions = columns;
-          cacheCheckOptions.value = columns;
-          cacheCheckList.value = checkList;
-        } else {
-          // const fixedColumns = columns.filter((item) =>
-          //   Reflect.has(item, 'fixed')
-          // ) as BasicColumn[];
-          state.checkOptions.forEach((item: BasicColumn) => {
-            const findItem = columns.find((col: BasicColumn) => col.dataIndex_ === item.dataIndex_);
-            if (findItem) {
-              item.fixed = findItem.fixed;
-            }
-          });
-        }
-        state.checkedList = checkList;
-        state.fixedList = [];
-        state.isInit = true;
-      }
-
-      // checkAll change
-      function onCheckAllChange(e: any) {
-        const checkList = state.checkOptions.map((item) => item.value);
-        if (e.target.checked) {
-          state.checkedList = checkList;
-          setColumns(checkList);
-        } else {
-          state.checkedList = [];
-          setColumns([]);
-        }
-      }
-
-      const indeterminate = computed(() => {
-        const len = state.checkOptions.length;
-        const checkedLen = state.checkedList.length;
-        if (checkedLen == len) return undefined;
-        return checkedLen >= 0 && checkedLen < len;
-      });
-
-      // Trigger when check/uncheck a column
-      function onChange(checkedList: string[] | any) {
-        const len = state.checkOptions.length;
-        state.checkAll = checkedList.length === len && len > 0;
-        const sortList = state.checkOptions.map((item) => item.value);
-        if (Array.isArray(checkedList)) {
-          checkedList.sort((prev, next) => {
-            return sortList.indexOf(prev) - sortList.indexOf(next);
-          });
-        }
-        setColumns(checkedList);
-      }
-
-      // reset columns
-      function reset() {
-        state.checkAll = true;
-        table.setProps({
-          showIndexColumn: unref(cacheCheckIndex),
-          rowSelection: unref(cacheCheckSelect) ? defaultRowSelection : undefined,
-        });
-        state.checkOptions = cloneDeep(unref(cacheCheckOptions));
-        state.checkedList = cloneDeep(unref(cacheCheckList));
-        state.fixedList = [];
-        setColumns(table.getCacheColumns(), true);
-        // sortable.sort(sortableOrder);
-      }
-
-      // let sortable: Sortable;
-      // let sortableOrder: string[] = [];
-
-      // Drag and drop sort
-      function handleOpenChange() {
-        if (isInitSortable) return;
-        nextTick(async () => {
-          const columnListEl = unref(columnListRef);
-          if (!columnListEl) return;
-          const el = columnListEl.$el as any;
-          if (!el) return;
-          const Sortablejs = (await import('sortablejs')).default;
-          Sortablejs.create(unref(el), {
-            animation: 500,
-            delay: 400,
-            delayOnTouchOnly: true,
-            handle: '.table-column-drag-icon ',
-            onEnd: (evt) => {
-              const { oldIndex, newIndex } = evt;
-              if (isNullAndUnDef(oldIndex) || isNullAndUnDef(newIndex) || oldIndex === newIndex) {
-                return;
-              }
-              // Sort column
-              const columns = cloneDeep(state.checkOptions);
-
-              if (oldIndex > newIndex) {
-                columns.splice(newIndex, 0, columns[oldIndex]);
-                columns.splice(oldIndex + 1, 1);
-              } else {
-                columns.splice(newIndex + 1, 0, columns[oldIndex]);
-                columns.splice(oldIndex, 1);
-              }
-
-              state.checkOptions = columns;
-
-              setColumns(
-                columns.map((col: Options) => col.value).filter((value: string) => state.checkedList.includes(value)),
-              );
-            },
-          });
-          // 记录原始order 序列
-          // sortableOrder = sortable.toArray();
-          isInitSortable = true;
-        });
-      }
-
-      // Control whether the serial number column is displayed
-      function handleIndexCheckChange(e: any) {
-        table.setProps({
-          showIndexColumn: e.target.checked,
-        });
-      }
-
-      // Control whether the check box is displayed
-      function handleSelectCheckChange(e: any) {
-        table.setProps({
-          rowSelection: e.target.checked ? defaultRowSelection : undefined,
-        });
-      }
-
-      function handleColumnFixed(item: BasicColumn, fixed?: 'left' | 'right') {
-        if (!state.checkedList.includes(item.dataIndex_ as string)) return;
-
-        const columns = getColumns() as BasicColumn[];
-        const isFixed = item.fixed === fixed ? false : fixed;
-        const index = columns.findIndex((col) => col.dataIndex_ === item.dataIndex_);
-        if (index !== -1) {
-          columns[index].fixed = isFixed;
-        }
-        item.fixed = isFixed;
-
-        if (isFixed && !item.width) {
-          item.width = 100;
-        }
-
-        const fixedIndex = state.fixedList.findIndex((col) => col.dataIndex_ === item.dataIndex_);
-        if (fixedIndex !== -1) {
-          state.fixedList[fixedIndex] = item;
-        } else {
-          state.fixedList.push(item);
-        }
-
-        // table.setCacheColumnsByField?.(item.dataIndex_ as string, { fixed: isFixed });
-        setColumns(columns);
-      }
-
-      function setColumns(columns: BasicColumn[] | string[], reset = false) {
-        table.setColumns(columns);
-
-        const data: ColumnChangeParam[] = state.checkOptions.map((col) => {
-          const open =
-            columns.findIndex(
-              (c: BasicColumn | string) => c === col.value || (typeof c !== 'string' && c.dataIndex_ === col.value),
-            ) !== -1;
-          return { dataIndex_: col.value, fixed: col.fixed, open };
-        });
-        emit('columns-change', data);
-      }
-
-      function getPopupContainer() {
-        return isFunction(attrs.getPopupContainer) ? attrs.getPopupContainer() : getParentContainer();
-      }
-
-      return {
-        t,
-        ...toRefs(state),
-        isTreeTable,
-        indeterminate,
-        onCheckAllChange,
-        onChange,
-        reset,
-        columnListRef,
-        handleOpenChange,
-        handleIndexCheckChange,
-        handleSelectCheckChange,
-        defaultRowSelection,
-        handleColumnFixed,
-        getPopupContainer,
-      };
-    },
+  const state = reactive<State>({
+    checkAll: true,
+    checkIndex: true,
+    checkSelect: false,
+    checkOptions: [],
+    checkedList: [],
+    fixedList: [],
   });
+
+  const { checkAll, checkIndex, checkSelect, checkOptions, checkedList, fixedList } = toRefs(state);
+
+  watchEffect(() => {
+    setTimeout(() => {
+      // const columns = table.getColumns(); // 去掉长度判断，如果初始化状态没有列，就不会显示设置列
+      if (/*columns.length && */ !state.isInit) {
+        init();
+      }
+    }, 500); // 晚加载一点，防止 useTable 设置 showIndexColumn: false 时，存储的 序号 未生效
+  });
+
+  watch([() => unref(table?.getProps)?.showIndexColumn, () => unref(table?.getProps)?.rowSelection], () => {
+    const values = unref(table?.getProps) || {};
+    state.checkIndex = !!values?.showIndexColumn;
+    state.checkSelect = !!values?.rowSelection;
+  });
+
+  const isTreeTable = computed(() => unref(table?.getProps)?.isTreeTable);
+
+  function getColumns() {
+    const ret: Options[] = [];
+    table.getColumns({ ignoreIndex: true, ignoreAction: true }).forEach((item) => {
+      ret.push({
+        label: item.title as string /* || (item.customTitle as string)*/,
+        value: (item.dataIndex_ || item.title) as string,
+        ...item,
+      });
+    });
+    return ret;
+  }
+
+  function init() {
+    const values = unref(table?.getProps) || {};
+    cacheCheckIndex.value = !!values.showIndexColumn;
+    cacheCheckSelect.value = !!values.rowSelection;
+
+    const columns = getColumns();
+
+    const checkList = table
+      .getColumns({ ignoreIndex: true, ignoreAction: true })
+      .map((item) => {
+        if (item.defaultHidden) {
+          return '';
+        }
+        return item.dataIndex_ || item.title;
+      })
+      .filter(Boolean) as string[];
+
+    if (!state.checkOptions.length) {
+      state.checkOptions = columns;
+      cacheCheckOptions.value = columns;
+      cacheCheckList.value = checkList;
+    } else {
+      // const fixedColumns = columns.filter((item) =>
+      //   Reflect.has(item, 'fixed')
+      // ) as BasicColumn[];
+      state.checkOptions.forEach((item: BasicColumn) => {
+        const findItem = columns.find((col: BasicColumn) => col.dataIndex_ === item.dataIndex_);
+        if (findItem) {
+          item.fixed = findItem.fixed;
+        }
+      });
+    }
+    state.checkedList = checkList;
+    state.fixedList = [];
+    state.isInit = true;
+  }
+
+  function onCheckAllChange(e: any) {
+    const list = state.checkOptions.map((item) => item.value);
+    if (e.target.checked) {
+      state.checkedList = list;
+      setColumns(list);
+    } else {
+      state.checkedList = [];
+      setColumns([]);
+    }
+  }
+
+  const indeterminate = computed(() => {
+    const len = state.checkOptions.length;
+    const checkedLen = state.checkedList.length;
+    if (checkedLen == len) return undefined;
+    return checkedLen >= 0 && checkedLen < len;
+  });
+
+  function onChange(checkedListInput: string[] | any) {
+    const len = state.checkOptions.length;
+    state.checkAll = checkedListInput.length === len && len > 0;
+    const sortList = state.checkOptions.map((item) => item.value);
+    if (Array.isArray(checkedListInput)) {
+      checkedListInput.sort((prev: string, next: string) => {
+        return sortList.indexOf(prev) - sortList.indexOf(next);
+      });
+    }
+    setColumns(checkedListInput);
+  }
+
+  function reset() {
+    state.checkAll = true;
+    table.setProps({
+      showIndexColumn: unref(cacheCheckIndex),
+      rowSelection: unref(cacheCheckSelect) ? defaultRowSelection : undefined,
+    });
+    state.checkOptions = cloneDeep(unref(cacheCheckOptions));
+    state.checkedList = cloneDeep(unref(cacheCheckList));
+    state.fixedList = [];
+    setColumns(table.getCacheColumns(), true);
+  }
+
+  function handleOpenChange() {
+    if (isInitSortable) return;
+    nextTick(async () => {
+      const columnListEl = unref(columnListRef);
+      if (!columnListEl) return;
+      const el = columnListEl.$el as any;
+      if (!el) return;
+      const Sortablejs = (await import('sortablejs')).default;
+      Sortablejs.create(unref(el), {
+        animation: 500,
+        delay: 400,
+        delayOnTouchOnly: true,
+        handle: '.table-column-drag-icon ',
+        onEnd: (evt) => {
+          const { oldIndex, newIndex } = evt;
+          if (isNullAndUnDef(oldIndex) || isNullAndUnDef(newIndex) || oldIndex === newIndex) {
+            return;
+          }
+          const columns = cloneDeep(state.checkOptions);
+
+          if (oldIndex > newIndex) {
+            columns.splice(newIndex, 0, columns[oldIndex]);
+            columns.splice(oldIndex + 1, 1);
+          } else {
+            columns.splice(newIndex + 1, 0, columns[oldIndex]);
+            columns.splice(oldIndex, 1);
+          }
+
+          state.checkOptions = columns;
+
+          setColumns(
+            columns.map((col: Options) => col.value).filter((value: string) => state.checkedList.includes(value)),
+          );
+        },
+      });
+      isInitSortable = true;
+    });
+  }
+
+  function handleIndexCheckChange(e: any) {
+    table.setProps({
+      showIndexColumn: e.target.checked,
+    });
+  }
+
+  function handleSelectCheckChange(e: any) {
+    table.setProps({
+      rowSelection: e.target.checked ? defaultRowSelection : undefined,
+    });
+  }
+
+  function handleColumnFixed(item: BasicColumn, fixed?: 'left' | 'right') {
+    if (!state.checkedList.includes(item.dataIndex_ as string)) return;
+
+    const columns = getColumns() as BasicColumn[];
+    const isFixed = item.fixed === fixed ? false : fixed;
+    const index = columns.findIndex((col) => col.dataIndex_ === item.dataIndex_);
+    if (index !== -1) {
+      columns[index].fixed = isFixed;
+    }
+    item.fixed = isFixed;
+
+    if (isFixed && !item.width) {
+      item.width = 100;
+    }
+
+    const fixedIndex = state.fixedList.findIndex((col) => col.dataIndex_ === item.dataIndex_);
+    if (fixedIndex !== -1) {
+      state.fixedList[fixedIndex] = item;
+    } else {
+      state.fixedList.push(item);
+    }
+
+    setColumns(columns);
+  }
+
+  function setColumns(columns: BasicColumn[] | string[], resetVal = false) {
+    table.setColumns(columns);
+
+    const data: ColumnChangeParam[] = state.checkOptions.map((col) => {
+      const open =
+        columns.findIndex(
+          (c: BasicColumn | string) => c === col.value || (typeof c !== 'string' && c.dataIndex_ === col.value),
+        ) !== -1;
+      return { dataIndex_: col.value, fixed: col.fixed, open };
+    });
+    emit('columns-change', data);
+  }
+
+  function getPopupContainer() {
+    return isFunction(attrs.getPopupContainer) ? attrs.getPopupContainer() : getParentContainer();
+  }
 </script>
 <style lang="less">
   .table-column-drag-icon {

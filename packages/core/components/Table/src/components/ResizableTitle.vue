@@ -1,5 +1,20 @@
-<script lang="ts">
-  import { defineComponent, h, onBeforeUnmount, ref } from 'vue';
+<template>
+  <th v-if="!props.column?.resizable || !props.column?.width" v-bind="$attrs" @clickCapture="onClickCapture">
+    <slot></slot>
+  </th>
+  <th
+    v-else
+    v-bind="$attrs"
+    :class="['resizable-title', $attrs.class]"
+    :style="{ ...($attrs.style as any), width: `${props.column?.width}px` }"
+    @clickCapture="onClickCapture"
+  >
+    <slot></slot>
+    <span :class="['resizable-handle', { dragging: dragging }]" @mousedown="onMouseDown"></span>
+  </th>
+</template>
+<script lang="ts" setup name="ResizableTitle">
+  import { ref, useAttrs, onBeforeUnmount } from 'vue';
   import { BasicColumn } from '@jeesite/core/components/Table';
 
   interface ResizeInfo {
@@ -8,88 +23,62 @@
     };
   }
 
-  interface ResizableTitleProps {
+  const props = defineProps<{
     column?: BasicColumn;
     onResize?: (event: MouseEvent, info: ResizeInfo) => void;
-  }
+  }>();
 
-  export default defineComponent<ResizableTitleProps>({
-    name: 'ResizableTitle',
+  defineOptions({
     inheritAttrs: false,
-    props: ['column', 'onResize'],
-    setup(props, { slots, attrs }) {
-      const dragging = ref(false);
-      const stopNextClick = ref(false);
-      const widthRef = ref(props.column?.width);
-      let startX = 0;
-      let startWidth = 0;
+  });
 
-      const onMouseMove = (event: MouseEvent) => {
-        if (!dragging.value) {
-          return;
-        }
-        stopNextClick.value = true;
-        const nextWidth = Math.max(startWidth + event.clientX - startX, 40);
-        props.onResize?.(event, { size: { width: nextWidth } });
-        widthRef.value = nextWidth;
-      };
+  const attrs = useAttrs();
+  const dragging = ref(false);
+  const stopNextClick = ref(false);
+  let startX = 0;
+  let startWidth = 0;
 
-      const onMouseUp = () => {
-        dragging.value = false;
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        setTimeout(() => {
-          stopNextClick.value = false;
-        }, 0);
-      };
+  const onMouseMove = (event: MouseEvent) => {
+    if (!dragging.value) {
+      return;
+    }
+    stopNextClick.value = true;
+    const nextWidth = Math.max(startWidth + event.clientX - startX, 40);
+    props.onResize?.(event, { size: { width: nextWidth } });
+  };
 
-      const onMouseDown = (event: MouseEvent) => {
-        event.preventDefault();
-        event.stopPropagation();
-        dragging.value = true;
-        stopNextClick.value = false;
-        startX = event.clientX;
-        startWidth =
-          (props.column?.width as number) || (event.currentTarget as HTMLElement).parentElement?.offsetWidth || 0;
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-      };
+  const onMouseUp = () => {
+    dragging.value = false;
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+    setTimeout(() => {
+      stopNextClick.value = false;
+    }, 0);
+  };
 
-      const onClickCapture = (event: MouseEvent) => {
-        if (stopNextClick.value) {
-          event.stopPropagation();
-          event.preventDefault();
-          stopNextClick.value = false;
-        }
-      };
+  const onMouseDown = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragging.value = true;
+    stopNextClick.value = false;
+    startX = event.clientX;
+    startWidth =
+      (props.column?.width as number) || (event.currentTarget as HTMLElement).parentElement?.offsetWidth || 0;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
 
-      onBeforeUnmount(() => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-      });
+  const onClickCapture = (event: MouseEvent) => {
+    if (stopNextClick.value) {
+      event.stopPropagation();
+      event.preventDefault();
+      stopNextClick.value = false;
+    }
+  };
 
-      return () => {
-        if (!props.column?.resizable || !props.column?.width) {
-          return h('th', attrs, slots.default?.());
-        }
-        return h(
-          'th',
-          {
-            ...attrs,
-            class: ['resizable-title', attrs.class],
-            style: { ...(attrs.style as any), width: `${props.column?.width}px` },
-            onClickCapture,
-          },
-          [
-            slots.default?.(),
-            h('span', {
-              class: ['resizable-handle', { dragging: dragging.value }],
-              onMousedown: onMouseDown,
-            }),
-          ],
-        );
-      };
-    },
+  onBeforeUnmount(() => {
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
   });
 </script>
 <style lang="less">

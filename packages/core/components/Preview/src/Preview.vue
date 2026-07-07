@@ -14,9 +14,9 @@
     </PreviewGroup>
   </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="ImagePreview">
   import type { PropType } from 'vue';
-  import { defineComponent, computed } from 'vue';
+  import { computed } from 'vue';
 
   import { Image } from 'antdv-next';
   import { propTypes } from '@jeesite/core/utils/propTypes';
@@ -40,41 +40,29 @@
 
   type ImageItem = string | ImageProps;
 
-  const props = {
+  const PreviewGroup = Image.PreviewGroup;
+
+  const props = defineProps({
     functional: propTypes.bool,
     imageList: {
       type: Array as PropType<ImageItem[]>,
     },
-  };
+  });
 
-  export default defineComponent({
-    name: 'ImagePreview',
-    components: {
-      Image,
-      PreviewGroup: Image.PreviewGroup,
-    },
-    props,
-    setup(props) {
-      const getImageList = computed((): any[] => {
-        const { imageList } = props;
-        if (!imageList) {
-          return [];
-        }
-        return imageList.map((item) => {
-          if (isString(item)) {
-            return {
-              src: item,
-              placeholder: false,
-            };
-          }
-          return item;
-        });
-      });
-
-      return {
-        getImageList,
-      };
-    },
+  const getImageList = computed((): any[] => {
+    const { imageList } = props;
+    if (!imageList) {
+      return [];
+    }
+    return imageList.map((item) => {
+      if (isString(item)) {
+        return {
+          src: item,
+          placeholder: false,
+        };
+      }
+      return item;
+    });
   });
 </script>
 <style lang="less">

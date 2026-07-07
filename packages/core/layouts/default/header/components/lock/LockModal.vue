@@ -24,8 +24,8 @@
     </div>
   </BasicModal>
 </template>
-<script lang="ts">
-  import { defineComponent, computed } from 'vue';
+<script lang="ts" setup name="LockModal">
+  import { computed } from 'vue';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { BasicModal, useModalInner } from '@jeesite/core/components/Modal';
   import { BasicForm, useForm } from '@jeesite/core/components/Form';
@@ -33,58 +33,42 @@
   import { useUserStore } from '@jeesite/core/store/modules/user';
   import { useLockStore } from '@jeesite/core/store/modules/lock';
 
-  export default defineComponent({
-    name: 'LockModal',
-    components: { BasicModal, BasicForm },
+  const { t } = useI18n();
+  const userStore = useUserStore();
+  const lockStore = useLockStore();
 
-    setup() {
-      const { t } = useI18n();
-      const userStore = useUserStore();
-      const lockStore = useLockStore();
+  const getRealName = computed(() => userStore.getUserInfo?.userName);
+  const [register, { closeModal }] = useModalInner();
 
-      const getRealName = computed(() => userStore.getUserInfo?.userName);
-      const [register, { closeModal }] = useModalInner();
+  const [registerForm, { validateFields, resetFields }] = useForm({
+    showActionButtonGroup: false,
+    labelWidth: 100,
+    schemas: [
+      {
+        field: 'password',
+        label: t('layout.header.lockScreenPassword'),
+        component: 'InputPassword',
+        required: true,
+      },
+    ],
+    baseColProps: { md: 23, lg: 23 },
+  });
 
-      const [registerForm, { validateFields, resetFields }] = useForm({
-        showActionButtonGroup: false,
-        labelWidth: 100,
-        schemas: [
-          {
-            field: 'password',
-            label: t('layout.header.lockScreenPassword'),
-            component: 'InputPassword',
-            required: true,
-          },
-        ],
-        baseColProps: { md: 23, lg: 23 },
-      });
+  async function handleLock() {
+    const values = (await validateFields()) as any;
+    const password: string | undefined = values.password;
+    closeModal();
 
-      async function handleLock() {
-        const values = (await validateFields()) as any;
-        const password: string | undefined = values.password;
-        closeModal();
+    lockStore.setLockInfo({
+      isLock: true,
+      pwd: password,
+    });
+    await resetFields();
+  }
 
-        lockStore.setLockInfo({
-          isLock: true,
-          pwd: password,
-        });
-        await resetFields();
-      }
-
-      const avatar = computed(() => {
-        const { avatarUrl } = userStore.getUserInfo;
-        return avatarUrl;
-      });
-
-      return {
-        t,
-        getRealName,
-        register,
-        registerForm,
-        handleLock,
-        avatar,
-      };
-    },
+  const avatar = computed(() => {
+    const { avatarUrl } = userStore.getUserInfo;
+    return avatarUrl;
   });
 </script>
 <style lang="less">

@@ -51,20 +51,10 @@
   </li>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup name="SubMenu">
   import type { CSSProperties, PropType } from 'vue';
   import type { SubMenuProvider } from './types';
-  import {
-    defineComponent,
-    computed,
-    unref,
-    getCurrentInstance,
-    toRefs,
-    reactive,
-    provide,
-    onBeforeMount,
-    inject,
-  } from 'vue';
+  import { computed, unref, getCurrentInstance, toRefs, reactive, provide, onBeforeMount, inject } from 'vue';
   import { propTypes } from '@jeesite/core/utils/propTypes';
   import { useMenuItem } from './useMenu';
   import { useSimpleRootMenuContext } from './useSimpleMenuContext';
@@ -76,250 +66,226 @@
 
   const DELAY = 200;
 
-  const props = {
+  const props = defineProps({
     name: {
       type: [String, Number] as PropType<string | number>,
       required: true,
     },
     disabled: propTypes.bool,
     collapsedShowTitle: propTypes.bool,
-  };
+  });
 
-  export default defineComponent({
-    name: 'SubMenu',
-    components: {
-      Icon,
-      CollapseTransition,
-      Popover,
-    },
-    props,
-    setup(props) {
-      const instance = getCurrentInstance();
+  const instance = getCurrentInstance();
 
-      const state = reactive({
-        active: false,
-        opened: false,
+  const state = reactive({
+    active: false,
+    opened: false,
+  });
+
+  const data = reactive({
+    timeout: null as TimeoutHandle | null,
+    mouseInChild: false,
+    isChild: false,
+  });
+
+  const { opened, active } = toRefs(state);
+  const { mouseInChild, isChild: dataIsChild, timeout: dataTimeout } = toRefs(data);
+
+  const { getParentSubMenu, getItemStyle, getParentMenu, getParentList } = useMenuItem(instance);
+
+  const subMenuEmitter = mitt();
+
+  const { rootMenuEmitter } = useSimpleRootMenuContext();
+
+  const {
+    addSubMenu: parentAddSubmenu,
+    removeSubMenu: parentRemoveSubmenu,
+    removeAll: parentRemoveAll,
+    getOpenNames: parentGetOpenNames,
+    isRemoveAllPopup,
+    sliceIndex,
+    level,
+    props: rootProps,
+    handleMouseleave: parentHandleMouseleave,
+  } = inject<SubMenuProvider>(`subMenu:${getParentMenu.value?.uid}`)!;
+
+  const getClass = computed(() => {
+    return [
+      'jeesite-menu-submenu',
+      {
+        ['jeesite-menu-item-active']: state.active,
+        ['jeesite-menu-opened']: state.opened,
+        ['jeesite-menu-submenu-disabled']: props.disabled,
+        ['jeesite-menu-submenu-has-parent-submenu']: unref(getParentSubMenu),
+        ['jeesite-menu-child-item-active']: state.active,
+      },
+    ];
+  });
+
+  const getAccordion = computed(() => rootProps.accordion);
+  const getCollapse = computed(() => rootProps.collapse);
+  const getTheme = computed(() => rootProps.theme);
+
+  const getOverlayStyle = computed((): CSSProperties => {
+    return {
+      minWidth: '200px',
+    };
+  });
+
+  const getIsOpend = computed(() => {
+    const name = props.name;
+    if (unref(getCollapse)) {
+      return parentGetOpenNames().includes(name as string);
+    }
+    return state.opened;
+  });
+
+  const getSubClass = computed(() => {
+    const isActive = rootProps.activeSubMenuNames.includes(props.name as string);
+    return [
+      'jeesite-menu-submenu-title',
+      {
+        ['jeesite-menu-submenu-active']: isActive,
+        ['jeesite-menu-submenu-active-border']: isActive && level === 0,
+        ['jeesite-menu-submenu-collapse']: unref(getCollapse) && level === 0,
+      },
+    ];
+  });
+
+  function getEvents(deep: boolean) {
+    if (!unref(getCollapse)) {
+      return {};
+    }
+    return {
+      onMouseenter: handleMouseenter,
+      onMouseleave: () => handleMouseleave(deep),
+    };
+  }
+
+  function handleClick() {
+    const { disabled } = props;
+    if (disabled || unref(getCollapse)) return;
+    const openedState = state.opened;
+
+    if (unref(getAccordion)) {
+      const { uidList } = getParentList();
+      rootMenuEmitter.emit('on-update-opened', {
+        opend: false,
+        parent: instance?.parent,
+        uidList: uidList,
       });
-
-      const data = reactive({
-        timeout: null as TimeoutHandle | null,
-        mouseInChild: false,
-        isChild: false,
+    } else {
+      rootMenuEmitter.emit('open-name-change', {
+        name: props.name,
+        opened: !openedState,
       });
+    }
+    state.opened = !openedState;
+  }
 
-      const { getParentSubMenu, getItemStyle, getParentMenu, getParentList } = useMenuItem(instance);
+  function handleMouseenter() {
+    const disabled = props.disabled;
+    if (disabled) return;
 
-      const subMenuEmitter = mitt();
+    subMenuEmitter.emit('submenu:mouse-enter-child');
 
-      const { rootMenuEmitter } = useSimpleRootMenuContext();
+    const index = parentGetOpenNames().findIndex((item) => item === props.name);
 
-      const {
-        addSubMenu: parentAddSubmenu,
-        removeSubMenu: parentRemoveSubmenu,
-        removeAll: parentRemoveAll,
-        getOpenNames: parentGetOpenNames,
-        isRemoveAllPopup,
-        sliceIndex,
-        level,
-        props: rootProps,
-        handleMouseleave: parentHandleMouseleave,
-      } = inject<SubMenuProvider>(`subMenu:${getParentMenu.value?.uid}`)!;
+    sliceIndex(index);
 
-      const getClass = computed(() => {
-        return [
-          'jeesite-menu-submenu',
-          {
-            ['jeesite-menu-item-active']: state.active,
-            ['jeesite-menu-opened']: state.opened,
-            ['jeesite-menu-submenu-disabled']: props.disabled,
-            ['jeesite-menu-submenu-has-parent-submenu']: unref(getParentSubMenu),
-            ['jeesite-menu-child-item-active']: state.active,
-          },
-        ];
-      });
+    const isRoot = level === 0 && parentGetOpenNames().length === 2;
+    if (isRoot) {
+      parentRemoveAll();
+    }
+    data.isChild = parentGetOpenNames().includes(props.name as string);
+    clearTimeout(data.timeout!);
+    data.timeout = setTimeout(() => {
+      parentAddSubmenu(props.name as string);
+    }, DELAY);
+  }
 
-      const getAccordion = computed(() => rootProps.accordion);
-      const getCollapse = computed(() => rootProps.collapse);
-      const getTheme = computed(() => rootProps.theme);
+  function handleMouseleave(deepDispatch = false) {
+    const parentName = getParentMenu.value?.props.name;
+    if (!parentName) {
+      isRemoveAllPopup.value = true;
+    }
 
-      const getOverlayStyle = computed((): CSSProperties => {
-        return {
-          minWidth: '200px',
-        };
-      });
+    if (parentGetOpenNames().slice(-1)[0] === props.name) {
+      data.isChild = false;
+    }
 
-      const getIsOpend = computed(() => {
-        const name = props.name;
-        if (unref(getCollapse)) {
-          return parentGetOpenNames().includes(name as string);
-        }
-        return state.opened;
-      });
-
-      const getSubClass = computed(() => {
-        const isActive = rootProps.activeSubMenuNames.includes(props.name as string);
-        return [
-          'jeesite-menu-submenu-title',
-          {
-            ['jeesite-menu-submenu-active']: isActive,
-            ['jeesite-menu-submenu-active-border']: isActive && level === 0,
-            ['jeesite-menu-submenu-collapse']: unref(getCollapse) && level === 0,
-          },
-        ];
-      });
-
-      function getEvents(deep: boolean) {
-        if (!unref(getCollapse)) {
-          return {};
-        }
-        return {
-          onMouseenter: handleMouseenter,
-          onMouseleave: () => handleMouseleave(deep),
-        };
-      }
-
-      function handleClick() {
-        const { disabled } = props;
-        if (disabled || unref(getCollapse)) return;
-        const opened = state.opened;
-
-        if (unref(getAccordion)) {
-          const { uidList } = getParentList();
-          rootMenuEmitter.emit('on-update-opened', {
-            opend: false,
-            parent: instance?.parent,
-            uidList: uidList,
-          });
-        } else {
-          rootMenuEmitter.emit('open-name-change', {
-            name: props.name,
-            opened: !opened,
-          });
-        }
-        state.opened = !opened;
-      }
-
-      function handleMouseenter() {
-        const disabled = props.disabled;
-        if (disabled) return;
-
-        subMenuEmitter.emit('submenu:mouse-enter-child');
-
-        const index = parentGetOpenNames().findIndex((item) => item === props.name);
-
-        sliceIndex(index);
-
-        const isRoot = level === 0 && parentGetOpenNames().length === 2;
-        if (isRoot) {
+    subMenuEmitter.emit('submenu:mouse-leave-child');
+    if (data.timeout) {
+      clearTimeout(data.timeout!);
+      data.timeout = setTimeout(() => {
+        if (isRemoveAllPopup.value) {
           parentRemoveAll();
+        } else if (!data.mouseInChild) {
+          parentRemoveSubmenu(props.name as string);
         }
-        data.isChild = parentGetOpenNames().includes(props.name as string);
-        clearTimeout(data.timeout!);
-        data.timeout = setTimeout(() => {
-          parentAddSubmenu(props.name as string);
-        }, DELAY);
+      }, DELAY);
+    }
+    if (deepDispatch) {
+      if (getParentSubMenu.value) {
+        parentHandleMouseleave?.(true);
+      }
+    }
+  }
+
+  onBeforeMount(() => {
+    subMenuEmitter.on('submenu:mouse-enter-child', () => {
+      data.mouseInChild = true;
+      isRemoveAllPopup.value = false;
+      clearTimeout(data.timeout!);
+    });
+    subMenuEmitter.on('submenu:mouse-leave-child', () => {
+      if (data.isChild) return;
+      data.mouseInChild = false;
+      clearTimeout(data.timeout!);
+    });
+
+    rootMenuEmitter.on('on-update-opened', (eventData: boolean | (string | number)[] | Recordable) => {
+      if (unref(getCollapse)) return;
+      if (isBoolean(eventData)) {
+        state.opened = eventData;
+        return;
+      }
+      if (isObject(eventData) && rootProps.accordion) {
+        const { opend, parent, uidList } = eventData as Recordable;
+        if (parent === instance?.parent) {
+          state.opened = opend;
+        } else if (!uidList.includes(instance?.uid)) {
+          state.opened = false;
+        }
+        return;
       }
 
-      function handleMouseleave(deepDispatch = false) {
-        const parentName = getParentMenu.value?.props.name;
-        if (!parentName) {
-          isRemoveAllPopup.value = true;
-        }
-
-        if (parentGetOpenNames().slice(-1)[0] === props.name) {
-          data.isChild = false;
-        }
-
-        subMenuEmitter.emit('submenu:mouse-leave-child');
-        if (data.timeout) {
-          clearTimeout(data.timeout!);
-          data.timeout = setTimeout(() => {
-            if (isRemoveAllPopup.value) {
-              parentRemoveAll();
-            } else if (!data.mouseInChild) {
-              parentRemoveSubmenu(props.name as string);
-            }
-          }, DELAY);
-        }
-        if (deepDispatch) {
-          if (getParentSubMenu.value) {
-            parentHandleMouseleave?.(true);
-          }
-        }
+      if (props.name && Array.isArray(eventData)) {
+        state.opened = (eventData as (string | number)[]).includes(props.name);
       }
+    });
 
-      onBeforeMount(() => {
-        subMenuEmitter.on('submenu:mouse-enter-child', () => {
-          data.mouseInChild = true;
-          isRemoveAllPopup.value = false;
-          clearTimeout(data.timeout!);
-        });
-        subMenuEmitter.on('submenu:mouse-leave-child', () => {
-          if (data.isChild) return;
-          data.mouseInChild = false;
-          clearTimeout(data.timeout!);
-        });
-
-        rootMenuEmitter.on('on-update-opened', (data: boolean | (string | number)[] | Recordable) => {
-          if (unref(getCollapse)) return;
-          if (isBoolean(data)) {
-            state.opened = data;
-            return;
-          }
-          if (isObject(data) && rootProps.accordion) {
-            const { opend, parent, uidList } = data as Recordable;
-            if (parent === instance?.parent) {
-              state.opened = opend;
-            } else if (!uidList.includes(instance?.uid)) {
-              state.opened = false;
-            }
-            return;
-          }
-
-          if (props.name && Array.isArray(data)) {
-            state.opened = (data as (string | number)[]).includes(props.name);
-          }
-        });
-
-        rootMenuEmitter.on('on-update-active-name:submenu', (data: number[]) => {
-          if (instance?.uid) {
-            state.active = data.includes(instance?.uid);
-          }
-        });
-      });
-
-      function handleOpenChange(open: boolean) {
-        state.opened = open;
+    rootMenuEmitter.on('on-update-active-name:submenu', (eventData: number[]) => {
+      if (instance?.uid) {
+        state.active = eventData.includes(instance?.uid);
       }
+    });
+  });
 
-      // provide
-      provide<SubMenuProvider>(`subMenu:${instance?.uid}`, {
-        addSubMenu: parentAddSubmenu,
-        removeSubMenu: parentRemoveSubmenu,
-        getOpenNames: parentGetOpenNames,
-        removeAll: parentRemoveAll,
-        isRemoveAllPopup,
-        sliceIndex,
-        level: level + 1,
-        handleMouseleave,
-        props: rootProps,
-      });
+  function handleOpenChange(open: boolean) {
+    state.opened = open;
+  }
 
-      return {
-        getClass,
-        getCollapse,
-        getItemStyle,
-        handleClick,
-        handleOpenChange,
-        getParentSubMenu,
-        getOverlayStyle,
-        getTheme,
-        getIsOpend,
-        getEvents,
-        getSubClass,
-        ...toRefs(state),
-        ...toRefs(data),
-      };
-    },
+  // provide
+  provide<SubMenuProvider>(`subMenu:${instance?.uid}`, {
+    addSubMenu: parentAddSubmenu,
+    removeSubMenu: parentRemoveSubmenu,
+    getOpenNames: parentGetOpenNames,
+    removeAll: parentRemoveAll,
+    isRemoveAllPopup,
+    sliceIndex,
+    level: level + 1,
+    handleMouseleave,
+    props: rootProps,
   });
 </script>

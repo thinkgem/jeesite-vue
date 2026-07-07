@@ -42,8 +42,8 @@
     </div>
   </ALayoutHeader>
 </template>
-<script lang="ts">
-  import { defineComponent, ref, unref, computed } from 'vue';
+<script lang="ts" setup name="LayoutHeader">
+  import { ref, unref, computed } from 'vue';
   import { propTypes } from '@jeesite/core/utils/propTypes';
   import { LayoutHeader } from 'antdv-next';
   import { AppLogo } from '@jeesite/core/components/Application';
@@ -70,123 +70,78 @@
     SettingDrawer,
   } from './components';
 
-  export default defineComponent({
-    name: 'LayoutHeader',
-    components: {
-      ALayoutHeader: LayoutHeader,
-      AppLogo,
-      LayoutTrigger,
-      LayoutBreadcrumb,
-      LayoutMenu,
-      UserDropDown,
-      FullScreen,
-      Notify,
-      AppSearch,
-      ErrorAction,
-      OnlineCount,
-      SettingDrawer,
-    },
-    props: {
-      fixed: propTypes.bool,
-    },
-    setup(props) {
-      // 增加延迟，修复Safari下首次加载顶部菜单重叠问题。
-      const getIsInitMenu = ref<boolean>(false);
-      onMountedOrActivated(() => {
-        setTimeout(() => {
-          getIsInitMenu.value = true;
-        }, 100);
-      });
-      const { getShowTopMenu, getShowHeaderTrigger, getSplit, getIsMixMode, getMenuWidth, getIsMixSidebar } =
-        useMenuSetting();
-      const { getUseErrorHandle, getShowSettingButton, getSettingButtonPosition } = useRootSetting();
+  const ALayoutHeader = LayoutHeader;
 
-      const {
-        getHeaderTheme,
-        getShowFullScreen,
-        getShowNotice,
-        getShowContent,
-        getShowBread,
-        getShowHeaderLogo,
-        getShowHeader,
-        getShowSearch,
-      } = useHeaderSetting();
+  const props = defineProps({
+    fixed: propTypes.bool,
+  });
 
-      const { getShowLocalePicker } = useLocale();
+  // 增加延迟，修复Safari下首次加载顶部菜单重叠问题。
+  const getIsInitMenu = ref<boolean>(false);
+  onMountedOrActivated(() => {
+    setTimeout(() => {
+      getIsInitMenu.value = true;
+    }, 100);
+  });
+  const { getShowTopMenu, getShowHeaderTrigger, getSplit, getIsMixMode, getMenuWidth, getIsMixSidebar } =
+    useMenuSetting();
+  const { getUseErrorHandle, getShowSettingButton, getSettingButtonPosition } = useRootSetting();
 
-      const { getIsMobile } = useAppInject();
+  const {
+    getHeaderTheme,
+    getShowFullScreen,
+    getShowNotice,
+    getShowContent,
+    getShowBread,
+    getShowHeaderLogo,
+    getShowHeader,
+    getShowSearch,
+  } = useHeaderSetting();
 
-      const getHeaderClass = computed(() => {
-        const theme = unref(getHeaderTheme);
-        return [
-          'jeesite-layout-header',
-          {
-            ['jeesite-layout-header--fixed']: props.fixed,
-            ['jeesite-layout-header--mobile']: unref(getIsMobile),
-            [`jeesite-layout-header--${theme}`]: theme,
-          },
-        ];
-      });
+  const { getShowLocalePicker } = useLocale();
 
-      const getUseCorpModel = computed(() => {
-        const userStore = useUserStore();
-        const { hasPermission } = usePermission();
-        return userStore.getPageCacheByKey('useCorpModel', false) && hasPermission('sys:corpAdmin:edit');
-      });
+  const { getIsMobile } = useAppInject();
 
-      const getShowSetting = computed(() => {
-        if (!unref(getShowSettingButton)) {
-          return false;
-        }
-        const settingButtonPosition = unref(getSettingButtonPosition);
+  const getHeaderClass = computed(() => {
+    const theme = unref(getHeaderTheme);
+    return [
+      'jeesite-layout-header',
+      {
+        ['jeesite-layout-header--fixed']: props.fixed,
+        ['jeesite-layout-header--mobile']: unref(getIsMobile),
+        [`jeesite-layout-header--${theme}`]: theme,
+      },
+    ];
+  });
 
-        if (settingButtonPosition === SettingButtonPositionEnum.AUTO) {
-          return unref(getShowHeader);
-        }
-        return settingButtonPosition === SettingButtonPositionEnum.HEADER;
-      });
+  const userStore = useUserStore();
 
-      const getLogoWidth = computed(() => {
-        if (!unref(getIsMixMode) || unref(getIsMobile)) {
-          return {};
-        }
-        const width = unref(getMenuWidth) < 180 ? 180 : unref(getMenuWidth);
-        return { minWidth: `${width}px` };
-      });
+  const getShowSetting = computed(() => {
+    if (!unref(getShowSettingButton)) {
+      return false;
+    }
+    const settingButtonPosition = unref(getSettingButtonPosition);
 
-      const getSplitType = computed(() => {
-        return unref(getSplit) ? MenuSplitTyeEnum.TOP : MenuSplitTyeEnum.NONE;
-      });
+    if (settingButtonPosition === SettingButtonPositionEnum.AUTO) {
+      return unref(getShowHeader);
+    }
+    return settingButtonPosition === SettingButtonPositionEnum.HEADER;
+  });
 
-      const getMenuMode = computed(() => {
-        return unref(getSplit) ? MenuModeEnum.HORIZONTAL : null;
-      });
+  const getLogoWidth = computed(() => {
+    if (!unref(getIsMixMode) || unref(getIsMobile)) {
+      return {};
+    }
+    const width = unref(getMenuWidth) < 180 ? 180 : unref(getMenuWidth);
+    return { minWidth: `${width}px` };
+  });
 
-      return {
-        getHeaderClass,
-        getShowHeaderLogo,
-        getHeaderTheme,
-        getShowHeaderTrigger,
-        getIsMobile,
-        getShowBread,
-        getShowContent,
-        getSplitType,
-        getSplit,
-        getMenuMode,
-        getIsInitMenu,
-        getShowTopMenu,
-        getShowLocalePicker,
-        getShowFullScreen,
-        getShowNotice,
-        getUseErrorHandle,
-        getLogoWidth,
-        getIsMixSidebar,
-        getShowSettingButton,
-        getShowSetting,
-        getShowSearch,
-        getUseCorpModel,
-      };
-    },
+  const getSplitType = computed(() => {
+    return unref(getSplit) ? MenuSplitTyeEnum.TOP : MenuSplitTyeEnum.NONE;
+  });
+
+  const getMenuMode = computed(() => {
+    return unref(getSplit) ? MenuModeEnum.HORIZONTAL : null;
   });
 </script>
 <style lang="less">

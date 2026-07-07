@@ -44,11 +44,11 @@
     </template>
   </SubMenu>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="SimpleSubMenu">
   import type { PropType } from 'vue';
   import type { Menu } from '@jeesite/core/router/types';
 
-  import { defineComponent, computed } from 'vue';
+  import { computed } from 'vue';
   import Icon from '@jeesite/core/components/Icon';
 
   import MenuItem from './components/MenuItem.vue';
@@ -58,7 +58,7 @@
   import SimpleMenuTag from './SimpleMenuTag.vue';
   import { omit } from 'lodash-es';
 
-  const props = {
+  const props = defineProps({
     item: {
       type: Object as PropType<Menu>,
       default: () => ({}),
@@ -67,58 +67,34 @@
     collapsedShowTitle: propTypes.bool,
     collapse: propTypes.bool,
     theme: propTypes.oneOf(['dark', 'light']),
-  };
-
-  export default defineComponent({
-    name: 'SimpleSubMenu',
-    components: {
-      SubMenu,
-      MenuItem,
-      SimpleMenuTag,
-      Icon,
-    },
-    props,
-    setup(props) {
-      const { t } = useI18n();
-
-      const getShowMenu = computed(() => !props.item?.meta?.hideMenu);
-      const getIcon = computed(() => props.item?.icon);
-      const getColor = computed(() => props.item?.color);
-      const getI18nName = computed(() => t(props.item?.name));
-      const getShowSubTitle = computed(() => !props.collapse || !props.parent);
-      const getIsCollapseParent = computed(() => !!props.collapse && !!props.parent);
-      const getLevelClass = computed(() => {
-        return [
-          {
-            ['jeesite-simple-menu__parent']: props.parent,
-            ['jeesite-simple-menu__children']: !props.parent,
-          },
-        ];
-      });
-      const getMenuItem = computed(() => {
-        return omit(props.item, 'children', 'icon', 'title', 'color', 'extend');
-      });
-
-      function menuHasChildren(menuTreeItem: Menu): boolean {
-        return (
-          !menuTreeItem.meta?.hideChildrenInMenu &&
-          Reflect.has(menuTreeItem, 'children') &&
-          !!menuTreeItem.children &&
-          menuTreeItem.children.length > 0
-        );
-      }
-
-      return {
-        menuHasChildren,
-        getShowMenu,
-        getIcon,
-        getColor,
-        getI18nName,
-        getShowSubTitle,
-        getLevelClass,
-        getIsCollapseParent,
-        getMenuItem,
-      };
-    },
   });
+
+  const { t } = useI18n();
+
+  const getShowMenu = computed(() => !props.item?.meta?.hideMenu);
+  const getIcon = computed(() => props.item?.icon);
+  const getColor = computed(() => props.item?.color);
+  const getI18nName = computed(() => t(props.item?.name));
+  const getShowSubTitle = computed(() => !props.collapse || !props.parent);
+  const getIsCollapseParent = computed(() => !!props.collapse && !!props.parent);
+  const getLevelClass = computed(() => {
+    return [
+      {
+        ['jeesite-simple-menu__parent']: props.parent,
+        ['jeesite-simple-menu__children']: !props.parent,
+      },
+    ];
+  });
+  const getMenuItem = computed(() => {
+    return omit(props.item, 'children', 'icon', 'title', 'color', 'extend');
+  });
+
+  function menuHasChildren(menuTreeItem: Menu): boolean {
+    return (
+      !menuTreeItem.meta?.hideChildrenInMenu &&
+      Reflect.has(menuTreeItem, 'children') &&
+      !!menuTreeItem.children &&
+      menuTreeItem.children.length > 0
+    );
+  }
 </script>

@@ -68,10 +68,10 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup name="LayoutMixSider">
   import type { Menu } from '@jeesite/core/router/types';
   import { CSSProperties, shallowRef } from 'vue';
-  import { computed, defineComponent, onMounted, ref, unref } from 'vue';
+  import { computed, onMounted, ref, unref } from 'vue';
   import type { RouteLocationNormalized } from 'vue-router';
   import { ScrollContainer } from '@jeesite/core/components/Container';
   import { SimpleMenu, SimpleMenuTag } from '@jeesite/core/components/SimpleMenu';
@@ -83,262 +83,233 @@
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { useGo } from '@jeesite/core/hooks/web/usePage';
   import { SIDE_BAR_MINI_WIDTH, SIDE_BAR_SHOW_TIT_MINI_WIDTH } from '@jeesite/core/enums/appEnum';
-  import clickOutside from '@jeesite/core/directives/clickOutside';
   import { getChildrenMenus, getCurrentParentPath, getShallowMenus } from '@jeesite/core/router/menus';
   import { listenerRouteChange } from '@jeesite/core/logics/mitt/routeChange';
   import LayoutTrigger from '../trigger/index.vue';
   import { omit } from 'lodash-es';
 
-  export default defineComponent({
-    name: 'LayoutMixSider',
-    components: {
-      ScrollContainer,
-      AppLogo,
-      SimpleMenu,
-      Icon,
-      LayoutTrigger,
-      SimpleMenuTag,
-    },
-    directives: {
-      clickOutside,
-    },
-    setup() {
-      let menuModules = ref<Menu[]>([]);
-      const activePath = ref('');
-      const childrenMenus = ref<Menu[]>([]);
-      const openMenu = ref(false);
-      const dragBarRef = shallowRef<ElRef>(null);
-      const sideRef = shallowRef<ElRef>(null);
-      const currentRoute = ref<Nullable<RouteLocationNormalized>>(null);
-
-      const go = useGo();
-      const { t } = useI18n();
-      const {
-        getMenuWidth,
-        getCanDrag,
-        getCloseMixSidebarOnChange,
-        getMenuTheme,
-        getMixSideTrigger,
-        getRealWidth,
-        getMixSideFixed,
-        mixSideHasChildren,
-        setMenuSetting,
-        getIsMixSidebar,
-        getCollapsed,
-      } = useMenuSetting();
-
-      const { title } = useGlobSetting();
-
-      useDragLine(sideRef, dragBarRef, true);
-
-      const getMenuStyle = computed((): CSSProperties => {
-        return {
-          width: unref(openMenu) ? `${unref(getMenuWidth)}px` : 0,
-          left: `${unref(getMixSideWidth)}px`,
-        };
-      });
-
-      const getIsFixed = computed(() => {
-        mixSideHasChildren.value = unref(childrenMenus).length > 0;
-        const isFixed = unref(getMixSideFixed) && unref(mixSideHasChildren);
-        if (isFixed) {
-          openMenu.value = true;
+  // click-outside 指令
+  const vClickOutside = {
+    mounted(el: HTMLElement, binding: any) {
+      const clickHandler = (event: MouseEvent) => {
+        if (!el.contains(event.target as Node)) {
+          binding.value(event);
         }
-        return isFixed;
-      });
-
-      const getMixSideWidth = computed(() => {
-        return unref(getCollapsed) ? SIDE_BAR_MINI_WIDTH : SIDE_BAR_SHOW_TIT_MINI_WIDTH;
-      });
-
-      const getDomStyle = computed((): CSSProperties => {
-        const fixedWidth = unref(getIsFixed) ? unref(getRealWidth) : 0;
-        const width = `${unref(getMixSideWidth) + fixedWidth}px`;
-        return getWrapCommonStyle(width);
-      });
-
-      const getWrapStyle = computed((): CSSProperties => {
-        const width = `${unref(getMixSideWidth)}px`;
-        return getWrapCommonStyle(width);
-      });
-
-      const getMenuEvents = computed(() => {
-        return !unref(getMixSideFixed)
-          ? {
-              onMouseleave: () => {
-                setActive(true);
-                closeMenu();
-              },
-            }
-          : {};
-      });
-
-      const getShowDragBar = computed(() => unref(getCanDrag));
-
-      onMounted(async () => {
-        menuModules.value = await getShallowMenus();
-      });
-
-      listenerRouteChange((route) => {
-        currentRoute.value = route;
-        setActive(true);
-        if (unref(getCloseMixSidebarOnChange)) {
-          closeMenu();
-        }
-      });
-
-      function getWrapCommonStyle(width: string): CSSProperties {
-        return {
-          width,
-          maxWidth: width,
-          minWidth: width,
-          flex: `0 0 ${width}`,
-        };
-      }
-
-      // Process module menu click
-      async function handleModuleClick(path: string, item: any, hover = false) {
-        const children = await getChildrenMenus(path);
-        if (unref(activePath) === path) {
-          if (!hover) {
-            if (!unref(openMenu)) {
-              openMenu.value = true;
-            } else {
-              closeMenu();
-            }
-          } else {
-            if (!unref(openMenu)) {
-              openMenu.value = true;
-            }
-          }
-          if (!unref(openMenu)) {
-            setActive();
-          }
-        } else {
-          openMenu.value = true;
-          activePath.value = path;
-        }
-
-        if (!children || children.length === 0) {
-          if (!hover) handleMenuClick(path);
-          childrenMenus.value = [];
-          closeMenu();
-          return;
-        }
-        childrenMenus.value = children;
-      }
-
-      // Set the currently active menu and submenu
-      async function setActive(setChildren = false) {
-        // const path = currentRoute.value?.path;
-        const currRoute = unref(currentRoute);
-        const path = (currRoute?.meta?.currentActiveMenu as string) || currRoute?.path;
-        if (!path) return;
-        activePath.value = await getCurrentParentPath(path);
-        // hanldeModuleClick(parentPath);
-        if (unref(getIsMixSidebar)) {
-          const activeMenu = unref(menuModules).find((item) => item.path === unref(activePath));
-          const p = activeMenu?.path;
-          if (p) {
-            const children = await getChildrenMenus(p);
-            if (setChildren) {
-              childrenMenus.value = children;
-
-              if (unref(getMixSideFixed)) {
-                openMenu.value = children.length > 0;
-              }
-            }
-            if (children.length === 0) {
-              childrenMenus.value = [];
-            }
-          }
-        }
-      }
-
-      function handleMenuClick(path: string) {
-        const menus = unref(childrenMenus);
-        const item = findMenuItem(menus, path);
-        if (item && item.target === '_blank') {
-          window.open(path);
-        } else {
-          go(path);
-        }
-      }
-
-      function findMenuItem(items: any[], key: string): any | null {
-        for (const item of items) {
-          if (item.path === key) {
-            return item;
-          }
-          if (item.children && item.children.length > 0) {
-            const found = findMenuItem(item.children, key);
-            if (found) {
-              return found;
-            }
-          }
-        }
-        return null;
-      }
-
-      function handleClickOutside() {
-        setActive(true);
-        closeMenu();
-      }
-
-      function getItemEvents(item: Menu) {
-        const getItem = omit(item, 'children', 'icon', 'title', 'color', 'extend');
-        if (unref(getMixSideTrigger) === 'hover') {
-          return {
-            onMouseenter: () => handleModuleClick(item.path, getItem, true),
-            onClick: async () => {
-              const children = await getChildrenMenus(item.path);
-              if (item.path && (!children || children.length === 0)) handleMenuClick(item.path);
-            },
-          };
-        }
-        return {
-          onClick: () => handleModuleClick(item.path, getItem),
-        };
-      }
-
-      function handleFixedMenu() {
-        setMenuSetting({
-          mixSideFixed: !unref(getIsFixed),
-        });
-      }
-
-      // Close menu
-      function closeMenu() {
-        if (!unref(getIsFixed)) {
-          openMenu.value = false;
-        }
-      }
-
-      return {
-        t,
-        menuModules,
-        handleModuleClick: handleModuleClick,
-        activePath,
-        childrenMenus: childrenMenus,
-        getShowDragBar,
-        handleMenuClick,
-        getMenuStyle,
-        handleClickOutside,
-        sideRef,
-        dragBarRef,
-        title,
-        openMenu,
-        getMenuTheme,
-        getItemEvents,
-        getMenuEvents,
-        getDomStyle,
-        handleFixedMenu,
-        getMixSideFixed,
-        getWrapStyle,
-        getCollapsed,
       };
+      el['__clickOutside__'] = clickHandler;
+      document.addEventListener('click', clickHandler, true);
     },
+    unmounted(el: HTMLElement) {
+      document.removeEventListener('click', el['__clickOutside__'], true);
+      delete el['__clickOutside__'];
+    },
+  };
+
+  let menuModules = ref<Menu[]>([]);
+  const activePath = ref('');
+  const childrenMenus = ref<Menu[]>([]);
+  const openMenu = ref(false);
+  const dragBarRef = shallowRef<ElRef>(null);
+  const sideRef = shallowRef<ElRef>(null);
+  const currentRoute = ref<Nullable<RouteLocationNormalized>>(null);
+
+  const go = useGo();
+  const { t } = useI18n();
+  const {
+    getMenuWidth,
+    getCanDrag,
+    getCloseMixSidebarOnChange,
+    getMenuTheme,
+    getMixSideTrigger,
+    getRealWidth,
+    getMixSideFixed,
+    mixSideHasChildren,
+    setMenuSetting,
+    getIsMixSidebar,
+    getCollapsed,
+  } = useMenuSetting();
+
+  const { title } = useGlobSetting();
+
+  useDragLine(sideRef, dragBarRef, true);
+
+  const getMenuStyle = computed((): CSSProperties => {
+    return {
+      width: unref(openMenu) ? `${unref(getMenuWidth)}px` : 0,
+      left: `${unref(getMixSideWidth)}px`,
+    };
   });
+
+  const getIsFixed = computed(() => {
+    mixSideHasChildren.value = unref(childrenMenus).length > 0;
+    const isFixed = unref(getMixSideFixed) && unref(mixSideHasChildren);
+    if (isFixed) {
+      openMenu.value = true;
+    }
+    return isFixed;
+  });
+
+  const getMixSideWidth = computed(() => {
+    return unref(getCollapsed) ? SIDE_BAR_MINI_WIDTH : SIDE_BAR_SHOW_TIT_MINI_WIDTH;
+  });
+
+  const getDomStyle = computed((): CSSProperties => {
+    const fixedWidth = unref(getIsFixed) ? unref(getRealWidth) : 0;
+    const width = `${unref(getMixSideWidth) + fixedWidth}px`;
+    return getWrapCommonStyle(width);
+  });
+
+  const getWrapStyle = computed((): CSSProperties => {
+    const width = `${unref(getMixSideWidth)}px`;
+    return getWrapCommonStyle(width);
+  });
+
+  const getMenuEvents = computed(() => {
+    return !unref(getMixSideFixed)
+      ? {
+          onMouseleave: () => {
+            setActive(true);
+            closeMenu();
+          },
+        }
+      : {};
+  });
+
+  const getShowDragBar = computed(() => unref(getCanDrag));
+
+  onMounted(async () => {
+    menuModules.value = await getShallowMenus();
+  });
+
+  listenerRouteChange((route) => {
+    currentRoute.value = route;
+    setActive(true);
+    if (unref(getCloseMixSidebarOnChange)) {
+      closeMenu();
+    }
+  });
+
+  function getWrapCommonStyle(width: string): CSSProperties {
+    return {
+      width,
+      maxWidth: width,
+      minWidth: width,
+      flex: `0 0 ${width}`,
+    };
+  }
+
+  async function handleModuleClick(path: string, item: any, hover = false) {
+    const children = await getChildrenMenus(path);
+    if (unref(activePath) === path) {
+      if (!hover) {
+        if (!unref(openMenu)) {
+          openMenu.value = true;
+        } else {
+          closeMenu();
+        }
+      } else {
+        if (!unref(openMenu)) {
+          openMenu.value = true;
+        }
+      }
+      if (!unref(openMenu)) {
+        setActive();
+      }
+    } else {
+      openMenu.value = true;
+      activePath.value = path;
+    }
+
+    if (!children || children.length === 0) {
+      if (!hover) handleMenuClick(path);
+      childrenMenus.value = [];
+      closeMenu();
+      return;
+    }
+    childrenMenus.value = children;
+  }
+
+  async function setActive(setChildren = false) {
+    const currRoute = unref(currentRoute);
+    const path = (currRoute?.meta?.currentActiveMenu as string) || currRoute?.path;
+    if (!path) return;
+    activePath.value = await getCurrentParentPath(path);
+    if (unref(getIsMixSidebar)) {
+      const activeMenu = unref(menuModules).find((item) => item.path === unref(activePath));
+      const p = activeMenu?.path;
+      if (p) {
+        const children = await getChildrenMenus(p);
+        if (setChildren) {
+          childrenMenus.value = children;
+
+          if (unref(getMixSideFixed)) {
+            openMenu.value = children.length > 0;
+          }
+        }
+        if (children.length === 0) {
+          childrenMenus.value = [];
+        }
+      }
+    }
+  }
+
+  function handleMenuClick(path: string) {
+    const menus = unref(childrenMenus);
+    const item = findMenuItem(menus, path);
+    if (item && item.target === '_blank') {
+      window.open(path);
+    } else {
+      go(path);
+    }
+  }
+
+  function findMenuItem(items: any[], key: string): any | null {
+    for (const item of items) {
+      if (item.path === key) {
+        return item;
+      }
+      if (item.children && item.children.length > 0) {
+        const found = findMenuItem(item.children, key);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return null;
+  }
+
+  function handleClickOutside() {
+    setActive(true);
+    closeMenu();
+  }
+
+  function getItemEvents(item: Menu) {
+    const getItem = omit(item, 'children', 'icon', 'title', 'color', 'extend');
+    if (unref(getMixSideTrigger) === 'hover') {
+      return {
+        onMouseenter: () => handleModuleClick(item.path, getItem, true),
+        onClick: async () => {
+          const children = await getChildrenMenus(item.path);
+          if (item.path && (!children || children.length === 0)) handleMenuClick(item.path);
+        },
+      };
+    }
+    return {
+      onClick: () => handleModuleClick(item.path, getItem),
+    };
+  }
+
+  function handleFixedMenu() {
+    setMenuSetting({
+      mixSideFixed: !unref(getIsFixed),
+    });
+  }
+
+  function closeMenu() {
+    if (!unref(getIsFixed)) {
+      openMenu.value = false;
+    }
+  }
 </script>
 <style lang="less">
   @width: 80px;
@@ -352,7 +323,7 @@
     overflow: hidden;
     background-color: @sider-dark-bg-color;
     transition: all 0.2s ease 0s;
-    padding: 0 5px 5px; // 2
+    padding: 0 5px 5px;
 
     &-dom {
       height: 100%;
@@ -408,19 +379,8 @@
           color: @white;
         }
 
-        // &:hover,
         &--active {
-          border-radius: 6px; // 2
-
-          // &::before { // 1
-          //   position: absolute;
-          //   top: 0;
-          //   left: 0;
-          //   width: 3px;
-          //   height: 100%;
-          //   background-color: @primary-color;
-          //   content: '';
-          // }
+          border-radius: 6px;
         }
       }
 
@@ -469,7 +429,6 @@
       &__title {
         display: flex;
         height: @header-height;
-        // margin-left: -6px;
         font-size: 18px;
         color: @primary-color;
         border-bottom: 1px solid rgb(238 238 238);

@@ -13,8 +13,8 @@
   </Layout>
 </template>
 
-<script lang="ts">
-  import { defineComponent, computed, unref } from 'vue';
+<script lang="ts" setup name="DefaultLayout">
+  import { computed, unref } from 'vue';
   import { Layout } from 'antdv-next';
   import { createAsyncComponent } from '@jeesite/core/utils/factory/createAsyncComponent';
 
@@ -30,44 +30,23 @@
   import { useAppInject } from '@jeesite/core/hooks/web/useAppInject';
   import { switchSkin } from '@jeesite/core/api/sys/login';
 
-  export default defineComponent({
-    name: 'DefaultLayout',
-    components: {
-      LayoutFeatures: createAsyncComponent(() => import('@jeesite/core/layouts/default/feature/index.vue')),
-      LayoutFooter: createAsyncComponent(() => import('@jeesite/core/layouts/default/footer/index.vue')),
-      LayoutHeader,
-      LayoutContent,
-      LayoutSideBar,
-      LayoutMultipleHeader,
-      Layout,
-    },
-    setup() {
-      const { getIsMobile } = useAppInject();
-      const { getShowFullHeaderRef } = useHeaderSetting();
-      const { getShowSidebar, getIsMixSidebar, getShowMenu } = useMenuSetting();
+  const LayoutFeatures = createAsyncComponent(() => import('@jeesite/core/layouts/default/feature/index.vue'));
+  const LayoutFooter = createAsyncComponent(() => import('@jeesite/core/layouts/default/footer/index.vue'));
 
-      switchSkin();
+  const { getIsMobile } = useAppInject();
+  const { getShowFullHeaderRef } = useHeaderSetting();
+  const { getShowSidebar, getIsMixSidebar, getShowMenu } = useMenuSetting();
 
-      // Create a lock screen monitor
-      const lockEvents = useLockPage();
+  switchSkin();
 
-      const layoutClass = computed(() => {
-        let cls: string[] = ['ant-layout'];
-        if (unref(getIsMixSidebar) || unref(getShowMenu)) {
-          cls.push('ant-layout-has-sider');
-        }
-        return cls;
-      });
+  const lockEvents = useLockPage();
 
-      return {
-        getShowFullHeaderRef,
-        getShowSidebar,
-        getIsMobile,
-        getIsMixSidebar,
-        layoutClass,
-        lockEvents,
-      };
-    },
+  const layoutClass = computed(() => {
+    let cls: string[] = ['ant-layout'];
+    if (unref(getIsMixSidebar) || unref(getShowMenu)) {
+      cls.push('ant-layout-has-sider');
+    }
+    return cls;
   });
 </script>
 <style lang="less">
