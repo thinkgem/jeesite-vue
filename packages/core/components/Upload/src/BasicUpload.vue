@@ -13,14 +13,14 @@
       <Tooltip placement="bottom" v-if="getShowPreview">
         <template #title>
           {{ t('component.upload.uploaded') }}
-          <template v-if="fileList.length">
-            {{ fileList.length }}
+          <template v-if="fileList.length >= 0 && props.showPreviewNumber">
+            <span class="ml-1">{{ fileList.length }}</span>
           </template>
         </template>
         <a-button @click="props.showPreviewList ? null : openPreviewModal()" :size="props.size">
           <Icon icon="i-bi:eye" />
-          <template v-if="fileList.length && props.showPreviewNumber">
-            {{ fileList.length }}
+          <template v-if="fileList.length >= 0 && props.showPreviewNumber">
+            <span class="ml-1">{{ fileList.length }}</span>
           </template>
         </a-button>
       </Tooltip>
