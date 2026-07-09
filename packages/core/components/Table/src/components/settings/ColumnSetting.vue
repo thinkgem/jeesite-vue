@@ -44,7 +44,7 @@
                   <template v-if="Array.isArray(item.label)">
                     <component v-for="(node, i) in item.label" :is="node" :key="i" />
                   </template>
-                  <template v-else-if="typeof item.label === 'object' && item.label !== null">
+                  <template v-else-if="typeof item.label === 'object' && item.label['__v_isVNode'] !== undefined">
                     <component :is="item.label" />
                   </template>
                   <template v-else>
