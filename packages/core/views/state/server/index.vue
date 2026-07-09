@@ -56,6 +56,14 @@
             <template #headerCell="{ column }">
               {{ column.title }}
             </template>
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.key === 'mem'">
+                <UsageTag :value="record.mem" />
+              </template>
+              <template v-if="column.key === 'jvm'">
+                <UsageTag :value="record.jvm" />
+              </template>
+            </template>
           </BasicTable>
         </Card>
       </Col>
@@ -184,6 +192,7 @@
         inset
         :show-search-form="false"
         :show-index-column="true"
+        :index-column-props="{ width: 100 }"
         row-key="mount"
         auto-create-key
       >
@@ -437,6 +446,8 @@
 
 <style lang="less">
   .jeesite-state-server {
+    margin-bottom: 15px;
+
     .ant-card {
       .ant-card-head {
         min-height: 45px;
