@@ -29,6 +29,7 @@
   import { BasicForm, FormExtend, FormSchema, useForm } from '@jeesite/core/components/Form';
   import { BasicDrawer, useDrawerInner } from '@jeesite/core/components/Drawer';
   import { Office, officeSave, officeForm, officeTreeData } from '@jeesite/core/api/sys/office';
+  import { roleTreeData } from '@jeesite/core/api/sys/role';
 
   const emit = defineEmits(['success', 'register']);
 
@@ -160,6 +161,18 @@
       },
     },
     {
+      label: t('关联角色'),
+      field: 'roleCodes',
+      fieldLabel: 'roleNames',
+      component: 'TreeSelect',
+      componentProps: {
+        api: roleTreeData,
+        params: { userType: 'employee' },
+        treeCheckable: true,
+      },
+      colProps: { md: 24, lg: 24 },
+    },
+    {
       label: t('备注信息'),
       field: 'remarks',
       component: 'InputTextArea',
@@ -182,6 +195,8 @@
     await formExtendRef.value?.resetFields();
     const res = await officeForm(data);
     record.value = (res.office || {}) as Office;
+    record.value.roleCodes = res.roleCodes || '';
+    record.value.roleNames = res.roleNames || '';
     if (data.parentCode && data.parentName) {
       record.value.parentCode = data.parentCode;
       record.value.parentName = data.parentName;
