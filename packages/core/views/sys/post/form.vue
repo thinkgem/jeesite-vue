@@ -100,6 +100,7 @@
       component: 'TreeSelect',
       componentProps: {
         api: roleTreeData,
+        params: { userType: 'employee' },
         treeCheckable: true,
       },
       colProps: { md: 24, lg: 24 },
