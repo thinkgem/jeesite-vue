@@ -21,9 +21,9 @@
         <FormEmployeeOfficeList ref="formEmployeeOfficeListRef" />
       </template>
       <template #userRoleString>
-        <div v-if="postRolePermi" class="mb-3">
+        <div v-if="officeRolePermi || postRolePermi" class="mb-3">
           <Alert
-            :title="`启用岗位角色权限后，角色不会保存，请在用户关联岗位中关联角色。`"
+            :title="`启用部门角色或岗位角色权限后，部门或岗位关联的角色与本用户直接关联的角色同时有效。`"
             type="info"
             banner
             closable
@@ -32,7 +32,7 @@
         <FormUserRoleList ref="formUserRoleListRef" />
       </template>
     </BasicForm>
-    <FormExtend ref="formExtendRef" />
+    <FormExtend v-show="op === 'add' || op === 'edit'" ref="formExtendRef" />
   </BasicDrawer>
 </template>
 <script lang="ts" setup name="ViewsSysEmpUserForm">
@@ -65,6 +65,7 @@
     value: record.value.isNewRecord ? t('新增用户') : t('编辑用户'),
   }));
   const ctrlPermi = ref<string>('');
+  const officeRolePermi = ref<boolean>(false);
   const postRolePermi = ref<boolean>(false);
   const op = ref<string>('');
   const formExtendRef = shallowRef<InstanceType<typeof FormExtend>>();
@@ -294,6 +295,7 @@
     const res = await empUserForm(data);
     record.value = (res.empUser || {}) as EmpUser;
     ctrlPermi.value = res.ctrlPermi || '2';
+    officeRolePermi.value = res.officeRolePermi || false;
     postRolePermi.value = res.postRolePermi || false;
     await setFieldsValue(record.value);
     await updateSchema([
