@@ -41,7 +41,7 @@
   </BasicDrawer>
 </template>
 <script lang="ts" setup name="ViewsSysRoleForm">
-  import { ref, unref, computed, shallowRef } from 'vue';
+  import { ref, unref, computed, shallowRef, nextTick } from 'vue';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { useMessage } from '@jeesite/core/hooks/web/useMessage';
   import { router } from '@jeesite/core/router';
@@ -231,17 +231,10 @@
     },
   ];
 
-  const menuMapRef = ref({});
-  const checkedKeysRef = ref({});
-
   const treeRefs: Recordable<TreeActionType> = {};
   const setTreeRefs = (key: string) => (el: any) => {
     if (el) {
       treeRefs[key] = el;
-      const treeData = menuMapRef.value[key];
-      if (treeData) treeRefs[key]?.setTreeData(treeData);
-      const checkedKeys = checkedKeysRef.value[key];
-      if (checkedKeys) treeRefs[key]?.setCheckedKeys(checkedKeys);
     }
   };
 
@@ -295,12 +288,12 @@
       }
       checkedKeys[item.sysCode].push(item.id);
     });
-    menuMapRef.value = res.menuMap;
-    checkedKeysRef.value = checkedKeys;
-    // for (const key in res.menuMap) {
-    //   treeRefs[key]?.setTreeData(res.menuMap[key]);
-    //   treeRefs[key]?.setCheckedKeys(checkedKeys[key]);
-    // }
+    await nextTick(() => {
+      for (const key in res.menuMap) {
+        treeRefs[key]?.setTreeData(res.menuMap[key]);
+        treeRefs[key]?.setCheckedKeys(checkedKeys[key]);
+      }
+    });
   }
 
   function getRoleMenuListJson() {
