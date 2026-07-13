@@ -213,8 +213,8 @@ importers:
   packages/cms:
     dependencies:
       '@jeesite/cms-lib':
-        specifier: 5.18.0-next-rc.1
-        version: 5.18.0-next-rc.1(vue@3.5.38(typescript@6.0.3))
+        specifier: 5.18.1-next-dev-rc.1
+        version: 5.18.1-next-dev-rc.1(vue@3.5.38(typescript@6.0.3))
       qs:
         specifier: 6.15.2
         version: 6.15.2
@@ -225,6 +225,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@jeesite/core-lib':
+        specifier: 5.18.1-next-dev-rc.1
+        version: 5.18.1-next-dev-rc.1(vue@3.5.38(typescript@6.0.3))
       '@uppy/core':
         specifier: 2.1.5
         version: 2.1.5
@@ -335,8 +338,8 @@ importers:
   packages/dbm:
     dependencies:
       '@jeesite/dbm-lib':
-        specifier: 5.18.0-next-rc.1
-        version: 5.18.0-next-rc.1(vue@3.5.38(typescript@6.0.3))
+        specifier: 5.18.1-next-dev-rc.1
+        version: 5.18.1-next-dev-rc.1(vue@3.5.38(typescript@6.0.3))
       qs:
         specifier: 6.15.2
         version: 6.15.2
@@ -348,8 +351,8 @@ importers:
   packages/dfm:
     dependencies:
       '@jeesite/dfm-lib':
-        specifier: 5.18.0-next-rc.1
-        version: 5.18.0-next-rc.1(@types/sortablejs@1.15.9)(vue@3.5.38(typescript@6.0.3))
+        specifier: 5.18.1-next-dev-rc.1
+        version: 5.18.1-next-dev-rc.1(@types/sortablejs@1.15.9)(vue@3.5.38(typescript@6.0.3))
       '@vueuse/core':
         specifier: 14.3.0
         version: 14.3.0(vue@3.5.38(typescript@6.0.3))
@@ -1515,14 +1518,17 @@ packages:
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
 
-  '@jeesite/cms-lib@5.18.0-next-rc.1':
-    resolution: {integrity: sha512-sF0pYXw013hRp8Nh6y66+5bL1AQVEIU1NiGr0lam6XtDdiXPaeRT+xJZrL5eUg/ZRmibRmHazwubZtV/R1xDLA==}
+  '@jeesite/cms-lib@5.18.1-next-dev-rc.1':
+    resolution: {integrity: sha512-yQW5PXAINjymE4MyzKqf7lGBaK3HQN3Ew0RlK1SMbbwS/6n8enk0ti3490bUuFTQ6c+3y2pUfgdcL45GayaLww==}
 
-  '@jeesite/dbm-lib@5.18.0-next-rc.1':
-    resolution: {integrity: sha512-79HBof6yYyDsX5nWr6xDAbpM0/Qc3LhjKGKpuMTTXiagSbh6Rnb3y5Q5iJVDBN9ZzHLb8e2gTRBx0KIkESks/w==}
+  '@jeesite/core-lib@5.18.1-next-dev-rc.1':
+    resolution: {integrity: sha512-pds4zLY+DXcxwRYfccNqZflkDU7O5owuujN+8HcwHdiE2Jq0VFRX+jL9tsDwJXTmFkt7nOLn3AUetJOhgjLggA==}
 
-  '@jeesite/dfm-lib@5.18.0-next-rc.1':
-    resolution: {integrity: sha512-MURi6FXjuADzbQM5+LViSjOe9VfmHL5/8Z2/hKha9upLeZ7nMZPmLmuhbr7viBRmxi3PTpotGxOA9cyOgjCfZw==}
+  '@jeesite/dbm-lib@5.18.1-next-dev-rc.1':
+    resolution: {integrity: sha512-jlSQts9CQPY0KQBgZDHKWEvhhwj20LlAfE8BGlx2bxnaojuO58VKlzjtsRNkjgxcS/LJtKFx3nKVfqhKievNtA==}
+
+  '@jeesite/dfm-lib@5.18.1-next-dev-rc.1':
+    resolution: {integrity: sha512-645kh2m89/0QSy2VTOcijvW8R0sPRfk8Y5dkxq3LBWBAAz5+9INJglICkIs9B7ZSljbWamxdmAsMuZJN1f9cRQ==}
 
   '@jridgewell/gen-mapping@0.3.12':
     resolution: {integrity: sha512-OuLGC46TjB5BbN1dH8JULVVZY4WTdkF7tV9Ys6wLL1rubZnCMstOhNHueU5bLCrnRuDhKPDM4g6sw4Bel5Gzqg==}
@@ -7192,7 +7198,7 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
-  '@jeesite/cms-lib@5.18.0-next-rc.1(vue@3.5.38(typescript@6.0.3))':
+  '@jeesite/cms-lib@5.18.1-next-dev-rc.1(vue@3.5.38(typescript@6.0.3))':
     dependencies:
       '@traptitech/markdown-it-katex': 3.6.0
       highlight.js: 11.11.1
@@ -7205,7 +7211,7 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@jeesite/dbm-lib@5.18.0-next-rc.1(vue@3.5.38(typescript@6.0.3))':
+  '@jeesite/core-lib@5.18.1-next-dev-rc.1(vue@3.5.38(typescript@6.0.3))':
     dependencies:
       qs: 6.15.2
       vue-i18n: 11.4.5(vue@3.5.38(typescript@6.0.3))
@@ -7213,7 +7219,15 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@jeesite/dfm-lib@5.18.0-next-rc.1(@types/sortablejs@1.15.9)(vue@3.5.38(typescript@6.0.3))':
+  '@jeesite/dbm-lib@5.18.1-next-dev-rc.1(vue@3.5.38(typescript@6.0.3))':
+    dependencies:
+      qs: 6.15.2
+      vue-i18n: 11.4.5(vue@3.5.38(typescript@6.0.3))
+      vue-types: 6.0.0(vue@3.5.38(typescript@6.0.3))
+    transitivePeerDependencies:
+      - vue
+
+  '@jeesite/dfm-lib@5.18.1-next-dev-rc.1(@types/sortablejs@1.15.9)(vue@3.5.38(typescript@6.0.3))':
     dependencies:
       '@vueuse/core': 14.3.0(vue@3.5.38(typescript@6.0.3))
       dayjs: 1.11.21
