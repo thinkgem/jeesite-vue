@@ -6,7 +6,7 @@
 <template>
   <PageWrapper
     class="jeesite-state-cache"
-    :sidebarWidth="310"
+    :sidebarWidth="330"
     :sidebarWidthRight="300"
     :contentFullHeight="true"
     :contentMinHeight="400"
@@ -81,7 +81,7 @@
       },
     ],
     indexColumnProps: {
-      width: 50,
+      width: 40,
     },
     actionColumn: {
       width: 50,
@@ -132,7 +132,7 @@
       },
     ],
     indexColumnProps: {
-      width: 50,
+      width: 45,
     },
     actionColumn: {
       width: 50,
