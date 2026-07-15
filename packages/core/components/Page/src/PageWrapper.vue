@@ -179,7 +179,7 @@
   );
 
   const getIsContentFullHeight = computed(() => {
-    return props.contentFullHeight || sidebar;
+    return props.contentFullHeight || sidebar || sidebarRight;
   });
 
   const getUpwardSpace = computed(() => props.upwardSpace);
@@ -196,7 +196,7 @@
     return [
       'jeesite-page-wrapper',
       {
-        ['jeesite-page-wrapper--dense']: props.dense || sidebar,
+        ['jeesite-page-wrapper--dense']: props.dense || sidebar || sidebarRight,
       },
       attrs.class ?? {},
     ];
@@ -217,10 +217,10 @@
 
   const getContentStyle = computed((): CSSProperties => {
     const { contentFullHeight, contentMinHeight, contentStyle, fixedHeight } = props;
-    const h = (unref(contentHeight) || 800) - (!sidebar ? -13 : 0);
+    const h = (unref(contentHeight) || 800) - (!(sidebar || sidebarRight) ? -13 : 0);
     const height = `${h < contentMinHeight ? contentMinHeight : h}px`;
 
-    if (sidebar) {
+    if (sidebar || sidebarRight) {
       return {
         ...contentStyle,
         minHeight: height,
@@ -230,7 +230,7 @@
       return {
         ...contentStyle,
         minHeight: height,
-        ...(fixedHeight || sidebar ? { height } : {}),
+        ...(fixedHeight || sidebar || sidebarRight ? { height } : {}),
         marginBottom: 0,
       };
     }
@@ -238,12 +238,12 @@
     return { ...contentStyle };
   });
 
-  const getSidebarContentHeight = ref(0);
+  const sidebarContentHeight = ref(0);
   const getSidebarContentStyle = computed((): CSSProperties => {
-    if (getSidebarContentHeight.value <= 0) return {};
+    if (sidebarContentHeight.value <= 0) return {};
     return {
-      height: `${getSidebarContentHeight.value}px`,
-      minHeight: `${getSidebarContentHeight.value}px`,
+      height: `${sidebarContentHeight.value}px`,
+      minHeight: `${sidebarContentHeight.value}px`,
     };
   });
 
@@ -252,7 +252,7 @@
     const { contentFullHeight, contentMinHeight } = props;
     if (contentFullHeight && contentHeight.value) {
       const height = contentHeight.value - 10;
-      getSidebarContentHeight.value = height < contentMinHeight ? contentMinHeight : height;
+      sidebarContentHeight.value = height < contentMinHeight ? contentMinHeight : height;
       return;
     }
     let height = 0;
@@ -273,10 +273,10 @@
       height = mainContentHeight - 10;
     }
     // console.log('calcSidebarContentHeight', height);
-    getSidebarContentHeight.value = height;
+    sidebarContentHeight.value = height;
   }
 
-  if (sidebar) {
+  if (sidebar || sidebarRight) {
     onBeforeMount(() => {
       emitter.on('on-page-wrapper-resize', () => {
         setTimeout(calcSidebarContentHeight, 500);
@@ -291,7 +291,7 @@
       'jeesite-page-wrapper-content',
       contentClass,
       {
-        ['jeesite-page-wrapper-content-bg']: contentBackground && !sidebar,
+        ['jeesite-page-wrapper-content-bg']: contentBackground && !(sidebar || sidebarRight),
       },
     ];
   });
@@ -421,21 +421,21 @@
       .jeesite-page-wrapper-content {
         margin: 0;
         padding: 0;
-        border-radius: 0;
+        //border-radius: 0;
       }
 
       .page-header {
         margin: 0;
         padding: 0;
-        border-radius: 0;
+        //border-radius: 0;
       }
     }
 
     .jeesite.ant-layout {
-      background-color: @content-bg;
+      background-color: transparent;
 
       .sidebar {
-        background-color: @content-bg;
+        background-color: transparent;
         transition: none;
         //min-height: 400px;
 
@@ -522,7 +522,7 @@
       }
 
       .sidebar {
-        background: #000 !important;
+        // background: #000 !important;
 
         &-open,
         &-close {
