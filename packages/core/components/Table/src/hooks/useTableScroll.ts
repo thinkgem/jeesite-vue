@@ -49,16 +49,17 @@ export function useTableScroll(
       const hasScrollBarY = bodyEl.scrollHeight > bodyEl.clientHeight;
       const hasScrollBarX = bodyEl.scrollWidth > bodyEl.clientWidth;
 
+      const tableClassList = tableEl.classList;
       if (hasScrollBarY) {
-        tableEl.classList.contains('hide-scrollbar-y') && tableEl.classList.remove('hide-scrollbar-y');
+        tableClassList.contains('hide-scrollbar-y') && tableClassList.remove('hide-scrollbar-y');
       } else {
-        !tableEl.classList.contains('hide-scrollbar-y') && tableEl.classList.add('hide-scrollbar-y');
+        !tableClassList.contains('hide-scrollbar-y') && tableClassList.add('hide-scrollbar-y');
       }
 
       if (hasScrollBarX) {
-        tableEl.classList.contains('hide-scrollbar-x') && tableEl.classList.remove('hide-scrollbar-x');
+        tableClassList.contains('hide-scrollbar-x') && tableClassList.remove('hide-scrollbar-x');
       } else {
-        !tableEl.classList.contains('hide-scrollbar-x') && tableEl.classList.add('hide-scrollbar-x');
+        !tableClassList.contains('hide-scrollbar-x') && tableClassList.add('hide-scrollbar-x');
       }
 
       bodyEl.style.height = 'unset';
@@ -73,7 +74,7 @@ export function useTableScroll(
     if (!headEl) return;
 
     // Table height from bottom height-custom offset
-    let paddingHeight = 17;
+    let paddingHeight = 15;
     if (tableEl.closest('.jeesite-layout-content')) {
       paddingHeight += 11;
     }
@@ -151,8 +152,19 @@ export function useTableScroll(
     // Set empty data height
     if (tableData.length === 0) {
       const emptyDataEl = tableEl.querySelector('.ant-empty') as HTMLElement;
-      if (emptyDataEl && emptyDataEl.style) {
-        emptyDataEl.style.height = `${height - 100}px`;
+      if (!emptyDataEl) return;
+      emptyDataEl.style.height = `${height - 108}px`;
+
+      const td = emptyDataEl.parentElement as HTMLElement;
+      if (!td.classList.contains('ant-table-expanded-row-fixed')) {
+        const fixedEl = document.createElement('div');
+        fixedEl.classList.add('ant-table-expanded-row-fixed');
+        fixedEl.style.width = `${tableEl.clientWidth - 16}px`;
+        fixedEl.style.position = 'sticky';
+        fixedEl.style.left = '0';
+        fixedEl.style.overflow = 'hidden';
+        td.replaceChild(fixedEl, emptyDataEl);
+        fixedEl.appendChild(emptyDataEl);
       }
     }
   }

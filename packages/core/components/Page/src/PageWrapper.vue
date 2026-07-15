@@ -217,19 +217,21 @@
 
   const getContentStyle = computed((): CSSProperties => {
     const { contentFullHeight, contentMinHeight, contentStyle, fixedHeight } = props;
-    const h = (unref(contentHeight) || 800) - (!sidebar ? -12 : 0);
+    const h = (unref(contentHeight) || 800) - (!sidebar ? -13 : 0);
     const height = `${h < contentMinHeight ? contentMinHeight : h}px`;
 
     if (sidebar) {
       return {
         ...contentStyle,
         minHeight: height,
+        marginBottom: 0,
       };
     } else if (contentFullHeight) {
       return {
         ...contentStyle,
         minHeight: height,
         ...(fixedHeight || sidebar ? { height } : {}),
+        marginBottom: 0,
       };
     }
 
@@ -249,7 +251,7 @@
   function calcSidebarContentHeight() {
     const { contentFullHeight, contentMinHeight } = props;
     if (contentFullHeight && contentHeight.value) {
-      const height = contentHeight.value - 14;
+      const height = contentHeight.value - 10;
       getSidebarContentHeight.value = height < contentMinHeight ? contentMinHeight : height;
       return;
     }
@@ -268,7 +270,7 @@
     }
     const mainContentHeight = contentHeight.value || 0;
     if (height < mainContentHeight) {
-      height = mainContentHeight - 12;
+      height = mainContentHeight - 10;
     }
     // console.log('calcSidebarContentHeight', height);
     getSidebarContentHeight.value = height;
@@ -375,7 +377,7 @@
     .jeesite-page-wrapper-content {
       // margin: 16px;
       padding: 12px;
-      margin-bottom: 13px;
+      margin-bottom: 10px;
       border-radius: 10px;
       color: @text-color-base;
       overflow-y: auto;
