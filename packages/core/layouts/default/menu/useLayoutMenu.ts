@@ -8,6 +8,7 @@ import { useMenuSetting } from '@jeesite/core/hooks/setting/useMenuSetting';
 import { getChildrenMenus, getCurrentParentPath, getMenus, getShallowMenus } from '@jeesite/core/router/menus';
 import { usePermissionStore } from '@jeesite/core/store/modules/permission';
 import { useAppInject } from '@jeesite/core/hooks/web/useAppInject';
+import { REDIRECT_NAME } from '@jeesite/core/router/constant';
 
 export function useSplitMenu(splitType: Ref<MenuSplitTyeEnum>) {
   // Menu array
@@ -34,7 +35,11 @@ export function useSplitMenu(splitType: Ref<MenuSplitTyeEnum>) {
     async ([path]: [string, MenuSplitTyeEnum]) => {
       if (unref(getSplitNotLeft) || unref(getIsMobile)) return;
 
-      const { meta } = unref(currentRoute);
+      // 跳过 REDIRECT 路由，避免 tabs 刷新时侧边栏菜单被重置
+      // REDIRECT 路由找不到对应的父级菜单，会错误地回退到第一个菜单
+      const { meta, name: routeName } = unref(currentRoute);
+      if (routeName === REDIRECT_NAME) return;
+
       const currentPath = (meta.currentActiveMenu as string) || path;
       let parentPath: string | null = await getCurrentParentPath(currentPath);
       // if (parentPath) {
