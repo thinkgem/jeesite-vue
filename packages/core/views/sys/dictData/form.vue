@@ -152,7 +152,7 @@
     // {
     //   label: t('其它信息'),
     //   field: 'otherInfo',
-    //   component: 'Divider',
+    //   component: 'FormGroup',
     //   colProps: { md: 24, lg: 24 },
     // },
     {
