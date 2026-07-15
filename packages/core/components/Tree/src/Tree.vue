@@ -659,7 +659,12 @@
               />
             </ScrollContainer>
             <Spin spinning={unref(loading)}>
-              <Empty v-show={unref(getNotFound)} image={Empty.PRESENTED_IMAGE_SIMPLE} class="!mt-4" />
+              <Empty
+                v-show={unref(getNotFound)}
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                class="!mt-4"
+                styles={{ root: { marginBottom: '0', paddingBottom: '13px' } }}
+              />
             </Spin>
           </div>
         );
