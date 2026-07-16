@@ -98,12 +98,12 @@
         ifShow: () => record.status === '0',
       },
       {
-        icon: 'i-ant-design:check-outlined',
+        icon: 'i-ant-design:check-circle-outlined',
         color: 'success',
         title: t('启用'),
         popConfirm: { title: t('确认要启用该版本吗？'), confirm: handleEnable.bind(this, record) },
         auth: 'app:appUpgrade:edit',
-        ifShow: () => record.status === '1',
+        ifShow: () => record.status === '2',
       },
       {
         icon: 'i-ant-design:delete-outlined',
