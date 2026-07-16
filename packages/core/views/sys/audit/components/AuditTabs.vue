@@ -12,13 +12,13 @@
     <TabPane key="/sys/audit/userList">
       <template #tab>
         <Icon icon="i-ant-design:menu-outlined" class="pr-1" />
-        <span>{{ t('菜单权限审计') }}</span>
+        <span>{{ t('按权限审用户') }}</span>
       </template>
     </TabPane>
     <TabPane key="/sys/audit/menuList">
       <template #tab>
         <Icon icon="i-ant-design:team-outlined" class="pr-1" />
-        <span>{{ t('用户权限审计') }}</span>
+        <span>{{ t('按用户审权限') }}</span>
       </template>
     </TabPane>
   </Tabs>
