@@ -110,8 +110,13 @@ export function useTableScroll(
       headerHeight = (headEl as HTMLElement).offsetHeight;
     }
 
+    // Title height
+    const titleHeight =
+      (unref(wrapRef)?.querySelector('.jeesite-basic-table-header-container') as HTMLElement)?.offsetHeight ?? 0;
+
     // Table height
     let bottomIncludeBody = 0;
+    let titleIncluded = false;
     if (unref(wrapRef) && isCanResizeParent) {
       const tablePadding = 12;
       const formMargin = 16;
@@ -127,8 +132,8 @@ export function useTableScroll(
       if (isBoolean(useSearchForm) && !useSearchForm) {
         paddingHeight = 0;
       }
-      const headerCellHeight = (tableEl.querySelector('.ant-table-title') as HTMLElement)?.offsetHeight ?? 0;
-      bottomIncludeBody = wrapHeight - formHeight - headerCellHeight - tablePadding - paginationMargin;
+      bottomIncludeBody = wrapHeight - formHeight - titleHeight - tablePadding - paginationMargin;
+      titleIncluded = true;
     } else {
       bottomIncludeBody = getViewportOffset(headEl).bottomIncludeBody;
     }
@@ -153,7 +158,11 @@ export function useTableScroll(
     if (tableData.length === 0) {
       const emptyDataEl = tableEl.querySelector('.ant-empty') as HTMLElement;
       if (!emptyDataEl) return;
-      emptyDataEl.style.height = `${height - 108}px`;
+
+      const contentEl = tableEl.querySelector('.ant-table-content') as HTMLElement;
+      const hasScrollBarX = contentEl ? contentEl.scrollWidth > contentEl.clientWidth : false;
+      const emptyOffset = (titleIncluded ? 0 : titleHeight) + (hasScrollBarX ? 10 : 0) + 10;
+      emptyDataEl.style.height = `${height - emptyOffset}px`;
 
       const td = emptyDataEl.parentElement as HTMLElement;
       if (!td.classList.contains('ant-table-expanded-row-fixed')) {

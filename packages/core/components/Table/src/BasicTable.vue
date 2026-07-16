@@ -611,6 +611,12 @@
         }
       }
 
+      .ant-table-placeholder {
+        .ant-empty-normal {
+          margin: 10px;
+        }
+      }
+
       //.ant-table-row-expand-icon {
       //  margin-left: 7px;
       //}
@@ -788,6 +794,12 @@
 
       &-header-container {
         color: rgb(255 255 255 / 75%);
+      }
+
+      &-header-hidden {
+        .ant-form {
+          border-top: 0 !important;
+        }
       }
     }
   }
