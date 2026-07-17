@@ -23,6 +23,7 @@
   import { useWindowSizeFn } from '@jeesite/core/hooks/event/useWindowSizeFn';
   import { useLayoutHeight } from '@jeesite/core/layouts/default/content/useContentViewHeight';
   import { router } from '@jeesite/core/router';
+  import { useMultipleTabStore } from '@jeesite/core/store/modules/multipleTab';
 
   const props = defineProps({
     frame: { type: Object as PropType<AppRouteRecordRaw> },
@@ -35,6 +36,7 @@
   const heightRef = ref(window.innerHeight);
   const frameRef = shallowRef<HTMLFrameElement>();
   const { headerHeightRef } = useLayoutHeight();
+  const tabStore = useMultipleTabStore();
 
   useWindowSizeFn(calcHeight, 150, { immediate: true });
 
@@ -67,6 +69,19 @@
         let src = props.frame?.meta?.frameSrc;
         src += src?.indexOf('?') != -1 ? '&' : '?';
         frameSrc.value = src + '__t' + new Date().getTime();
+      }
+    },
+  );
+
+  // Watch store iframeRefreshMap for tab refresh operations (e.g. useTabs.refreshPage)
+  watch(
+    () => tabStore.getIframeRefreshMap[props.frame?.name as string],
+    (newVal) => {
+      if (newVal && props.frame?.meta?.frameSrc) {
+        let src = props.frame.meta.frameSrc;
+        src += src?.indexOf('?') != -1 ? '&' : '?';
+        frameSrc.value = src + '__t' + newVal;
+        loading.value = true;
       }
     },
   );

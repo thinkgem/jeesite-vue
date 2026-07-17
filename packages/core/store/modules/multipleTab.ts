@@ -19,6 +19,7 @@ export interface MultipleTabState {
   cacheTabList: Set<string>;
   tabList: RouteLocationNormalized[];
   lastDragEndIndex: number;
+  iframeRefreshMap: Record<string, number>;
 }
 
 // function handleGotoPage(router: Router) {
@@ -36,6 +37,8 @@ export const useMultipleTabStore = defineStore('app-multiple-tab', {
     tabList: cacheTab ? Persistent.getLocal(MULTIPLE_TABS_KEY) || [] : [],
     // Index of the last moved tab
     lastDragEndIndex: 0,
+    // Iframe refresh counter: key=routeName, value=timestamp
+    iframeRefreshMap: {},
   }),
   getters: {
     getTabList(): RouteLocationNormalized[] {
@@ -46,6 +49,9 @@ export const useMultipleTabStore = defineStore('app-multiple-tab', {
     },
     getLastDragEndIndex(): number {
       return this.lastDragEndIndex;
+    },
+    getIframeRefreshMap(): Record<string, number> {
+      return this.iframeRefreshMap;
     },
   },
   actions: {
@@ -85,6 +91,7 @@ export const useMultipleTabStore = defineStore('app-multiple-tab', {
     },
     clearCacheTabs(): void {
       this.cacheTabList = new Set();
+      this.iframeRefreshMap = {};
     },
     resetState(): void {
       this.tabList = [];
@@ -309,6 +316,22 @@ export const useMultipleTabStore = defineStore('app-multiple-tab', {
         findTab.fullPath = fullPath;
         findTab.path = fullPath;
         await this.updateCacheTab();
+      }
+    },
+
+    /**
+     * Refresh iframe page (triggers FramePage.vue to reload iframe src)
+     */
+    async refreshIframePage(router: Router) {
+      const { currentRoute } = router;
+      const route = unref(currentRoute);
+      const name = route.name as string;
+      if (name && route.meta?.frameSrc) {
+        // Update refresh counter → FramePage.vue watch detects change → reload iframe src
+        this.iframeRefreshMap = {
+          ...this.iframeRefreshMap,
+          [name]: Date.now(),
+        };
       }
     },
   },

@@ -34,9 +34,16 @@ export function useTabs(_router?: Router) {
 
   function getCurrentTab() {
     const route = unref(currentRoute);
-    return tabStore.getTabList.find((item) => {
+    const tab = tabStore.getTabList.find((item) => {
       return (item.fullPath || item.path) === route.fullPath;
-    })!;
+    });
+    // For iframe routes, also try matching by name as fallback (dynamic routes may have different paths)
+    if (!tab && route.meta?.frameSrc && route.name) {
+      return tabStore.getTabList.find((item) => {
+        return item.name === route.name;
+      })!;
+    }
+    return tab!;
   }
 
   async function updateTabTitle(title: string, tab?: RouteLocationNormalized) {
@@ -65,7 +72,12 @@ export function useTabs(_router?: Router) {
     const currentTab = getCurrentTab();
     switch (action) {
       case TableActionEnum.REFRESH:
-        await tabStore.refreshPage(router);
+        // For iframe routes, use dedicated iframe refresh to trigger FramePage.vue reload
+        if (currentTab?.meta?.frameSrc) {
+          await tabStore.refreshIframePage(router);
+        } else {
+          await tabStore.refreshPage(router);
+        }
         break;
 
       case TableActionEnum.CLOSE_ALL:
