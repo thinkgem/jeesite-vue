@@ -174,6 +174,12 @@
         .ant-menu.ant-menu-horizontal {
           line-height: 34px;
           border: 0;
+          padding: 0 5px;
+
+          .ant-menu-item {
+            margin: 0 -5px;
+            padding-left: 14px;
+          }
         }
       }
     }
@@ -202,6 +208,11 @@
 
       .anticon {
         opacity: 0.8;
+        margin: 0;
+      }
+
+      > span {
+        margin-left: -5px;
       }
     }
 

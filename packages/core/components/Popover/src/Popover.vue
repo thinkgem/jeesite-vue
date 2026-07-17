@@ -28,14 +28,14 @@
               <template #icon v-if="item.popConfirm.icon">
                 <Icon :icon="item.popConfirm.icon" />
               </template>
-              <div>
+              <div :title="item.iconTitle">
                 <Icon :icon="item.icon" v-if="item.icon" />
                 <span v-if="item.text" class="ml-1">{{ item.text }}</span>
               </div>
             </Popconfirm>
             <template v-else>
               <Icon :icon="item.icon" v-if="item.icon" />
-              <span v-if="item.text" class="ml-1">{{ item.text }}</span>
+              <span v-if="item.text" class="ml-1" :title="item.iconTitle">{{ item.text }}</span>
             </template>
           </MenuItem>
           <MenuDivider v-if="item.divider" :key="`d-${item.event}`" />

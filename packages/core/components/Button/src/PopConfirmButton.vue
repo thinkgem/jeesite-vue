@@ -12,6 +12,9 @@
         </template>
       </BasicButton>
     </template>
+    <template v-if="$attrs.title" #title>
+      <div v-html="$attrs.title"></div>
+    </template>
   </Popconfirm>
 </template>
 <script lang="ts" setup name="PopConfirmButton">
