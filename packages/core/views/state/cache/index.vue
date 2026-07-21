@@ -203,6 +203,7 @@
 
   function caleTextAreaHeight() {
     const box = document.querySelector('.jeesite-basic-form-box') as HTMLElement;
+    if (!box) return;
     textAreaHeight.value = box.offsetHeight - 240;
   }
 
