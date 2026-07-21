@@ -139,9 +139,7 @@ export function createPermissionGuard(router: Router) {
       const queryIndex = redirect.indexOf('?');
       if (queryIndex > -1) {
         const targetPath = redirect.substring(0, queryIndex);
-        const targetQuery = Object.fromEntries(
-          new URLSearchParams(redirect.substring(queryIndex + 1)),
-        );
+        const targetQuery = Object.fromEntries(new URLSearchParams(redirect.substring(queryIndex + 1)));
         return { path: targetPath, query: targetQuery, replace: true };
       }
       const nextData = to.path === redirect ? { ...to, replace: true } : { path: redirect };

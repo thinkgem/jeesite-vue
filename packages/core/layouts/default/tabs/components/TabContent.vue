@@ -18,7 +18,7 @@
 
   import { TabContentProps } from '../types';
 
-  import { useI18n } from '@jeesite/core/hooks/web/useI18n';
+  import { useI18n, isTranslatableString } from '@jeesite/core/hooks/web/useI18n';
   import { useTabDropdown } from '../useTabDropdown';
 
   const props = defineProps({
@@ -31,14 +31,24 @@
 
   const { t } = useI18n();
 
+  function resolveI18n(value: any): string {
+    if (!value) return '';
+    if (isTranslatableString(value)) {
+      return String(value);
+    }
+    return t(value as string);
+  }
+
   const getIcon = computed(() => {
     const { tabItem: { meta } = {} } = props;
-    return meta && t((meta.tabIcon as string) || (meta.icon as string));
+    if (!meta) return '';
+    return resolveI18n((meta.tabIcon as string) || (meta.icon as string));
   });
 
   const getTitle = computed(() => {
     const { tabItem: { meta } = {} } = props;
-    return meta && t(meta.title as string);
+    if (!meta) return '';
+    return resolveI18n(meta.title as string);
   });
 
   const getIsTabs = computed(() => !props.isExtra);
