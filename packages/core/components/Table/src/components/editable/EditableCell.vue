@@ -538,17 +538,24 @@
       .ant-input-number,
       .ant-picker,
       .ant-select,
-      .ant-input-affix-wrapper {
+      .ant-input-affix-wrapper,
+      .jeesite-listselect {
         background: transparent !important;
         border: 0 !important;
+        border-bottom: 1px dotted #999 !important;
         border-radius: 0;
         box-shadow: none !important;
         padding: 0 5px !important;
         min-height: 30px;
 
-        &:focus {
-          border-bottom: 1px dotted #999 !important;
+        > input.ant-input,
+        > textarea.ant-input {
+          border-bottom: 0 !important;
         }
+
+        //&:focus {
+        //  border-bottom: 1px dotted #999 !important;
+        //}
 
         .ant-select-selection-search {
           left: 4px !important;
@@ -557,6 +564,10 @@
         .ant-select-selection-placeholder {
           left: 4px !important;
         }
+      }
+
+      .jeesite-listselect .ant-input-affix-wrapper {
+        border-bottom: 0 !important;
       }
 
       textarea.ant-input {
