@@ -84,7 +84,8 @@ const transform: AxiosTransform = {
           if (config.url?.indexOf('__notUpdateSession=true') == -1) {
             let path = PageEnum.BASE_LOGIN as string;
             if (currentRoute.path !== '/' && currentRoute.path !== PageEnum.BASE_LOGIN) {
-              path = path + '?redirect=' + currentRoute.fullPath;
+              // 编码 fullPath，确保查询参数不会因 & 和 ? 被拆分为独立参数
+              path = path + '?redirect=' + encodeURIComponent(currentRoute.fullPath);
             }
             router.replace(path);
           }

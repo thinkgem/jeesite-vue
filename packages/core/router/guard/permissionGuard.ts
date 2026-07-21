@@ -74,7 +74,9 @@ export function createPermissionGuard(router: Router) {
       if (to.path) {
         redirectData.query = {
           ...redirectData.query,
-          redirect: to.path,
+          // 使用 encodeURIComponent 编码 fullPath，确保查询参数（如 ?procDefKey=xx&formVersion=7）
+          // 不会被浏览器解析为 /login 页面的独立查询参数
+          redirect: encodeURIComponent(to.fullPath),
         };
       }
       return redirectData;
@@ -106,7 +108,8 @@ export function createPermissionGuard(router: Router) {
         // }
         let path = LOGIN_PATH as string;
         if (to.path !== '/' && to.path !== LOGIN_PATH) {
-          path = path + '?redirect=' + to.fullPath;
+          // 编码 fullPath，确保查询参数不会丢失
+          path = path + '?redirect=' + encodeURIComponent(to.fullPath);
         }
         return path;
       }
@@ -132,6 +135,15 @@ export function createPermissionGuard(router: Router) {
     } else {
       const redirectPath = (from.query.redirect || to.path) as string;
       const redirect = decodeURIComponent(redirectPath);
+      // 解析 redirect URL 中的查询参数，确保所有参数都被完整携带至目标页面
+      const queryIndex = redirect.indexOf('?');
+      if (queryIndex > -1) {
+        const targetPath = redirect.substring(0, queryIndex);
+        const targetQuery = Object.fromEntries(
+          new URLSearchParams(redirect.substring(queryIndex + 1)),
+        );
+        return { path: targetPath, query: targetQuery, replace: true };
+      }
       const nextData = to.path === redirect ? { ...to, replace: true } : { path: redirect };
       return nextData;
     }
