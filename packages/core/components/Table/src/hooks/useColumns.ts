@@ -289,11 +289,12 @@ export function useColumns(
           }
 
           // 兼容 customRender 调用
-          if (column.customRender) {
-            column.render = (value: any, record: Recordable, index: number): VueNode => {
-              return column.customRender?.({ value, text: value, record, index, renderIndex: index, column });
-            };
-          }
+          // customRender 通过 #bodyCell 插槽渲染（替代已废弃的 column.render）
+          // if (column.customRender) {
+          //   column.render = (value: any, record: Recordable, index: number): VueNode => {
+          //     return column.customRender?.({ value, text: value, record, index, renderIndex: index, column });
+          //   };
+          // }
 
           column.onHeaderCell = (data: any) =>
             ({

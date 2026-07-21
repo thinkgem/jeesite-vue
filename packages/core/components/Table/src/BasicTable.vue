@@ -66,7 +66,11 @@
           />
           <slot v-else-if="data.column.slot" :name="data.column.slot" v-bind="getSlotData(data)"></slot>
         </template>
-        <slot v-else name="bodyCell" v-bind="getSlotData(data)"></slot>
+        <template v-else>
+          <slot name="bodyCell" v-bind="getSlotData(data)">
+            <component :is="getCustomRenderFn(data)" />
+          </slot>
+        </template>
       </template>
     </Table>
   </div>
@@ -385,6 +389,12 @@
     if (!data.record) data.record = {};
     if (!data.record.dataMap) data.record.dataMap = {};
     return data;
+  }
+
+  function getCustomRenderFn(data: any) {
+    const { column, text, record, index } = data;
+    if (!column?.customRender) return;
+    return () => column.customRender({ value: text, text, record, index, renderIndex: index, column });
   }
 
   const redoTableHeight = useDebounceFn(redoHeight, 20);
