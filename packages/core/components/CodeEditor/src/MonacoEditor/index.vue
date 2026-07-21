@@ -67,6 +67,7 @@
     monacoEditor = monaco.editor.create(editContainer.value as HTMLElement, {
       ...props.config,
       automaticLayout: true,
+      fontSize: 14,
       language: props.language,
       lineNumbers: props.lineNumbers,
       readOnly: props.readonly,
