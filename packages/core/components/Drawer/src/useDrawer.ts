@@ -6,7 +6,18 @@ import type {
   UseDrawerInnerReturnType,
 } from './typing';
 
-import { ref, onUnmounted, unref, getCurrentInstance, reactive, watchEffect, nextTick, toRaw, computed } from 'vue';
+import {
+  ref,
+  onUnmounted,
+  onMounted,
+  unref,
+  getCurrentInstance,
+  reactive,
+  watch,
+  nextTick,
+  toRaw,
+  computed,
+} from 'vue';
 import { isProdMode } from '@jeesite/core/utils/env';
 import { isFunction } from '@jeesite/core/utils/is';
 import { isEqual } from 'lodash-es';
@@ -130,7 +141,14 @@ export const useDrawerInner = (callbackFn?: Fn): UseDrawerInnerReturnType => {
     currentInstance?.emit('register', modalInstance, uuid);
   };
 
-  watchEffect(() => {
+  const isMounted = ref(false);
+
+  onMounted(() => {
+    isMounted.value = true;
+  });
+
+  watch([() => dataTransfer[unref(uidRef)], isMounted], () => {
+    if (!isMounted.value) return;
     const data = dataTransfer[unref(uidRef)];
     if (!data) return;
     if (!callbackFn || !isFunction(callbackFn)) return;

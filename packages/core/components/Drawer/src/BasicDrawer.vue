@@ -17,6 +17,7 @@
     </template>
     <div v-if="widthResize" class="ew-resize" @mousedown="onMousedown"></div>
     <ScrollContainer
+      ref="scrollContainerRef"
       :style="getScrollContentStyle"
       v-loading="getLoading"
       :loading-tip="loadingText || t('common.loadingText')"
@@ -32,7 +33,18 @@
 </template>
 <script lang="ts" setup name="BasicDrawer">
   import type { DrawerInstance, DrawerProps } from './typing';
-  import { ref, computed, watch, unref, toRaw, getCurrentInstance, CSSProperties, watchEffect } from 'vue';
+  import {
+    ref,
+    shallowRef,
+    computed,
+    watch,
+    unref,
+    toRaw,
+    getCurrentInstance,
+    CSSProperties,
+    watchEffect,
+    nextTick,
+  } from 'vue';
   import { Drawer } from 'antdv-next';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { isFunction, isNumber } from '@jeesite/core/utils/is';
@@ -55,6 +67,7 @@
   const attrs = useAttrs();
   const openRef = ref(false);
   const propsRef = ref<Partial<Nullable<DrawerProps>>>(null);
+  const scrollContainerRef = shallowRef<InstanceType<typeof ScrollContainer>>();
 
   const { t } = useI18n();
   const { realWidthRef, screenEnum } = useBreakpoint();
@@ -164,6 +177,11 @@
       emit('open-change', v);
       emit('update:open', v);
       instance && drawerInstance.emitOpen?.(v, instance.uid);
+      nextTick(() => {
+        if (props.scrollTop && v && unref(scrollContainerRef)) {
+          unref(scrollContainerRef)?.scrollTo?.(0, 0);
+        }
+      });
     },
     {
       immediate: false,

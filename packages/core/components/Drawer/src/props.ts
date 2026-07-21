@@ -42,6 +42,8 @@ export const basicProps = {
   wrapClassName: { type: String },
   // 是否允许拖拽调整抽屉宽度
   widthResize: { type: Boolean, default: true },
+  // 打开时是否自动滚动到顶部
+  scrollTop: { type: Boolean, default: true },
   ...footerProps,
   // eslint check
   width: { type: [Number, String] },
