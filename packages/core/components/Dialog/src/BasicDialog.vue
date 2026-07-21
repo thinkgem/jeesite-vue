@@ -22,6 +22,7 @@
 
   const props = defineProps({
     dialogType: propTypes.oneOf(['modal', 'drawer']).def('drawer'),
+    width: [String, Number],
   });
 
   const attrs = useAttrs();
