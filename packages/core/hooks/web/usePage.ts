@@ -10,6 +10,7 @@ import { REDIRECT_NAME } from '@jeesite/core/router/constant';
 export type RouteLocationRawEx = Omit<RouteLocationRaw, 'path'> & {
   path: PageEnum | string;
   query?: object;
+  hash?: string;
 };
 
 function handleError(e: Error) {

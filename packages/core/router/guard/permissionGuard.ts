@@ -131,18 +131,24 @@ export function createPermissionGuard(router: Router) {
 
     if (to.name === PAGE_NOT_FOUND_ROUTE.name) {
       // 动态添加路由后，此处应当重定向到fullPath，否则会加载404页面内容
-      return { path: to.fullPath, replace: true, query: to.query };
+      // 使用 to.path + to.hash 避免 hash 丢失（to.fullPath 赋值给 path 会导致 # 被当作路径字面量）
+      return { path: to.path, replace: true, query: to.query, hash: to.hash };
     } else {
       const redirectPath = (from.query.redirect || to.path) as string;
       const redirect = decodeURIComponent(redirectPath);
+      // 从 redirect URL 中提取 hash（如 #section1），避免刷新后锚点丢失
+      const hashIndex = redirect.indexOf('#');
+      const redirectWithoutHash = hashIndex > -1 ? redirect.substring(0, hashIndex) : redirect;
+      const redirectHash = hashIndex > -1 ? redirect.substring(hashIndex) : '';
       // 解析 redirect URL 中的查询参数，确保所有参数都被完整携带至目标页面
-      const queryIndex = redirect.indexOf('?');
+      const queryIndex = redirectWithoutHash.indexOf('?');
       if (queryIndex > -1) {
-        const targetPath = redirect.substring(0, queryIndex);
-        const targetQuery = Object.fromEntries(new URLSearchParams(redirect.substring(queryIndex + 1)));
-        return { path: targetPath, query: targetQuery, replace: true };
+        const targetPath = redirectWithoutHash.substring(0, queryIndex);
+        const targetQuery = Object.fromEntries(new URLSearchParams(redirectWithoutHash.substring(queryIndex + 1)));
+        return { path: targetPath, query: targetQuery, hash: redirectHash, replace: true };
       }
-      const nextData = to.path === redirect ? { ...to, replace: true } : { path: redirect };
+      const nextData =
+        to.path === redirectWithoutHash ? { ...to, replace: true } : { path: redirectWithoutHash, hash: redirectHash };
       return nextData;
     }
   });

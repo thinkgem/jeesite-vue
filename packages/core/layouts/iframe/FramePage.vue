@@ -43,15 +43,43 @@
   // const frameSrc = ref(props.frame?.meta?.frameSrc);
   const frameSrc = ref<string>();
 
+  // 检查 URL 中 hash 之前的部分是否包含 query string
+  function hasQueryBeforeHash(url: string): boolean {
+    const hashIndex = url.indexOf('#');
+    const queryPart = hashIndex !== -1 ? url.substring(0, hashIndex) : url;
+    return queryPart.indexOf('?') !== -1;
+  }
+
+  // 将参数拼接到 URL 的 hash 之前（如果存在 hash）
+  function appendParamBeforeHash(url: string, param: string): string {
+    const hashIndex = url.indexOf('#');
+    if (hashIndex !== -1) {
+      return url.substring(0, hashIndex) + param + url.substring(hashIndex);
+    }
+    return url + param;
+  }
+
+  // 将 window.location.hash 追加到 URL（替换已有 hash，作为 iframe hash 的权威来源）
+  function appendLocationHash(url: string): string {
+    const hash = window.location.hash;
+    if (!hash) return url;
+    const hashIndex = url.indexOf('#');
+    if (hashIndex !== -1) {
+      url = url.substring(0, hashIndex);
+    }
+    return url + hash;
+  }
+
   watch(
     () => router.currentRoute.value.query,
     () => {
       // jee site iframe query
       let src = props.frame?.meta?.frameSrc || '';
       let search = window.location.search;
-      if (!src.includes('?') && search && search != '') {
-        src += search;
+      if (!hasQueryBeforeHash(src) && search && search != '') {
+        src = appendParamBeforeHash(src, search);
       }
+      src = appendLocationHash(src);
       const path = window.location.pathname.replace(/\/\//g, '/');
       if (!frameSrc.value || (frameSrc.value != src && src.indexOf(path) != -1)) {
         frameSrc.value = src;
@@ -66,9 +94,10 @@
       // jee site iframe refresh
       let params = router.currentRoute.value.params;
       if (params && params.path == props.frame?.path) {
-        let src = props.frame?.meta?.frameSrc;
-        src += src?.indexOf('?') != -1 ? '&' : '?';
-        frameSrc.value = src + '__t' + new Date().getTime();
+        let src = props.frame?.meta?.frameSrc || '';
+        const connector = hasQueryBeforeHash(src) ? '&' : '?';
+        src = appendParamBeforeHash(src, connector + '__t' + new Date().getTime());
+        frameSrc.value = appendLocationHash(src);
       }
     },
   );
@@ -78,9 +107,10 @@
     () => tabStore.getIframeRefreshMap[props.frame?.name as string],
     (newVal) => {
       if (newVal && props.frame?.meta?.frameSrc) {
-        let src = props.frame.meta.frameSrc;
-        src += src?.indexOf('?') != -1 ? '&' : '?';
-        frameSrc.value = src + '__t' + newVal;
+        let src = props.frame.meta.frameSrc || '';
+        const connector = hasQueryBeforeHash(src) ? '&' : '?';
+        src = appendParamBeforeHash(src, connector + '__t' + newVal);
+        frameSrc.value = appendLocationHash(src);
         loading.value = true;
       }
     },
