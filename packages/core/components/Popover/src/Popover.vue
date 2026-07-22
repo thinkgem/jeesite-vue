@@ -5,11 +5,12 @@
 -->
 <template>
   <Popover
-    :trigger="trigger"
+    :trigger="effectiveTrigger"
     v-bind="$attrs"
     v-model:open="open"
     overlayClassName="jeesite-basic-popover"
     :mouseEnterDelay="0.05"
+    :mouseLeaveDelay="0.15"
     :placement="placement"
   >
     <span>
@@ -24,7 +25,11 @@
             :disabled="item.disabled"
             :title="item.iconTitle"
           >
-            <Popconfirm v-if="popconfirm && item.popConfirm" v-bind="getPopConfirmAttrs(item.popConfirm)">
+            <Popconfirm
+              v-if="popconfirm && item.popConfirm"
+              v-bind="getPopConfirmAttrs(item.popConfirm)"
+              @openChange="onPopconfirmOpenChange"
+            >
               <template #icon v-if="item.popConfirm.icon">
                 <Icon :icon="item.popConfirm.icon" />
               </template>
@@ -98,6 +103,25 @@
   const emit = defineEmits(['menuEvent']);
 
   const open = ref(false);
+  const popconfirmOpenCount = ref(0);
+
+  const effectiveTrigger = computed(() => {
+    // 当有 popconfirm 打开时，禁用自动触发（如 hover），防止鼠标移出 Popover 时关闭
+    if (popconfirmOpenCount.value > 0) {
+      return [];
+    }
+    return props.trigger;
+  });
+
+  function onPopconfirmOpenChange(visible: boolean) {
+    if (visible) {
+      popconfirmOpenCount.value += 1;
+    } else {
+      popconfirmOpenCount.value -= 1;
+      // Popconfirm 关闭后同步关闭 Popover（确定/取消都会触发）
+      open.value = false;
+    }
+  }
 
   function handleClickMenu(item: DropMenu, _info?: any) {
     // 如果 _info 是原生事件（PointerEvent/MouseE/vent），说明是第一次调用，跳过
