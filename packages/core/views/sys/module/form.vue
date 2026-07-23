@@ -308,6 +308,7 @@
       data.genFrontDir = genFrontDir.value;
       data.genFlag = flag;
       data.replaceFile = data.replaceFile ? '1' : '0';
+      data.lastUpdateDateTime = record.value.lastUpdateDateTime;
       // console.log('submit', params, data, record);
       const res = await moduleSave(params, data);
       showMessage(res.message);
