@@ -4,7 +4,7 @@
  * @author ThinkGem
 -->
 <template>
-  <PageWrapper :sidebarWidth="200">
+  <PageWrapper :sidebarWidth="230">
     <template #sidebar>
       <BasicTree
         :search="true"

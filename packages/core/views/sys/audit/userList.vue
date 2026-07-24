@@ -2,7 +2,7 @@
  * Copyright (c) 2013-Now https://jeesite.com All rights reserved.
 -->
 <template>
-  <PageWrapper :sidebarWidth="400" :dense="true">
+  <PageWrapper :sidebarWidth="300" :dense="true">
     <template #sidebar>
       <BasicTree
         :search="false"
