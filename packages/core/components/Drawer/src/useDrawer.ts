@@ -147,8 +147,10 @@ export const useDrawerInner = (callbackFn?: Fn): UseDrawerInnerReturnType => {
     isMounted.value = true;
   });
 
-  watch([() => dataTransfer[unref(uidRef)], isMounted], () => {
+  watch([() => openData[unref(uidRef)], isMounted], () => {
     if (!isMounted.value) return;
+    const open = openData[unref(uidRef)];
+    if (!open) return;
     const data = dataTransfer[unref(uidRef)];
     if (!data) return;
     if (!callbackFn || !isFunction(callbackFn)) return;
