@@ -13,7 +13,7 @@ import {
   unref,
   getCurrentInstance,
   reactive,
-  watch,
+  watchEffect,
   nextTick,
   toRaw,
   computed,
@@ -141,16 +141,7 @@ export const useDrawerInner = (callbackFn?: Fn): UseDrawerInnerReturnType => {
     currentInstance?.emit('register', modalInstance, uuid);
   };
 
-  const isMounted = ref(false);
-
-  onMounted(() => {
-    isMounted.value = true;
-  });
-
-  watch([() => openData[unref(uidRef)], isMounted], () => {
-    if (!isMounted.value) return;
-    const open = openData[unref(uidRef)];
-    if (!open) return;
+  watchEffect(() => {
     const data = dataTransfer[unref(uidRef)];
     if (!data) return;
     if (!callbackFn || !isFunction(callbackFn)) return;
