@@ -46,11 +46,19 @@ export function useTableExpand(
     };
   });
 
+  function safeGetFormData() {
+    try {
+      return getFormData();
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   function expandAll() {
     setLoading(true);
     setTimeout(async () => {
       try {
-        if (getFormData()) {
+        if (safeGetFormData()) {
           await expandOneLevel();
           currentLevel.value += 1;
         } else {
@@ -110,7 +118,7 @@ export function useTableExpand(
       const rowKey = unref(getRowKey) as string;
       let params = {
         parentCode: record[rowKey] as string,
-        status: forceLoad ? '' : getFormData()?.status,
+        status: forceLoad ? '' : safeGetFormData()?.status,
       };
       if (beforeChildFetch && isFunction(beforeChildFetch)) {
         params = (await beforeChildFetch(params)) || params;
