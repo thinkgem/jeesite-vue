@@ -344,7 +344,7 @@
       setDrawerProps({ confirmLoading: true });
       const params: any = {
         isNewRecord: record.value.isNewRecord,
-        categoryCode: record.value.categoryCode || data.categoryCode,
+        categoryCode: data.categoryCode || record.value.categoryCode,
       };
       data.oldParentCode = record.value.parentCode;
       data.image = record.value.image;

@@ -229,7 +229,7 @@
       setDrawerProps({ confirmLoading: true });
       const params: any = {
         isNewRecord: record.value.isNewRecord,
-        siteCode: record.value.siteCode || data.siteCode,
+        siteCode: data.siteCode || record.value.siteCode,
       };
       data.logo = record.value.logo;
       // console.log('submit', params, data, record);

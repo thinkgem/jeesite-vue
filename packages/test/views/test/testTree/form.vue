@@ -145,7 +145,7 @@
       setDrawerProps({ confirmLoading: true });
       const params: any = {
         isNewRecord: record.value.isNewRecord,
-        treeCode: record.value.treeCode,
+        treeCode: data.treeCode || record.value.treeCode,
       };
       data.oldParentCode = record.value.parentCode;
       // console.log('submit', params, data, record);

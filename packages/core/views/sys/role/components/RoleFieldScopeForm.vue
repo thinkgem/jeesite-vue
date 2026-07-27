@@ -243,7 +243,7 @@
       setDrawerProps({ confirmLoading: true });
       const params: any = {
         isNewRecord: record.value.isNewRecord,
-        id: record.value.id || data.id,
+        id: data.id || record.value.id,
       };
       data.roleCode = record.value.roleCode;
       data.menuCode = record.value.menuCode;
