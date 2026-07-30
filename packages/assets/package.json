@@ -1,6 +1,6 @@
 {
   "name": "@jeesite/assets",
-  "version": "5.18.1-dev",
+  "version": "5.18.1",
   "private": true,
   "type": "module",
   "scripts": {

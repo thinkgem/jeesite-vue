@@ -1,6 +1,6 @@
 {
   "name": "@jeesite/core",
-  "version": "5.18.1-dev",
+  "version": "5.18.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "update": "ncu -u -x codemirror,pinia,cropperjs"
   },
   "dependencies": {
-    "@jeesite/core-lib": "5.18.1-next-dev-rc.1",
+    "@jeesite/core-lib": "5.18.1-next-rc.1",
     "@uppy/core": "2.1.5",
     "@vueuse/core": "14.3.0",
     "@vueuse/shared": "14.3.0",
