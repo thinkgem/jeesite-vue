@@ -28,7 +28,7 @@
           <Icon icon="i-ant-design:deployment-unit-outlined" />
           <span class="pr-1"> {{ t('角色字段权限') }} </span>
         </template>
-        <RoleFieldScopeList ref="roleFieldScopeListRef" />
+        <RoleFieldScopeList ref="roleFieldScopeListRef" :resizeHeightOffset="70" />
       </TabPane>
       <TabPane key="2" :forceRender="true">
         <template #tab>
@@ -79,18 +79,16 @@
     data.menuCode = 'true'; // 查询菜单字段权限
     const res = await roleForm(data);
     record.value = (res.role || {}) as Recordable;
-    const roleFieldData = { roleCode: record.value.roleCode, menuCode: '0' };
-    roleFieldScopeListRef.value?.loadFieldScopeFormData(roleFieldData);
-    menuFieldScopeRef.value?.loadFieldScopeFormData(roleFieldData);
+    roleFieldScopeListRef.value?.loadFieldScopeFormData({ roleCode: record.value.roleCode, menuCode: '0' });
+    menuFieldScopeRef.value?.loadFieldScopeFormData({ roleCode: record.value.roleCode, menuCode: '0' });
     setDrawerProps({ loading: false });
   });
 
   function handleForm() {
-    const roleFieldData = { roleCode: record.value.roleCode, menuCode: '0' };
     if (activeKey.value == '1') {
-      roleFieldScopeListRef.value?.handleForm(roleFieldData);
+      roleFieldScopeListRef.value?.handleForm({ roleCode: record.value.roleCode, menuCode: '0' });
     } else {
-      menuFieldScopeRef.value?.handleForm(roleFieldData);
+      menuFieldScopeRef.value?.handleForm({ roleCode: record.value.roleCode, menuCode: '0' });
     }
   }
 
@@ -104,6 +102,7 @@
       > .scrollbar__wrap {
         > .scrollbar__view {
           margin: 6px !important;
+          margin-bottom: 0 !important;
         }
       }
     }

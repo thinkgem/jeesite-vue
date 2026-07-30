@@ -31,7 +31,7 @@
   import { useDrawer } from '@jeesite/core/components/Drawer';
 
   const props = defineProps({
-    resizeHeightOffset: propTypes.number.def(60),
+    resizeHeightOffset: propTypes.number.def(0),
     menuFieldScope: propTypes.bool,
   });
 
