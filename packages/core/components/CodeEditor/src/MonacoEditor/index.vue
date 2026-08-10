@@ -42,7 +42,7 @@
     config: () => ({
       selectOnLineNumbers: true,
       minimap: { enabled: false },
-      padding: { top: 6, bottom: 6 },
+      padding: { top: 5, bottom: 5 },
     }),
     language: 'json',
     lineNumbers: 'on',
