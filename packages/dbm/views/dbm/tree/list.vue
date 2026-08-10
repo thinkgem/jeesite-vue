@@ -18,7 +18,7 @@
           <Icon icon="i-bi:chevron-double-up" /> {{ t('折叠') }}
         </a-button>
         <Popconfirm :title="t('是否确认执行数结构冗余字段修复吗？')" @confirm="handleFixTreeData({})">
-          <a-button danger type="default" v-auth="'dbm:data:edit'" :title="t('修复数结构冗余字段')">
+          <a-button type="default" v-auth="'dbm:data:edit'" :title="t('修复数结构冗余字段')">
             <Icon icon="i-ant-design:file-exclamation-outlined" /> {{ t('修复') }}
           </a-button>
         </Popconfirm>

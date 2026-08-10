@@ -17,7 +17,7 @@
       <span> {{ getTitle.value }} </span>
     </template>
     <template #centerFooter>
-      <a-button v-if="isCustomModule" type="primary" danger :loading="confirmLoading" @click="handleSubmitAndGen">
+      <a-button type="error" v-if="isCustomModule" :loading="confirmLoading" @click="handleSubmitAndGen">
         <Icon icon="i-ant-design:bug-outlined" /> {{ t('确认并生成代码') }}
       </a-button>
     </template>
