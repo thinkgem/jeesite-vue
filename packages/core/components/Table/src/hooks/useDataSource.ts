@@ -344,6 +344,7 @@ export function useDataSource(
       emit('fetch-success', {
         items: unref(resultItems),
         total: resultTotal,
+        params,
       });
       emitter.emit('on-page-wrapper-resize');
       return resultItems;
