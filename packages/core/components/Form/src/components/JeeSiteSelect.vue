@@ -124,7 +124,7 @@
   );
 
   watch(
-    () => optionsRef.value,
+    () => [optionsRef.value, state.value],
     () => {
       // 如果没有给初始值，并不允许清空选择项和非多选的时候，默认选择第一个选项
       if (
@@ -197,6 +197,10 @@
 
     .ant-select {
       width: 100%;
+
+      .ant-select-clear {
+        border: 0;
+      }
     }
   }
   // 嵌入在 input 内部 suffix 插槽时的样式设置
