@@ -1,6 +1,17 @@
 // import { openWindow } from '..';
 import { dataURLtoBlob, urlToBase64 } from './base64Conver';
 import { defHttp } from '@jeesite/core/utils/http/axios';
+import { message } from 'antdv-next';
+
+/** 正在下载中的请求映射，用于防止短时间内重复点击下载 */
+const downloadingMap = new Map<string, Promise<boolean>>();
+
+/**
+ * 根据请求参数生成唯一 key，用于防重复下载判断
+ */
+function getDownloadKey(url: string, params?: any, data?: any): string {
+  return JSON.stringify({ url, params, data });
+}
 
 /**
  * Download online pictures
@@ -75,59 +86,32 @@ export async function downloadByUrl({
   fileName?: string;
   json?: boolean;
 }): Promise<boolean> {
-  const res = await defHttp[json ? 'postJson' : 'post'](
-    { url, params, data, responseType: 'blob' },
-    { isReturnNativeResponse: true, joinPrefix: false },
-  );
-  let name = res.headers['content-disposition'];
-  name = name && name.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-  name = name && name.length >= 1 && name[1].replace("utf-8'zh_cn'", '');
-  name = (name && decodeURIComponent(name)) || fileName || 'jeesite';
-  downloadByData(res.data, name);
-  // axios({
-  //   url: url,
-  //   method: 'post',
-  //   data: data,
-  //   responseType: 'blob',
-  // })
-  //   .then((response) => {
-  //     let name = response.headers['content-disposition'];
-  //     name = name && name.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-  //     name = name && name.length >= 1 && name[1].replace("utf-8'zh_cn'", '');
-  //     name = name && (decodeURIComponent(name) || fileName || 'jeesite');
-  //     downloadByData(response.data, name);
-  //   })
-  //   .catch((error) => {
-  //     console.error(error);
-  //   });
+  const key = getDownloadKey(url, params, data);
 
-  // const isChrome = window.navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-  // const isSafari = window.navigator.userAgent.toLowerCase().indexOf('safari') > -1;
+  // 如果同一请求正在下载中，提示用户并直接返回，防止重复下载
+  if (downloadingMap.has(key)) {
+    message.warning('文件正在下载中，请稍后...');
+    return false;
+  }
 
-  // if (/(iP)/g.test(window.navigator.userAgent)) {
-  //   console.error('Your browser does not support download!');
-  //   return false;
-  // }
-  // if (isChrome || isSafari) {
-  //   const link = document.createElement('a');
-  //   link.href = url;
-  //   link.target = target;
+  const downloadPromise = (async (): Promise<boolean> => {
+    try {
+      const res = await defHttp[json ? 'postJson' : 'post'](
+        { url, params, data, responseType: 'blob' },
+        { isReturnNativeResponse: true, joinPrefix: false },
+      );
+      let name = res.headers['content-disposition'];
+      name = name && name.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      name = name && name.length >= 1 && name[1].replace("utf-8'zh_cn'", '');
+      name = (name && decodeURIComponent(name)) || fileName || 'jeesite';
+      downloadByData(res.data, name);
+      return true;
+    } finally {
+      // 无论成功或失败，下载完成后移除锁，允许下次下载
+      downloadingMap.delete(key);
+    }
+  })();
 
-  //   if (link.download !== undefined) {
-  //     link.download = fileName || url.substring(url.lastIndexOf('/') + 1, url.length);
-  //   }
-
-  //   if (document.createEvent) {
-  //     const e = document.createEvent('MouseEvents');
-  //     e.initEvent('click', true, true);
-  //     link.dispatchEvent(e);
-  //     return true;
-  //   }
-  // }
-  // if (url.indexOf('?') === -1) {
-  //   url += '?download';
-  // }
-
-  // openWindow(url, { target });
-  return true;
+  downloadingMap.set(key, downloadPromise);
+  return downloadPromise;
 }
