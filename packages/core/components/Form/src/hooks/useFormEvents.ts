@@ -25,6 +25,7 @@ interface UseFormActionContext {
   handleFormValues: Fn;
   validateTriggerRef: Ref<string | string[] | false>;
 }
+
 export function useFormEvents({
   emit,
   getProps,
@@ -36,6 +37,9 @@ export function useFormEvents({
   handleFormValues,
   validateTriggerRef,
 }: UseFormActionContext) {
+  /**
+   * @description: Reset form value
+   */
   async function resetFields(): Promise<void> {
     const { resetFunc, submitOnReset } = unref(getProps);
     resetFunc && isFunction(resetFunc) && (await resetFunc());
