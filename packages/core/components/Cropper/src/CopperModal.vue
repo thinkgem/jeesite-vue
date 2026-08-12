@@ -1,3 +1,8 @@
+<!--
+ * Copyright (c) 2013-Now https://jeesite.com All rights reserved.
+ * No deletion without permission, or be held responsible to law.
+ * @author ThinkGem
+-->
 <template>
   <BasicModal
     v-bind="$attrs"
@@ -119,7 +124,7 @@
   // import { isFunction } from '@jeesite/core/utils/is';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
 
-  import type { CropendResult, Cropper } from './typing';
+  import type { CropendResult, CropperToolbarApi } from './typing';
   type apiFunParams = { file: Blob; name: string; filename: string };
 
   const props = defineProps({
@@ -134,9 +139,7 @@
 
   const src = ref(props.value);
   const previewSource = ref('');
-  const cropper = ref<Cropper>();
-  let scaleX = 1;
-  let scaleY = 1;
+  const cropper = ref<CropperToolbarApi>();
   let filename = '';
 
   const [register, { closeModal, setModalProps }] = useModalInner();
@@ -159,17 +162,11 @@
     previewSource.value = imgBase64;
   }
 
-  function handleReady(cropperInstance: Cropper) {
+  function handleReady(cropperInstance: CropperToolbarApi) {
     cropper.value = cropperInstance;
   }
 
   function handlerToolbar(event: string, arg?: number) {
-    if (event === 'scaleX') {
-      scaleX = arg = scaleX === -1 ? 1 : -1;
-    }
-    if (event === 'scaleY') {
-      scaleY = arg = scaleY === -1 ? 1 : -1;
-    }
     cropper?.value?.[event]?.(arg);
   }
 
