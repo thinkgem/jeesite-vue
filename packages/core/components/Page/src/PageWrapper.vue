@@ -12,6 +12,9 @@
         </div>
         <div v-else-if="title" class="page-header-heading-title">
           {{ title }}
+          <div v-if="$slots.extra" class="float-right">
+            <slot name="extra"></slot>
+          </div>
         </div>
         <div v-if="$slots.headerSubTitle" class="page-header-heading-sub-title">
           <slot name="headerSubTitle"></slot>
