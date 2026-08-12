@@ -11,8 +11,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-  import { computed } from 'vue';
-  import type { EditorConfiguration } from 'codemirror';
+  import { computed, type PropType } from 'vue';
   import CodeMirrorEditor from './CodeMirror.vue';
   import { isString } from '@jeesite/core/utils/is';
   import { MODE } from './typing';
@@ -23,14 +22,13 @@
       type: String as PropType<MODE>,
       default: MODE.JSON,
       validator(value: any) {
-        // 这个值必须匹配下列字符串中的一个
         return Object.values(MODE).includes(value);
       },
     },
     readonly: { type: Boolean },
     autoFormat: { type: Boolean, default: true },
     bordered: { type: Boolean, default: false },
-    config: { type: Object as PropType<EditorConfiguration>, default: () => {} },
+    config: { type: Object, default: () => ({}) },
   });
 
   const emit = defineEmits(['change', 'update:value', 'format-error']);
@@ -52,7 +50,7 @@
     return JSON.stringify(result, null, 2);
   });
 
-  function handleValueChange(v) {
+  function handleValueChange(v: string) {
     emit('update:value', v);
     emit('change', v);
   }

@@ -1,5 +1,13 @@
+import type { LanguageSupport } from '@codemirror/language';
+import type { Extension } from '@codemirror/state';
+import { oneDark } from '@codemirror/theme-one-dark';
+
+/**
+ * CodeMirror 6 支持的语言模式枚举
+ * 保留原有 MODE 枚举名称以保持向后兼容
+ */
 export enum MODE {
-  JSON = 'application/json',
+  JSON = 'json',
   APL = 'apl',
   ASCIIARMOR = 'asciiarmor',
   ASTERISK = 'asterisk',
@@ -118,130 +126,123 @@ export enum MODE {
   YAML = 'yaml',
   Z80 = 'z80',
 }
+
 /**
- * @description: DynamicImport codemirror
+ * 主题枚举
  */
-export function parserDynamicImport(str: MODE): () => Promise<any> {
-  const dynamicArray = {
-    // adapt before demo
-    'application/json': async () => await import('codemirror/mode/javascript/javascript'),
-    apl: async () => await import('codemirror/mode/apl/apl'),
-    asciiarmor: async () => await import('codemirror/mode/asciiarmor/asciiarmor'),
-    asterisk: async () => await import('codemirror/mode/asterisk/asterisk'),
-    brainfuck: async () => await import('codemirror/mode/brainfuck/brainfuck'),
-    clike: async () => await import('codemirror/mode/clike/clike'),
-    clojure: async () => await import('codemirror/mode/clojure/clojure'),
-    cmake: async () => await import('codemirror/mode/cmake/cmake'),
-    cobol: async () => await import('codemirror/mode/cobol/cobol'),
-    coffeescript: async () => await import('codemirror/mode/coffeescript/coffeescript'),
-    commonlisp: async () => await import('codemirror/mode/commonlisp/commonlisp'),
-    crystal: async () => await import('codemirror/mode/crystal/crystal'),
-    css: async () => await import('codemirror/mode/css/css'),
-    cypher: async () => await import('codemirror/mode/cypher/cypher'),
-    d: async () => await import('codemirror/mode/d/d'),
-    dart: async () => await import('codemirror/mode/dart/dart'),
-    diff: async () => await import('codemirror/mode/diff/diff'),
-    django: async () => await import('codemirror/mode/django/django'),
-    dockerfile: async () => await import('codemirror/mode/dockerfile/dockerfile'),
-    dtd: async () => await import('codemirror/mode/dtd/dtd'),
-    dylan: async () => await import('codemirror/mode/dylan/dylan'),
-    ebnf: async () => await import('codemirror/mode/ebnf/ebnf'),
-    ecl: async () => await import('codemirror/mode/ecl/ecl'),
-    eiffel: async () => await import('codemirror/mode/eiffel/eiffel'),
-    elm: async () => await import('codemirror/mode/elm/elm'),
-    erlang: async () => await import('codemirror/mode/erlang/erlang'),
-    factor: async () => await import('codemirror/mode/factor/factor'),
-    fcl: async () => await import('codemirror/mode/fcl/fcl'),
-    forth: async () => await import('codemirror/mode/forth/forth'),
-    fortran: async () => await import('codemirror/mode/fortran/fortran'),
-    gas: async () => await import('codemirror/mode/gas/gas'),
-    gfm: async () => await import('codemirror/mode/gfm/gfm'),
-    gherkin: async () => await import('codemirror/mode/gherkin/gherkin'),
-    go: async () => await import('codemirror/mode/go/go'),
-    groovy: async () => await import('codemirror/mode/groovy/groovy'),
-    haml: async () => await import('codemirror/mode/haml/haml'),
-    handlebars: async () => await import('codemirror/mode/handlebars/handlebars'),
-    haskell: async () => await import('codemirror/mode/haskell/haskell'),
-    haxe: async () => await import('codemirror/mode/haxe/haxe'),
-    htmlembedded: async () => await import('codemirror/mode/htmlembedded/htmlembedded'),
-    htmlmixed: async () => await import('codemirror/mode/htmlmixed/htmlmixed'),
-    http: async () => await import('codemirror/mode/http/http'),
-    idl: async () => await import('codemirror/mode/idl/idl'),
-    javascript: async () => await import('codemirror/mode/javascript/javascript'),
-    jinja2: async () => await import('codemirror/mode/jinja2/jinja2'),
-    jsx: async () => await import('codemirror/mode/jsx/jsx'),
-    julia: async () => await import('codemirror/mode/julia/julia'),
-    livescript: async () => await import('codemirror/mode/livescript/livescript'),
-    lua: async () => await import('codemirror/mode/lua/lua'),
-    markdown: async () => await import('codemirror/mode/markdown/markdown'),
-    mathematica: async () => await import('codemirror/mode/mathematica/mathematica'),
-    mbox: async () => await import('codemirror/mode/mbox/mbox'),
-    mirc: async () => await import('codemirror/mode/mirc/mirc'),
-    mllike: async () => await import('codemirror/mode/mllike/mllike'),
-    modelica: async () => await import('codemirror/mode/modelica/modelica'),
-    mscgen: async () => await import('codemirror/mode/mscgen/mscgen'),
-    mumps: async () => await import('codemirror/mode/mumps/mumps'),
-    nginx: async () => await import('codemirror/mode/nginx/nginx'),
-    nsis: async () => await import('codemirror/mode/nsis/nsis'),
-    ntriples: async () => await import('codemirror/mode/ntriples/ntriples'),
-    octave: async () => await import('codemirror/mode/octave/octave'),
-    oz: async () => await import('codemirror/mode/oz/oz'),
-    pascal: async () => await import('codemirror/mode/pascal/pascal'),
-    pegjs: async () => await import('codemirror/mode/pegjs/pegjs'),
-    perl: async () => await import('codemirror/mode/perl/perl'),
-    php: async () => await import('codemirror/mode/php/php'),
-    pig: async () => await import('codemirror/mode/pig/pig'),
-    powershell: async () => await import('codemirror/mode/powershell/powershell'),
-    properties: async () => await import('codemirror/mode/properties/properties'),
-    protobuf: async () => await import('codemirror/mode/protobuf/protobuf'),
-    pug: async () => await import('codemirror/mode/pug/pug'),
-    puppet: async () => await import('codemirror/mode/puppet/puppet'),
-    python: async () => await import('codemirror/mode/python/python'),
-    q: async () => await import('codemirror/mode/q/q'),
-    r: async () => await import('codemirror/mode/r/r'),
-    rpm: async () => await import('codemirror/mode/rpm/rpm'),
-    rst: async () => await import('codemirror/mode/rst/rst'),
-    ruby: async () => await import('codemirror/mode/ruby/ruby'),
-    rust: async () => await import('codemirror/mode/rust/rust'),
-    sas: async () => await import('codemirror/mode/sas/sas'),
-    sass: async () => await import('codemirror/mode/sass/sass'),
-    scheme: async () => await import('codemirror/mode/scheme/scheme'),
-    shell: async () => await import('codemirror/mode/shell/shell'),
-    sieve: async () => await import('codemirror/mode/sieve/sieve'),
-    slim: async () => await import('codemirror/mode/slim/slim'),
-    smalltalk: async () => await import('codemirror/mode/smalltalk/smalltalk'),
-    smarty: async () => await import('codemirror/mode/smarty/smarty'),
-    solr: async () => await import('codemirror/mode/solr/solr'),
-    soy: async () => await import('codemirror/mode/soy/soy'),
-    sparql: async () => await import('codemirror/mode/sparql/sparql'),
-    spreadsheet: async () => await import('codemirror/mode/spreadsheet/spreadsheet'),
-    sql: async () => await import('codemirror/mode/sql/sql'),
-    stex: async () => await import('codemirror/mode/stex/stex'),
-    stylus: async () => await import('codemirror/mode/stylus/stylus'),
-    swift: async () => await import('codemirror/mode/swift/swift'),
-    tcl: async () => await import('codemirror/mode/tcl/tcl'),
-    textile: async () => await import('codemirror/mode/textile/textile'),
-    tiddlywiki: async () => await import('codemirror/mode/tiddlywiki/tiddlywiki'),
-    tiki: async () => await import('codemirror/mode/tiki/tiki'),
-    toml: async () => await import('codemirror/mode/toml/toml'),
-    tornado: async () => await import('codemirror/mode/tornado/tornado'),
-    troff: async () => await import('codemirror/mode/troff/troff'),
-    ttcn: async () => await import('codemirror/mode/ttcn/ttcn'),
-    turtle: async () => await import('codemirror/mode/turtle/turtle'),
-    twig: async () => await import('codemirror/mode/twig/twig'),
-    vb: async () => await import('codemirror/mode/vb/vb'),
-    vbscript: async () => await import('codemirror/mode/vbscript/vbscript'),
-    velocity: async () => await import('codemirror/mode/velocity/velocity'),
-    verilog: async () => await import('codemirror/mode/verilog/verilog'),
-    vhdl: async () => await import('codemirror/mode/vhdl/vhdl'),
-    vue: async () => await import('codemirror/mode/vue/vue'),
-    wast: async () => await import('codemirror/mode/wast/wast'),
-    webidl: async () => await import('codemirror/mode/webidl/webidl'),
-    xml: async () => await import('codemirror/mode/xml/xml'),
-    xquery: async () => await import('codemirror/mode/xquery/xquery'),
-    yacas: async () => await import('codemirror/mode/yacas/yacas'),
-    yaml: async () => await import('codemirror/mode/yaml/yaml'),
-    z80: async () => await import('codemirror/mode/z80/z80'),
+export enum THEME {
+  ONE_DARK = 'one-dark',
+  NONE = 'none',
+}
+
+/**
+ * 语言到 LanguageSupport 的动态加载映射
+ * CodeMirror 6 使用 @codemirror/lang-* 包按需加载
+ */
+export function getLanguageLoader(mode: MODE): () => Promise<LanguageSupport | null> {
+  const loaders: Record<string, () => Promise<LanguageSupport | null>> = {
+    [MODE.JSON]: async () => {
+      const { json } = await import('@codemirror/lang-json');
+      return json();
+    },
+    [MODE.JAVASCRIPT]: async () => {
+      const { javascript } = await import('@codemirror/lang-javascript');
+      return javascript();
+    },
+    [MODE.JSX]: async () => {
+      const { javascript } = await import('@codemirror/lang-javascript');
+      return javascript({ jsx: true });
+    },
+    [MODE.HTMLMIXED]: async () => {
+      const { html } = await import('@codemirror/lang-html');
+      return html();
+    },
+    // [MODE.XML]: async () => {
+    //   const { xml } = await import('@codemirror/lang-xml');
+    //   return xml();
+    // },
+    // [MODE.CSS]: async () => {
+    //   const { css } = await import('@codemirror/lang-css');
+    //   return css();
+    // },
+    // [MODE.SASS]: async () => {
+    //   const { sass } = await import('@codemirror/lang-sass');
+    //   return sass();
+    // },
+    // [MODE.MARKDOWN]: async () => {
+    //   const { markdown } = await import('@codemirror/lang-markdown');
+    //   return markdown();
+    // },
+    // [MODE.GFM]: async () => {
+    //   const { markdown } = await import('@codemirror/lang-markdown');
+    //   return markdown();
+    // },
+    // [MODE.PYTHON]: async () => {
+    //   const { python } = await import('@codemirror/lang-python');
+    //   return python();
+    // },
+    // [MODE.GO]: async () => {
+    //   const { go } = await import('@codemirror/lang-go');
+    //   return go();
+    // },
+    // [MODE.RUST]: async () => {
+    //   const { rust } = await import('@codemirror/lang-rust');
+    //   return rust();
+    // },
+    // [MODE.SQL]: async () => {
+    //   const { sql } = await import('@codemirror/lang-sql');
+    //   return sql();
+    // },
+    // [MODE.PHP]: async () => {
+    //   const { php } = await import('@codemirror/lang-php');
+    //   return php();
+    // },
+    // [MODE.VUE]: async () => {
+    //   const { vue } = await import('@codemirror/lang-vue');
+    //   return vue();
+    // },
+    // [MODE.YAML]: async () => {
+    //   const { yaml } = await import('@codemirror/lang-yaml');
+    //   return yaml();
+    // },
+    // [MODE.CLIKE]: async () => {
+    //   const { cpp } = await import('@codemirror/lang-cpp');
+    //   return cpp();
+    // },
+    // [MODE.GROOVY]: async () => {
+    //   const { java } = await import('@codemirror/lang-java');
+    //   return java();
+    // },
+    [MODE.HTMLEMBEDDED]: async () => {
+      const { html } = await import('@codemirror/lang-html');
+      return html();
+    },
+    // 以下语言没有官方的 CM6 lang 包，回退到纯文本模式（返回 null）
+    // 用户看到的是纯文本，但不会报错
   };
-  return dynamicArray[str];
+
+  return loaders[mode] || (async () => null);
+}
+
+/**
+ * 向后兼容的 parserDynamicImport 函数
+ * 原 v5 版本返回 () => Promise<any>，直接 import codemirror mode 文件
+ * v6 版本返回 () => Promise<LanguageSupport | null>
+ * 对于没有官方 CM6 lang 包的语言，返回 null 表示使用纯文本模式
+ */
+export function parserDynamicImport(mode: MODE): () => Promise<LanguageSupport | null> {
+  return getLanguageLoader(mode);
+}
+
+/**
+ * 获取主题扩展
+ */
+export function getThemeExtension(theme: THEME): Extension {
+  switch (theme) {
+    case THEME.ONE_DARK:
+      return oneDark;
+    case THEME.NONE:
+    default:
+      return [];
+  }
 }

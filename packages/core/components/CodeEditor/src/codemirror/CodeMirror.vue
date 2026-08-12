@@ -7,126 +7,231 @@
 </template>
 
 <script lang="ts" setup>
-  import { type PropType, ref, onMounted, onUnmounted, watchEffect, watch, unref, nextTick } from 'vue';
+  import { type PropType, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
   import { useWindowSizeFn } from '@jeesite/core/hooks/event/useWindowSizeFn';
   import { useDebounceFn } from '@vueuse/core';
   import { useAppStore } from '@jeesite/core/store/modules/app';
 
-  import CodeMirror from 'codemirror';
-  import type { EditorConfiguration } from 'codemirror';
+  import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
+  import { EditorState, Compartment, type Extension } from '@codemirror/state';
+  import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+  import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
+  import {
+    bracketMatching,
+    foldGutter,
+    foldKeymap,
+    codeFolding,
+    syntaxHighlighting,
+    defaultHighlightStyle,
+  } from '@codemirror/language';
+  import { lintGutter } from '@codemirror/lint';
+  import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
+  import { oneDark } from '@codemirror/theme-one-dark';
+
   import { MODE, parserDynamicImport } from './typing';
-
-  // css
-  import 'codemirror/lib/codemirror.css';
-  import 'codemirror/theme/idea.css';
-  import 'codemirror/theme/material-palenight.css';
-
-  // 代码段折叠功能
-  import 'codemirror/addon/fold/foldgutter.css';
-  import 'codemirror/addon/fold/foldcode.js';
-  import 'codemirror/addon/fold/foldgutter';
-  import 'codemirror/addon/fold/brace-fold';
-  import 'codemirror/addon/fold/comment-fold';
-  import 'codemirror/addon/fold/markdown-fold';
-  import 'codemirror/addon/fold/xml-fold';
-  import 'codemirror/addon/fold/indent-fold';
+  import type { LanguageSupport } from '@codemirror/language';
 
   const props = defineProps({
     mode: {
       type: String as PropType<MODE>,
       default: MODE.JSON,
       validator(value: any) {
-        // 这个值必须匹配下列字符串中的一个
         return Object.values(MODE).includes(value);
       },
     },
     value: { type: String, default: '' },
     readonly: { type: Boolean, default: false },
     bordered: { type: Boolean, default: false },
-    config: { type: Object as PropType<EditorConfiguration>, default: () => {} },
+    config: { type: Object, default: () => ({}) },
   });
 
   const emit = defineEmits(['change']);
 
   const el = ref();
-  let editor: Nullable<CodeMirror.Editor>;
+  let editorView: EditorView | null = null;
+
+  // 使用 Compartment 实现可动态切换的配置
+  const languageCompartment = new Compartment();
+  const themeCompartment = new Compartment();
+  const editableCompartment = new Compartment();
 
   const debounceRefresh = useDebounceFn(refresh, 100);
   const appStore = useAppStore();
 
+  // 监听 value 变化，同步到编辑器
   watch(
     () => props.value,
     async (value) => {
       await nextTick();
-      const oldValue = editor?.getValue();
+      if (!editorView) return;
+      const oldValue = editorView.state.doc.toString();
       if (value !== oldValue) {
-        editor?.setValue(value ? value : '');
+        editorView.dispatch({
+          changes: {
+            from: 0,
+            to: oldValue.length,
+            insert: value || '',
+          },
+        });
       }
     },
     { flush: 'post' },
   );
 
-  watchEffect(async () => {
-    await parserDynamicImport(props.mode)();
-    editor?.setOption('mode', props.mode);
-  });
-
+  // 监听 mode 变化，动态切换语言
   watch(
-    () => appStore.getDarkMode,
-    async () => {
-      setTheme();
-    },
-    {
-      immediate: true,
+    () => props.mode,
+    async (newMode) => {
+      if (!editorView) return;
+      await setLanguage(newMode);
     },
   );
 
-  function setTheme() {
-    unref(editor)?.setOption('theme', appStore.getDarkMode === 'light' ? 'idea' : 'material-palenight');
-  }
+  // 监听 readonly 变化
+  watch(
+    () => props.readonly,
+    (newReadonly) => {
+      if (!editorView) return;
+      editorView.dispatch({
+        effects: editableCompartment.reconfigure(EditorView.editable.of(!newReadonly)),
+      });
+    },
+  );
+
+  // 监听暗色模式变化
+  watch(
+    () => appStore.getDarkMode,
+    () => {
+      setTheme();
+    },
+    { immediate: true },
+  );
 
   function refresh() {
-    editor?.refresh();
+    editorView?.requestMeasure();
+  }
+
+  async function setLanguage(mode: MODE) {
+    if (!editorView) return;
+    const loader = parserDynamicImport(mode);
+    const lang = await loader();
+
+    editorView.dispatch({
+      effects: languageCompartment.reconfigure(lang || []),
+    });
+  }
+
+  function setTheme() {
+    if (!editorView) return;
+    const isDark = appStore.getDarkMode === 'dark';
+    editorView.dispatch({
+      effects: themeCompartment.reconfigure(isDark ? oneDark : []),
+    });
+  }
+
+  function buildExtensions(): Extension[] {
+    const extensions: Extension[] = [
+      // 行号
+      lineNumbers(),
+      // 高亮当前行
+      highlightActiveLine(),
+      highlightActiveLineGutter(),
+      // 语法高亮
+      syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+      // 历史记录
+      history(),
+      // 括号匹配
+      bracketMatching(),
+      // 自动关闭括号
+      closeBrackets(),
+      // 代码折叠
+      codeFolding(),
+      foldGutter(),
+      // Lint gutter
+      lintGutter(),
+      // 搜索匹配高亮
+      highlightSelectionMatches(),
+      // 键盘映射
+      keymap.of([
+        ...closeBracketsKeymap,
+        ...defaultKeymap,
+        ...historyKeymap,
+        ...foldKeymap,
+        ...searchKeymap,
+        indentWithTab,
+      ]),
+      // 行换行
+      EditorView.lineWrapping,
+      // 内容变化监听
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          emit('change', update.state.doc.toString());
+        }
+      }),
+      // 动态切换的 compartments
+      languageCompartment.of([]),
+      themeCompartment.of([]),
+      editableCompartment.of(EditorView.editable.of(!props.readonly)),
+    ];
+
+    // 用户自定义扩展
+    if (props.config?.extensions) {
+      extensions.push(...props.config.extensions);
+    }
+
+    return extensions;
   }
 
   async function init() {
-    const addonOptions = {
-      autoCloseBrackets: true,
-      autoCloseTags: true,
-      foldGutter: true,
-      gutters: ['CodeMirror-lint-markers', 'CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-    };
+    if (!el.value) return;
 
-    editor = CodeMirror(el.value!, {
-      value: '',
-      mode: props.mode,
-      readOnly: props.readonly,
-      tabSize: 2,
-      theme: 'material-palenight',
-      lineWrapping: true,
-      lineNumbers: true,
-      ...addonOptions,
-      ...props.config,
+    const extensions = buildExtensions();
+
+    const state = EditorState.create({
+      doc: props.value || '',
+      extensions,
     });
-    editor?.setValue(props.value);
+
+    editorView = new EditorView({
+      state,
+      parent: el.value,
+    });
+
+    // 初始化语言和主题
+    const loader = parserDynamicImport(props.mode);
+    const lang = await loader();
+    if (lang) {
+      editorView.dispatch({
+        effects: languageCompartment.reconfigure(lang),
+      });
+    }
+
     setTheme();
-    editor?.on('change', () => {
-      emit('change', editor?.getValue());
-    });
   }
 
   onMounted(async () => {
     await nextTick();
-    init();
+    await init();
     useWindowSizeFn(debounceRefresh);
   });
 
   onUnmounted(() => {
-    editor = null;
+    if (editorView) {
+      editorView.destroy();
+      editorView = null;
+    }
   });
 </script>
 <style>
-  .CodeMirror {
+  .cm-editor {
     height: 100%;
+  }
+
+  .cm-editor .cm-scroller {
+    overflow: auto;
+  }
+
+  .cm-editor.cm-focused {
+    outline: none;
   }
 </style>
