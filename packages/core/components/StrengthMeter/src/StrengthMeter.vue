@@ -22,10 +22,12 @@
 <script lang="ts" setup name="StrengthMeter">
   import { computed, ref, watch, unref, watchEffect } from 'vue';
   import { Input } from 'antdv-next';
-  import { zxcvbn } from '@zxcvbn-ts/core';
+  import { ZxcvbnFactory } from '@zxcvbn-ts/core';
   import { propTypes } from '@jeesite/core/utils/propTypes';
 
   const InputPassword = Input.Password;
+
+  const zxcvbn = new ZxcvbnFactory();
 
   const props = defineProps({
     value: propTypes.string,
@@ -41,7 +43,7 @@
     const { disabled } = props;
     if (disabled) return -1;
     const innerValue = unref(innerValueRef);
-    const score = innerValue ? zxcvbn(unref(innerValueRef)).score : -1;
+    const score = innerValue ? zxcvbn.check(unref(innerValueRef)).score : -1;
     emit('score-change', score);
     return score;
   });

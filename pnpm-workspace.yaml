@@ -10,3 +10,5 @@ minimumReleaseAgeExclude:
   - '@jeesite/*'
   - '@v-c/*'
   - 'antdv-next'
+  - globals@17.10.0
+  - highlight.js@11.12.0

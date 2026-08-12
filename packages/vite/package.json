@@ -20,6 +20,10 @@
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
     },
+    "./tools/lib": {
+      "import": "./dist/tools/lib.mjs",
+      "types": "./dist/tools/lib.d.ts"
+    },
     "./config/getEnvConfigName": {
       "import": "./config/getEnvConfigName.ts",
       "types": "./config/getEnvConfigName.ts"
@@ -48,19 +52,19 @@
     "@types/fs-extra": "11.0.4",
     "@types/less": "3.0.8",
     "@types/tinycolor2": "1.4.6",
-    "@vitejs/plugin-legacy": "8.0.1",
-    "@vitejs/plugin-vue": "6.0.5",
-    "@vitejs/plugin-vue-jsx": "5.1.5",
+    "@vitejs/plugin-legacy": "8.2.3",
+    "@vitejs/plugin-vue": "6.0.8",
+    "@vitejs/plugin-vue-jsx": "5.1.6",
     "dotenv": "17.4.2",
-    "esbuild": "0.28.1",
-    "fs-extra": "11.3.5",
+    "esbuild": "0.28.2",
+    "fs-extra": "11.4.0",
     "pkg-types": "2.3.1",
     "rollup-plugin-visualizer": "7.0.1",
     "unbuild": "3.6.1",
-    "unocss": "66.7.2",
+    "unocss": "66.7.5",
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-html": "3.2.2",
-    "vite-plugin-mkcert": "1.17.10",
+    "vite-plugin-mkcert": "2.1.0",
     "vite-plugin-vue-setup-extend": "0.4.0"
   },
   "homepage": "https://jeesite.com",

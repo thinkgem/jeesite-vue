@@ -29,7 +29,7 @@ export default defineConfig(async ({ command, mode }: ConfigEnv) => {
     css: createCSSOptions(),
     resolve: {
       alias: {
-        '@jeesite/web': path.resolve(__dirname, './'),
+        '@jeesite/web': path.resolve(import.meta.dirname, './'),
       },
     },
   };
