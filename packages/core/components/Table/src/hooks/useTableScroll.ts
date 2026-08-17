@@ -1,7 +1,7 @@
 import type { BasicTableProps, TableRowSelection, BasicColumn } from '../types/table';
 import { Ref, ComputedRef, ref } from 'vue';
 import { computed, unref, nextTick, watch } from 'vue';
-import { getViewportOffset } from '@jeesite/core/utils/domUtils';
+import { getRefElement, getViewportOffset } from '@jeesite/core/utils/domUtils';
 import { isBoolean } from '@jeesite/core/utils/is';
 import { useWindowSizeFn } from '@jeesite/core/hooks/event/useWindowSizeFn';
 import { useModalContext } from '@jeesite/core/components/Modal';
@@ -15,7 +15,7 @@ export function useTableScroll(
   columnsRef: Ref<BasicColumn[]>,
   rowSelectionRef: ComputedRef<TableRowSelection | null>,
   getDataSourceRef: Ref<Recordable[]>,
-  wrapRef: Ref<ComponentRef>,
+  wrapRef: Ref<ElRef>,
   formRef: Ref<ComponentRef>,
 ) {
   const tableHeightRef = ref<number | string | undefined>(167);
@@ -33,10 +33,7 @@ export function useTableScroll(
     const { resizeHeightOffset, pagination, maxHeight, minHeight, isCanResizeParent, useSearchForm } = unref(propsRef);
     const tableData = unref(getDataSourceRef);
 
-    const table = unref(tableRef);
-    if (!table) return;
-
-    const tableEl: HTMLElement = table.$el;
+    const tableEl = getRefElement(tableRef);
     if (!tableEl) return;
 
     const bodyEl = tableEl.querySelector('.ant-table-body') as HTMLElement;
@@ -111,18 +108,19 @@ export function useTableScroll(
     }
 
     // Title height
+    const wrapEl = getRefElement(unref(wrapRef));
     const titleHeight =
-      (unref(wrapRef)?.querySelector('.jeesite-basic-table-header-container') as HTMLElement)?.offsetHeight ?? 0;
+      (wrapEl?.querySelector('.jeesite-basic-table-header-container') as HTMLElement)?.offsetHeight ?? 0;
 
     // Table height
     let bottomIncludeBody = 0;
     let titleIncluded = false;
-    if (unref(wrapRef) && isCanResizeParent) {
+    if (wrapEl && isCanResizeParent) {
       const tablePadding = 12;
       const formMargin = 16;
       let paginationMargin = 10;
-      const wrapHeight = unref(wrapRef)?.offsetHeight ?? 0;
-      let formHeight = unref(formRef)?.$el.offsetHeight ?? 0;
+      const wrapHeight = wrapEl.offsetHeight;
+      let formHeight = getRefElement(unref(formRef))?.offsetHeight ?? 0;
       if (formHeight) {
         formHeight += formMargin;
       }
@@ -195,8 +193,8 @@ export function useTableScroll(
   const tableWidthRef = ref();
 
   function calcTableWidth() {
-    const table = unref(tableRef);
-    tableWidthRef.value = table?.$el?.offsetWidth - 50 || 600; // 默认宽度不小于，列中指定的宽度总合
+    const tableEl = getRefElement(tableRef);
+    tableWidthRef.value = tableEl ? tableEl.offsetWidth - 50 || 600 : 600; // 默认宽度不小于，列中指定的宽度总合
   }
 
   useResizeObserver(wrapRef, useDebounceFn(calcTableWidth, 100));

@@ -82,7 +82,7 @@
   const attrs = useAttrs();
   const openRef = ref(false);
   const propsRef = ref<Partial<ModalProps> | null>(null);
-  const modalWrapperRef = shallowRef<InstanceType<typeof ModalWrapper>>();
+  const modalWrapperRef = shallowRef<InstanceType<typeof ModalWrapper> | null>(null);
 
   // modal   Bottom and top height
   const extHeightRef = ref(0);

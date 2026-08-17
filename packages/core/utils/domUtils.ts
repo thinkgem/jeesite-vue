@@ -1,5 +1,7 @@
 import type { FunctionArgs } from '@vueuse/core';
+import type { Ref } from 'vue';
 import { upperFirst } from 'lodash-es';
+import { unref } from 'vue';
 
 export interface ViewportOffsetResult {
   left: number;
@@ -8,6 +10,21 @@ export interface ViewportOffsetResult {
   bottom: number;
   rightIncludeBody: number;
   bottomIncludeBody: number;
+}
+
+/**
+ * 将 DOM、组件实例或其 Ref 统一解析为真实 DOM 元素。
+ */
+export function getRefElement<T extends HTMLElement = HTMLElement>(
+  target: ComponentRef<T> | Ref<ComponentRef<T>>,
+): T | null {
+  const value = unref(target);
+  if (!value) return null;
+
+  const element = unref(value);
+  if (!element) return null;
+
+  return Reflect.has(element, '$el') ? (element as ComponentElRef<T>).$el : (element as T);
 }
 
 export function getBoundingClientRect(element: Element): DOMRect | number {

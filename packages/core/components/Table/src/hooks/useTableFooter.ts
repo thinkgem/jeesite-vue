@@ -3,6 +3,7 @@ import type { BasicTableProps } from '../types/table';
 import { unref, computed, h, nextTick, watchEffect } from 'vue';
 import TableFooter from '../components/TableFooter.vue';
 import { useEventListener } from '@jeesite/core/hooks/event/useEventListener';
+import { getRefElement } from '@jeesite/core/utils/domUtils';
 
 export function useTableFooter(
   propsRef: ComputedRef<BasicTableProps>,
@@ -30,14 +31,14 @@ export function useTableFooter(
     if (!showSummary || unref(getIsEmptyData)) return;
 
     nextTick(() => {
-      const tableEl = unref(tableRef);
+      const tableEl = getRefElement(tableRef);
       if (!tableEl) return;
-      const bodyDom = tableEl.$el.querySelector('.ant-table-content');
+      const bodyDom = tableEl.querySelector('.ant-table-content');
       useEventListener({
         el: bodyDom,
         name: 'scroll',
         listener: () => {
-          const footerBodyDom = tableEl.$el.querySelector('.ant-table-footer .ant-table-content') as HTMLDivElement;
+          const footerBodyDom = tableEl.querySelector('.ant-table-footer .ant-table-content') as HTMLDivElement;
           if (!footerBodyDom || !bodyDom) return;
           footerBodyDom.scrollLeft = bodyDom.scrollLeft;
         },

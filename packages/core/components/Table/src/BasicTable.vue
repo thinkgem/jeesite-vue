@@ -148,8 +148,8 @@
   const tableRef = shallowRef<ComponentRef>(null);
   const tableData = ref<TableRecordable[]>([]);
 
-  const wrapRef = shallowRef<ComponentRef>(null);
-  const formRef = shallowRef<InstanceType<typeof BasicForm>>();
+  const wrapRef = shallowRef<ElRef>(null);
+  const formRef = shallowRef<InstanceType<typeof BasicForm> | null>(null);
   const innerPropsRef = ref<Partial<BasicTableProps>>();
 
   const [registerForm, formActions] = useForm();

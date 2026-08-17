@@ -5,7 +5,14 @@ import { computed, unref, onMounted, nextTick, ref } from 'vue';
 import { TriggerEnum } from '@jeesite/core/enums/menuEnum';
 
 import { useMenuSetting } from '@jeesite/core/hooks/setting/useMenuSetting';
+import { getRefElement } from '@jeesite/core/utils/domUtils';
 import { useDebounceFn } from '@vueuse/core';
+
+interface DraggableHTMLElement extends HTMLElement {
+  left: number;
+  releaseCapture?: () => void;
+  setCapture?: () => void;
+}
 
 /**
  * Handle related operations of menu events
@@ -65,19 +72,13 @@ export function useDragLine(siderRef: Ref<any>, dragBarRef: Ref<any>, mix = fals
     });
   });
 
-  function getEl(elRef: Ref<ElRef | ComponentRef>): any {
-    const el = unref(elRef);
-    if (!el) return null;
-    if (Reflect.has(el, '$el')) {
-      return (unref(elRef) as ComponentRef)?.$el;
-    }
-    return unref(elRef);
+  function getEl(elRef: Ref<ElRef | ComponentRef>): HTMLElement | null {
+    return getRefElement(unref(elRef));
   }
 
-  function handleMouseMove(ele: HTMLElement, wrap: HTMLElement, clientX: number) {
+  function handleMouseMove(ele: DraggableHTMLElement, wrap: HTMLElement, clientX: number) {
     document.onmousemove = function (innerE) {
-      let iT = (ele as any).left + (innerE.clientX - clientX);
-      innerE = innerE || window.event;
+      let iT = ele.left + (innerE.clientX - clientX);
       const maxT = 800;
       const minT = unref(getMiniWidthNumber);
       iT < 0 && (iT = 0);
@@ -89,8 +90,7 @@ export function useDragLine(siderRef: Ref<any>, dragBarRef: Ref<any>, mix = fals
   }
 
   // Drag and drop in the menu area-release the mouse
-  function removeMouseup(ele: any) {
-    const wrap = getEl(siderRef);
+  function removeMouseup(ele: DraggableHTMLElement, wrap: HTMLElement) {
     document.onmouseup = function () {
       document.onmousemove = null;
       document.onmouseup = null;
@@ -113,7 +113,7 @@ export function useDragLine(siderRef: Ref<any>, dragBarRef: Ref<any>, mix = fals
   }
 
   function changeWrapWidth() {
-    const ele = getEl(dragBarRef);
+    const ele = getEl(dragBarRef) as DraggableHTMLElement | null;
     if (!ele) return;
     const wrap = getEl(siderRef);
     if (!wrap) return;
@@ -123,7 +123,7 @@ export function useDragLine(siderRef: Ref<any>, dragBarRef: Ref<any>, mix = fals
       const clientX = e?.clientX;
       ele.left = ele.offsetLeft;
       handleMouseMove(ele, wrap, clientX);
-      removeMouseup(ele);
+      removeMouseup(ele, wrap);
       ele.setCapture?.();
       return false;
     };
