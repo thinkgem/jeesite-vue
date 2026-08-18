@@ -16,6 +16,7 @@ export function useRuleFormItem<T extends Recordable>(
   labelField = 'labelValue',
   changeEvent = 'change',
   emitData?: Ref<any[]>,
+  fallbackLabelToValue = false,
 ) {
   const instance = getCurrentInstance();
   const emit = instance?.emit;
@@ -41,6 +42,12 @@ export function useRuleFormItem<T extends Recordable>(
 
   const isDictType = computed(() => !isEmpty(props.dictType));
 
+  // 未绑定标签字段时，可使用值字段完成组件回显。
+  const getLabelValue = () => {
+    const labelValue = props[labelField];
+    return labelValue === undefined && fallbackLabelToValue ? props[valueField] : labelValue;
+  };
+
   const innerState = reactive({
     value: props[valueField],
   });
@@ -63,13 +70,13 @@ export function useRuleFormItem<T extends Recordable>(
         const values: Recordable = [];
         if (isMultiple.value && !(value instanceof Object) && !(value instanceof Array)) {
           const vals = (value as string)?.split(',');
-          const labs = (props.labelValue as string)?.split(',');
+          const labs = (getLabelValue() as string)?.split(',');
           for (const i in vals) {
             values.push({ value: vals && vals[i], label: labs && labs[i] });
           }
           value = values as T[keyof T];
         } else if (!isObject(value) && !(value instanceof Object) && !(value instanceof Array)) {
-          value = { value: String(value), label: props.labelValue };
+          value = { value: String(value), label: getLabelValue() };
         } else if (value instanceof Array) {
           for (const i in value) {
             if (isObject(value[i])) break;

@@ -76,7 +76,8 @@
 
   const attrs = useAttrs();
   const valueRef = ref<string>(props.value);
-  const labelValueRef = ref<string>(props.labelValue);
+  // 未传 labelValue 时直接显示 value，传入后保持编码与名称分离。
+  const labelValueRef = ref<string>(props.labelValue === undefined ? props.value : props.labelValue);
   const selectListRef = ref<any[]>(props.selectList);
   const itemCode = ref<string>(props.itemCode);
   const itemName = ref<string>(props.itemName);
@@ -97,13 +98,16 @@
     () => props.value,
     () => {
       valueRef.value = props.value;
+      if (props.labelValue === undefined) {
+        labelValueRef.value = props.value;
+      }
     },
   );
 
   watch(
     () => props.labelValue,
     () => {
-      labelValueRef.value = props.labelValue;
+      labelValueRef.value = props.labelValue === undefined ? props.value : props.labelValue;
     },
   );
 
@@ -125,7 +129,7 @@
         names.push(e[itemName.value]);
       });
     valueRef.value = codes.join(',');
-    labelValueRef.value = names.join(',');
+    labelValueRef.value = props.labelValue === undefined ? valueRef.value : names.join(',');
   }
 
   onMounted(async () => {
@@ -215,17 +219,20 @@
     valueRef.value = Array.from(values)
       .map((item) => item[configRef.value.itemCode])
       .join(',');
-    labelValueRef.value = Array.from(values)
-      .map((item) => item[configRef.value.itemName])
-      .join(',');
+    labelValueRef.value =
+      props.labelValue === undefined
+        ? valueRef.value
+        : Array.from(values)
+            .map((item) => item[configRef.value.itemName])
+            .join(',');
     emit('update:value', valueRef.value);
     emit('update:labelValue', labelValueRef.value);
     emit('change', valueRef.value, labelValueRef.value);
     emit('select', values);
   }
 
-  function handleInput() {
-    valueRef.value = labelValueRef.value;
+  function handleInput(event: any) {
+    valueRef.value = labelValueRef.value = event.target?.value;
     emit('update:value', valueRef.value);
     emit('update:labelValue', labelValueRef.value);
     emit('change', valueRef.value, labelValueRef.value);
