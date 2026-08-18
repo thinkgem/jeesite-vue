@@ -11,17 +11,19 @@ type I18nGlobalTranslation = {
 
 type I18nTranslationRestParameters = [string, any];
 
-// 可翻译字符串，继承自 String，在大多数场景下可当作普通字符串使用
-// 内部保存 i18n key 和 namespace，用于语言切换时重新翻译
+// 可重译字符串标记，内部保存当前译文、i18n key、namespace 和插值参数
+// 仅通过 tr 创建，并由 retranslateConfig 解析为原始字符串
 class TranslatableString extends String {
   readonly __i18nTranslatable: boolean = true;
   readonly __i18nKey: string;
   readonly __i18nNamespace?: string;
+  readonly __i18nArgs: any[];
 
-  constructor(value: string, key: string, namespace?: string) {
+  constructor(value: string, key: string, namespace?: string, args: any[] = []) {
     super(value);
     this.__i18nKey = key;
     this.__i18nNamespace = namespace;
+    this.__i18nArgs = args;
   }
 }
 
@@ -56,11 +58,17 @@ function formatText(key: string, args: any[]) {
 
 export function useI18n(namespace?: string): {
   t: I18nGlobalTranslation;
+  tr: I18nGlobalTranslation;
 } {
   if (!i18n) {
+    const tFn: I18nGlobalTranslation = (key: string, ...arg: any[]) => {
+      return formatText(getKey(namespace, key), arg);
+    };
     return {
-      t: (key: string, ...arg: any[]) => {
-        return formatText(getKey(namespace, key), arg);
+      t: tFn,
+      tr: (key: string, ...arg: any[]) => {
+        const value = tFn(key, ...(arg as I18nTranslationRestParameters));
+        return new TranslatableString(value, key, namespace, arg) as unknown as string;
       },
     };
   }
@@ -87,14 +95,19 @@ export function useI18n(namespace?: string): {
       result = v;
     }
 
-    // 返回可翻译字符串，保存 i18n key 和 namespace
-    // 这样在语言切换时可以重新翻译
-    return new TranslatableString(result, key, namespace) as unknown as string;
+    return result;
+  };
+
+  // 返回携带翻译元数据的标记，仅用于稍后会通过 retranslateConfig 解析的配置
+  const trFn: I18nGlobalTranslation = (key: string, ...arg: any[]) => {
+    const value = tFn(key, ...(arg as I18nTranslationRestParameters));
+    return new TranslatableString(value, key, namespace, arg) as unknown as string;
   };
 
   return {
     ...methods,
     t: tFn,
+    tr: trFn,
   };
 }
 
@@ -132,14 +145,14 @@ function retranslateObjectStrings(obj: any): void {
     const value = obj[key];
     if (isTranslatableString(value)) {
       const { t: tFn } = useI18n(value.__i18nNamespace);
-      obj[key] = tFn(value.__i18nKey);
+      obj[key] = tFn(value.__i18nKey, ...((value.__i18nArgs || []) as I18nTranslationRestParameters));
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       retranslateObjectStrings(value);
     } else if (Array.isArray(value)) {
       value.forEach((item: any, index: number) => {
         if (isTranslatableString(item)) {
           const { t: tFn } = useI18n(item.__i18nNamespace);
-          value[index] = tFn(item.__i18nKey);
+          value[index] = tFn(item.__i18nKey, ...((item.__i18nArgs || []) as I18nTranslationRestParameters));
         } else if (typeof item === 'object' && item !== null) {
           retranslateObjectStrings(item);
         }
