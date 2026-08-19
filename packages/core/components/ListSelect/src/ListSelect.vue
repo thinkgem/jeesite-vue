@@ -6,13 +6,50 @@
 -->
 <template>
   <div class="jeesite-listselect">
-    <InputSearch
-      v-bind="getAttrs"
-      v-model:value="labelValueRef"
-      @click="handleInputClick"
-      @search="handleInputSelect"
-      @input="handleInput"
-    />
+    <SpaceCompact
+      v-if="checkbox"
+      block
+      class="jeesite-listselect-control jeesite-listselect-multiple"
+      :size="controlSize"
+    >
+      <Select
+        v-bind="getMultipleAttrs"
+        :value="selectedValues"
+        :options="selectedOptions"
+        :mode="allowInput ? 'tags' : 'multiple'"
+        :open="false"
+        :showSearch="allowInput && !readonly"
+        :suffixIcon="null"
+        :tokenSeparators="allowInput ? [','] : undefined"
+        @change="handleMultipleChange"
+        @click="handleInputClick"
+      />
+      <Button
+        class="jeesite-listselect-search"
+        :disabled="readonly"
+        htmlType="button"
+        title="打开列表选择"
+        @click="handleInputSelect"
+      >
+        <template #icon>
+          <SearchOutlined />
+        </template>
+      </Button>
+    </SpaceCompact>
+    <SpaceCompact v-else block class="jeesite-listselect-control" :size="controlSize">
+      <Input v-bind="getAttrs" v-model:value="labelValueRef" @click="handleInputClick" @input="handleInput" />
+      <Button
+        class="jeesite-listselect-search"
+        :disabled="readonly"
+        htmlType="button"
+        title="打开列表选择"
+        @click="handleInputSelect"
+      >
+        <template #icon>
+          <SearchOutlined />
+        </template>
+      </Button>
+    </SpaceCompact>
     <component
       :is="modalComponent"
       :config="configRef"
@@ -24,7 +61,8 @@
 </template>
 <script lang="ts" setup name="JeeSiteListSelect">
   import { ref, unref, computed, watch, onMounted, shallowRef, type PropType } from 'vue';
-  import { Input } from 'antdv-next';
+  import { Button, Input, Select, SpaceCompact } from 'antdv-next';
+  import { SearchOutlined } from '@antdv-next/icons';
   import { propTypes } from '@jeesite/core/utils/propTypes';
   import { useAttrs } from '@jeesite/core/hooks/core/useAttrs';
   import { retranslateConfig } from '@jeesite/core/hooks/web/useI18n';
@@ -33,8 +71,6 @@
   import { createAsyncComponent } from '@jeesite/core/utils/factory/createAsyncComponent';
   import type { FormActionType, FormSchema } from '@jeesite/core/components/Form';
   import type { FormRecordable } from '@jeesite/types';
-
-  const InputSearch = Input.Search;
 
   const props = defineProps({
     value: propTypes.string,
@@ -75,14 +111,27 @@
   const emit = defineEmits(['change', 'update:value', 'update:labelValue', 'select', 'click']);
 
   const attrs = useAttrs();
+  // 动态表单绑定 labelValue 时初始值可能为 undefined，需结合 labelInValue 判断是否启用标签字段。
+  const hasLabelValue = computed(() => props.labelValue !== undefined || unref(attrs).labelInValue === true);
   const valueRef = ref<string>(props.value);
-  // 未传 labelValue 时直接显示 value，传入后保持编码与名称分离。
-  const labelValueRef = ref<string>(props.labelValue === undefined ? props.value : props.labelValue);
+  const labelValueRef = ref<string>(hasLabelValue.value ? props.labelValue : props.value);
   const selectListRef = ref<any[]>(props.selectList);
   const itemCode = ref<string>(props.itemCode);
   const itemName = ref<string>(props.itemName);
   const configRef = ref<any>();
   const modalComponent = shallowRef<Nullable<any>>(null);
+
+  interface SelectedOption {
+    label: string;
+    value: string;
+  }
+
+  interface SelectLabelValue {
+    label?: unknown;
+    value?: string | number;
+  }
+
+  type MultipleSelectValue = string | number | SelectLabelValue;
 
   const [registerModal, { openModal }] = useModal();
 
@@ -94,11 +143,36 @@
     };
   });
 
+  const controlSize = computed(() => unref(attrs).size);
+
+  // 多选控件仅透传外部属性，避免将 ListSelect 的业务参数传给底层 Select。
+  const getMultipleAttrs = computed(() => {
+    const selectAttrs = { ...unref(attrs) };
+    // ListSelect 自行维护 labelValue；底层启用 labelInValue 会将字符串变成对象。
+    delete selectAttrs.labelInValue;
+    return {
+      ...selectAttrs,
+      disabled: Boolean(unref(attrs).disabled || props.readonly),
+    };
+  });
+
+  // 将原有逗号分隔协议映射为 Select 所需的值与标签。
+  const selectedOptions = computed<SelectedOption[]>(() => {
+    const codes = splitValues(valueRef.value);
+    const labels = hasLabelValue.value ? splitValues(labelValueRef.value) : codes;
+    return codes.map((code, index) => ({
+      value: code,
+      label: labels[index] ?? code,
+    }));
+  });
+
+  const selectedValues = computed(() => selectedOptions.value.map((item) => item.value));
+
   watch(
     () => props.value,
     () => {
       valueRef.value = props.value;
-      if (props.labelValue === undefined) {
+      if (!hasLabelValue.value) {
         labelValueRef.value = props.value;
       }
     },
@@ -107,7 +181,7 @@
   watch(
     () => props.labelValue,
     () => {
-      labelValueRef.value = props.labelValue === undefined ? props.value : props.labelValue;
+      labelValueRef.value = hasLabelValue.value ? props.labelValue : props.value;
     },
   );
 
@@ -129,7 +203,7 @@
         names.push(e[itemName.value]);
       });
     valueRef.value = codes.join(',');
-    labelValueRef.value = props.labelValue === undefined ? valueRef.value : names.join(',');
+    labelValueRef.value = hasLabelValue.value ? names.join(',') : valueRef.value;
   }
 
   onMounted(async () => {
@@ -165,7 +239,11 @@
     openModal(true, { selectList, queryParams: props.queryParams });
   }
 
-  function handleInputClick() {
+  function handleInputClick(event?: MouseEvent) {
+    const target = event?.target as Element | null;
+    if (target?.closest('.ant-select-selection-item-remove, .ant-select-clear')) {
+      return;
+    }
     if (!props.readonly && !props.allowInput) {
       openSelectModal();
     }
@@ -215,16 +293,70 @@
     return selectList;
   }
 
+  /** 将逗号分隔字段转换为多选值数组。 */
+  function splitValues(value?: string) {
+    return value ? value.split(',') : [];
+  }
+
+  /** 删除标签或录入自定义标签后，同步原有值、标签和已选对象协议。 */
+  function handleMultipleChange(values: MultipleSelectValue[]) {
+    const codes = values.map(getMultipleValue).filter(Boolean);
+    const optionMap = new Map(selectedOptions.value.map((item) => [item.value, item.label]));
+    const names = codes.map((code) => optionMap.get(code) || code);
+    const currentList = selectListRef.value?.length ? selectListRef.value : getSelectList();
+    const nextList = codes.map((code, index) => {
+      const currentItem = currentList.find((item) => String(item[itemCode.value]) === code);
+      if (currentItem) return currentItem;
+      return createSelectItem(code, names[index]);
+    });
+
+    valueRef.value = codes.join(',');
+    //labelValueRef.value = hasLabelValue.value ? names.join(',') : valueRef.value;
+    labelValueRef.value = names.join(',');
+    selectListRef.value = nextList;
+    emit('update:value', valueRef.value);
+    emit('update:labelValue', labelValueRef.value);
+    emit('change', valueRef.value, labelValueRef.value);
+    emit('select', nextList);
+  }
+
+  /** 兼容底层 labelInValue 模式曾产生的对象值，始终提取原始编码。 */
+  function getMultipleValue(value: MultipleSelectValue) {
+    if (typeof value === 'object' && value !== null) {
+      return value.value === undefined || value.value === null ? '' : String(value.value);
+    }
+    return String(value);
+  }
+
+  /** 按当前配置的编码、名称路径创建一个选择项。 */
+  function createSelectItem(code: string, name: string) {
+    const item: Recordable = {};
+    setNestedValue(item, itemCode.value, code);
+    setNestedValue(item, itemName.value, name);
+    return item;
+  }
+
+  /** 为支持嵌套字段名，将值写入对象指定路径。 */
+  function setNestedValue(target: Recordable, path: string, value: string) {
+    const keys = path.split('.');
+    let current = target;
+    keys.forEach((key, index) => {
+      if (index === keys.length - 1) {
+        current[key] = value;
+      } else {
+        current[key] ||= {};
+        current = current[key];
+      }
+    });
+  }
+
   function handleSelect(values: Recordable[]) {
-    valueRef.value = Array.from(values)
-      .map((item) => item[configRef.value.itemCode])
-      .join(',');
-    labelValueRef.value =
-      props.labelValue === undefined
-        ? valueRef.value
-        : Array.from(values)
-            .map((item) => item[configRef.value.itemName])
-            .join(',');
+    selectListRef.value = Array.from(values);
+    valueRef.value = selectListRef.value.map((item) => item[configRef.value.itemCode]).join(',');
+    //labelValueRef.value = hasLabelValue.value
+    //  ? selectListRef.value.map((item) => item[configRef.value.itemName]).join(',')
+    //  : valueRef.value;
+    labelValueRef.value = selectListRef.value.map((item) => item[configRef.value.itemName]).join(',');
     emit('update:value', valueRef.value);
     emit('update:labelValue', labelValueRef.value);
     emit('change', valueRef.value, labelValueRef.value);
@@ -245,6 +377,26 @@
 </script>
 <style lang="less">
   .jeesite-listselect {
+    &-control {
+      width: 100%;
+
+      > .ant-input,
+      > .ant-input-affix-wrapper,
+      > .ant-select {
+        min-width: 0;
+        flex: 1;
+        width: 100%;
+      }
+    }
+
+    &-search.ant-btn {
+      flex: 0 0 auto;
+    }
+
+    &-multiple > &-search.ant-btn {
+      height: auto;
+    }
+
     .ant-input-group {
       .ant-input {
         height: 32px;
