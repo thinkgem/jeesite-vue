@@ -70,6 +70,7 @@
       fontSize: 14,
       language: props.language,
       lineNumbers: props.lineNumbers,
+      lineNumbersMinChars: 4,
       readOnly: props.readonly,
       scrollBeyondLastLine: false,
       theme: props.theme,
@@ -113,6 +114,7 @@
       { immediate: true },
     );
 
+    showHideLineNumber();
     // redoEditorHeight();
   });
 
@@ -157,6 +159,7 @@
     const style: any = {};
     if (props.height) {
       style.height = `${props.height}px`;
+      showHideLineNumber();
     }
     if (isFullScreen.value) {
       Object.assign(style, {
@@ -171,6 +174,14 @@
     }
     return style;
   });
+
+  function showHideLineNumber() {
+    const multiLine = props.height > 50;
+    monacoEditor?.updateOptions({
+      folding: multiLine,
+      lineNumbers: multiLine ? 'on' : 'off',
+    });
+  }
 
   // function redoEditorHeight() {
   //   if (!editContainer.value) return;
