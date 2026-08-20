@@ -56,7 +56,7 @@
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { LoginStateEnum, useLoginState } from './useLogin';
 
-  const LoginForm = createAsyncComponent(() => import('./LoginForm.vue'));
+  const LoginForm = createAsyncComponent(() => import('./LoginForm.vue'), { loading: true });
   const MobileForm = createAsyncComponent(() => import('./MobileForm.vue'));
   const QrCodeForm = createAsyncComponent(() => import('./QrCodeForm.vue'));
   const ForgetPasswordForm = createAsyncComponent(() => import('./ForgetPasswordForm.vue'));
