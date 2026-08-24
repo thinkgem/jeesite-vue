@@ -46,9 +46,9 @@
 
   const getWrapStyleRef = computed(() => {
     if (props.position === 'top' || props.position === 'bottom') {
-      return { width: '100%', cursor: isCollapsed.value ? 'default' : 's-resize' };
+      return { width: '100%', cursor: isCollapsed.value ? 'default' : 'row-resize' };
     } else {
-      return { cursor: isCollapsed.value ? 'default' : 'w-resize' };
+      return { cursor: isCollapsed.value ? 'default' : 'col-resize' };
     }
   });
 
