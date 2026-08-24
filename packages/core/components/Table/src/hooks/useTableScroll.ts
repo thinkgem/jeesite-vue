@@ -173,6 +173,14 @@ export function useTableScroll(
         td.replaceChild(fixedEl, emptyDataEl);
         fixedEl.appendChild(emptyDataEl);
       }
+
+      // 避免新版antdv-next切换页签后空数据的表格高度未自适应问题
+      setTimeout(() => {
+        const emptyDataEl = tableEl.querySelector('.ant-empty') as HTMLElement;
+        if (!emptyDataEl) return;
+
+        emptyDataEl.style.height = `${height - emptyOffset}px`;
+      });
     }
   }
 
