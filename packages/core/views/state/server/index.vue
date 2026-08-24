@@ -460,9 +460,12 @@
       }
     }
     // 仅显示表格行线，无外框和竖线，末尾行圆角
-    .ant-table-small {
-      border: none;
+    .ant-table.ant-table-small {
       border-radius: 10px;
+
+      .ant-table-container {
+        border: none !important;
+      }
 
       .ant-table-thead > tr > th {
         border-inline-end: none;
