@@ -70,7 +70,7 @@
 
   const { t } = useI18n();
   const attrs = useAttrs();
-  const [state] = useRuleFormItem(props);
+  const { state, labelInValue } = useRuleFormItem(props);
   const optionsRef = ref<Recordable[]>(props.options);
   const isFirstLoad = ref<boolean>(false);
   const loading = ref<boolean>(false);
@@ -85,6 +85,7 @@
       },
       ...unref(attrs),
       ...props,
+      labelInValue: unref(labelInValue),
     };
     return omit(propsData, 'options', 'params');
   });
@@ -135,7 +136,7 @@
       ) {
         const fieldNames = getAttrs.value.fieldNames;
         const firstValue = optionsRef.value[0];
-        if (props.labelInValue) {
+        if (labelInValue.value) {
           state.value = {
             label: firstValue[fieldNames.label],
             value: firstValue[fieldNames.value],

@@ -32,7 +32,7 @@
   const { ctxPath } = useGlobSetting();
   const userStore = useUserStore();
 
-  const [state] = useRuleFormItem(props);
+  const { state } = useRuleFormItem(props);
 
   const getValidCodeImg = ref('');
 

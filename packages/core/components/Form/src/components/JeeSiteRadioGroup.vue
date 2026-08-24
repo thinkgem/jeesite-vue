@@ -42,7 +42,7 @@
   const emit = defineEmits(['change', 'update:value']);
 
   const attrs = useAttrs();
-  const [state] = useRuleFormItem(props);
+  const { state } = useRuleFormItem(props);
   const optionsRef = ref<RadioItem[]>(props.options);
 
   watch(

@@ -5,7 +5,7 @@
  * @author Vben、ThinkGem
  */
 import type { UnwrapRef, Ref } from 'vue';
-import { reactive, readonly, computed, getCurrentInstance, watchEffect, unref, nextTick, toRaw } from 'vue';
+import { reactive, readonly, computed, getCurrentInstance, watchEffect, unref, toRaw } from 'vue';
 
 import { isEqual } from 'lodash-es';
 import { isEmpty, isNumber, isObject } from '@jeesite/core/utils/is';
@@ -16,7 +16,6 @@ export function useRuleFormItem<T extends Recordable>(
   labelField = 'labelValue',
   changeEvent = 'change',
   emitData?: Ref<any[]>,
-  fallbackLabelToValue = false,
 ) {
   const instance = getCurrentInstance();
   const emit = instance?.emit;
@@ -28,11 +27,11 @@ export function useRuleFormItem<T extends Recordable>(
   const hasChangeEmit = hasOwnProperty.call(emitsOptions, changeEvent);
 
   const isMultiple = computed(() => {
-    if (['JeeSiteCheckboxGroup'].includes(compName)) {
+    if (compName === 'JeeSiteCheckboxGroup') {
       return true;
     }
     if (
-      ['JeeSiteSelect', 'JeeSiteTreeSelect'].includes(compName) &&
+      (compName === 'JeeSiteSelect' || compName === 'JeeSiteTreeSelect') &&
       (props.mode === 'multiple' || props.mode === 'tags' || props.treeCheckable === true)
     ) {
       return true;
@@ -42,11 +41,15 @@ export function useRuleFormItem<T extends Recordable>(
 
   const isDictType = computed(() => !isEmpty(props.dictType));
 
-  // 未绑定标签字段时，可使用值字段完成组件回显。
-  const getLabelValue = () => {
-    const labelValue = props[labelField];
-    return labelValue === undefined && fallbackLabelToValue ? props[valueField] : labelValue;
-  };
+  // 如果未显式设置 labelInValue，则根据是否传递 labelValue 自动判断：
+  // 传递了 labelValue 时默认为 true，否则为 false
+  // 通过 vnode.props 检测 key 是否存在，以区分"未传递"和"传递了但值为 undefined"
+  const labelInValue = computed(() => {
+    const vnodeProps = instance?.vnode?.props;
+    if (vnodeProps && 'labelInValue' in vnodeProps) return props.labelInValue;
+    // if (props.allowInput && props.treeCheckable) return true;
+    return !!vnodeProps && labelField in vnodeProps;
+  });
 
   const innerState = reactive({
     value: props[valueField],
@@ -66,19 +69,19 @@ export function useRuleFormItem<T extends Recordable>(
     get() {
       let value = toRaw(innerState.value) as any;
       if (!value) return undefined;
-      if (props.labelInValue) {
-        const values: Recordable = [];
+      if (labelInValue.value) {
+        const values: Recordable[] = [];
         if (isMultiple.value && !(value instanceof Object) && !(value instanceof Array)) {
           const vals = (value as string)?.split(',');
-          const labs = (getLabelValue() as string)?.split(',');
-          for (const i in vals) {
-            values.push({ value: vals && vals[i], label: labs && labs[i] });
+          const labs = (props[labelField] as string)?.split(',');
+          for (let i = 0; i < vals.length; i++) {
+            values.push({ value: vals[i], label: labs?.[i] });
           }
           value = values as T[keyof T];
         } else if (!isObject(value) && !(value instanceof Object) && !(value instanceof Array)) {
-          value = { value: String(value), label: getLabelValue() };
+          value = { value: String(value), label: props[labelField] };
         } else if (value instanceof Array) {
-          for (const i in value) {
+          for (let i = 0; i < value.length; i++) {
             if (isObject(value[i])) break;
             values.push({ value: value[i] });
           }
@@ -108,12 +111,12 @@ export function useRuleFormItem<T extends Recordable>(
       }
       // console.log('values', value);
       const values = value instanceof Array ? value : [value];
-      if (props.labelInValue) {
+      if (labelInValue.value) {
         const vals: Recordable[] = [];
         const labs: Recordable[] = [];
-        for (const item of values) {
-          vals.push(item.value);
-          labs.push(item.label);
+        for (let i = 0; i < values.length; i++) {
+          vals.push(values[i].value);
+          labs.push(values[i].label);
         }
         const value = vals.length > 0 ? vals.join(',') : undefined;
         const labelValue = labs.length > 0 ? labs.join(',') : undefined;
@@ -130,5 +133,5 @@ export function useRuleFormItem<T extends Recordable>(
     },
   });
 
-  return [state, setState, defaultState];
+  return { state, setState, defaultState, labelInValue };
 }

@@ -31,7 +31,7 @@
 
   const emit = defineEmits(['change', 'update:value']);
 
-  const [state] = useRuleFormItem(props);
+  const { state } = useRuleFormItem(props);
 </script>
 <style lang="less">
   .jeesite-countdown-input {

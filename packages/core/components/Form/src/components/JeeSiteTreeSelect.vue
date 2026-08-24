@@ -16,7 +16,7 @@
       @input-key-down="handleInputKeyDown"
       @search="handleSearch"
     >
-      <template #[item]="data" v-for="item in Object.keys($slots)">
+      <template #[item]="data" v-for="item in Object.keys(slots)">
         <slot :name="item" v-bind="data || {}"></slot>
       </template>
       <template #notFoundContent v-if="loading">
@@ -29,7 +29,7 @@
   </div>
 </template>
 <script lang="ts" setup name="JeeSiteTreeSelect">
-  import { ref, unref, computed, watch, onMounted, shallowRef } from 'vue';
+  import { ref, unref, computed, watch, onMounted, shallowRef, useSlots } from 'vue';
   import { TreeSelect } from 'antdv-next';
   import { isEmpty, isFunction } from '@jeesite/core/utils/is';
   import { propTypes } from '@jeesite/core/utils/propTypes';
@@ -92,12 +92,13 @@
 
   const { t } = useI18n();
   const attrs = useAttrs();
-  // 未传 labelValue 时使用 value 回显，传入后保持原有标签逻辑。
-  const [state] = useRuleFormItem(props, 'value', 'labelValue', 'change', undefined, true);
+  const slots = useSlots();
+  const { state, labelInValue } = useRuleFormItem(props);
   const treeDataRef = ref<Recordable[]>(props.treeData);
   const isFirstLoad = ref<boolean>(false);
   const loading = ref<boolean>(false);
   const searchValue = shallowRef('');
+  const customValueSet = new Set<string>();
 
   const getAttrs = computed(() => {
     let propsData = {
@@ -121,6 +122,7 @@
       getPopupContainer: () => document.body,
       ...unref(attrs),
       ...props,
+      labelInValue: unref(labelInValue),
     };
     if (props.allowInput) {
       const showSearch = propsData.showSearch;
@@ -150,6 +152,7 @@
   watch(
     () => props.treeData,
     () => {
+      customValueSet.clear();
       treeDataRef.value = getTreeData(props.treeData);
       emit('options-change', unref(treeDataRef));
     },
@@ -184,6 +187,7 @@
     const { api } = props;
     if (!api || !isFunction(api)) return;
     treeDataRef.value = [];
+    customValueSet.clear();
     try {
       loading.value = true;
       let res = await api(props.params);
@@ -258,19 +262,40 @@
       const value = typeof item === 'object' && item !== null ? item.value : item;
       return String(value) === inputValue;
     });
-    const customValue = props.labelInValue ? { value: inputValue, label: inputValue } : inputValue;
+    const customValue = labelInValue.value ? { value: inputValue, label: inputValue } : inputValue;
     const multiple = props.treeCheckable || Boolean(unref(attrs).multiple);
 
     if (multiple) {
       if (!hasValue) {
         state.value = [...selectedValues, customValue];
+        addCustomTreeNode(inputValue);
       }
     } else if (!hasValue) {
       state.value = customValue;
+      addCustomTreeNode(inputValue);
     }
 
     searchValue.value = '';
     return true;
+  }
+
+  /** 将自定义输入值作为根节点添加到 treeDataRef，使底层 keyEntities 包含该值，避免重排序。 */
+  function addCustomTreeNode(value: string) {
+    // 使用 Set 缓存快速判断是否已添加过
+    if (customValueSet.has(value)) return;
+    const valueKey = props.dictType ? 'value' : 'id';
+    // 递归查找整棵树，避免把已存在的子节点误判为自定义值
+    const findInTree = (nodes: Recordable[]): boolean => {
+      for (let i = 0; i < nodes.length; i++) {
+        if (String(nodes[i][valueKey]) === value) return true;
+        if (nodes[i].children?.length && findInTree(nodes[i].children)) return true;
+      }
+      return false;
+    };
+    if (!findInTree(treeDataRef.value)) {
+      treeDataRef.value = [...treeDataRef.value, { [valueKey]: value, name: value }];
+      customValueSet.add(value);
+    }
   }
 
   /** 焦点真正离开组件时，在底层清空搜索文本前确认当前输入。 */
