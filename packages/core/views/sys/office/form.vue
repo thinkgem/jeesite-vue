@@ -160,6 +160,13 @@
         maxlength: 300,
       },
     },
+
+    {
+      label: t('其它信息'),
+      field: 'otherInfo',
+      component: 'FormGroup',
+      colProps: { md: 24, lg: 24 },
+    },
     {
       label: t('关联角色'),
       field: 'roleCodes',
