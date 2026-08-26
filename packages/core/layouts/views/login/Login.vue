@@ -1,6 +1,6 @@
 <template>
   <div class="jeesite-login relative h-full w-full bg-light-400 px-4">
-    <AppDarkModeToggle class="enter-x absolute right-12 top-5" v-if="!sessionTimeout" />
+    <AppDarkModeToggle class="enter-x absolute right-15 top-[22px]" v-if="!sessionTimeout" />
 
     <span class="-enter-x lg:hidden">
       <AppLogo :alwaysShowTitle="true" />
