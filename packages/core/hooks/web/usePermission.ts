@@ -12,7 +12,6 @@ import { useUserStore } from '@jeesite/core/store/modules/user';
 import { useTabs } from './useTabs';
 
 import { router, resetRouter } from '@jeesite/core/router';
-// import { RootRoute } from '@jeesite/core/router/routes';
 
 import projectSetting from '@jeesite/core/settings/projectSetting';
 import { PermissionModeEnum } from '@jeesite/core/enums/appEnum';

@@ -1,47 +1,29 @@
 import type { Router, RouteRecordRaw } from 'vue-router';
-import { usePermissionStoreWithOut } from '@jeesite/core/store/modules/permission';
-import { RootRoute } from '@jeesite/core/router/routes';
-import { PageEnum } from '@jeesite/core/enums/pageEnum';
 import { useUserStoreWithOut } from '@jeesite/core/store/modules/user';
-import { PAGE_NOT_FOUND_ROUTE } from '@jeesite/core/router/routes/basic';
+import { usePermissionStoreWithOut } from '@jeesite/core/store/modules/permission';
+import { PAGE_NOT_FOUND_ROUTE, RootRoute } from '@jeesite/core/router/routes/basic';
+import { PageEnum } from '@jeesite/core/enums/pageEnum';
 
 const ROOT_PATH = RootRoute.path;
 const HOME_PATH = PageEnum.BASE_HOME;
 const LOGIN_PATH = PageEnum.BASE_LOGIN;
-const MOD_PWD_PAGE = PageEnum.MOD_PWD_PAGE;
+const MOD_PWD_PATH = PageEnum.MOD_PWD_PAGE;
 
-// 白名单路由列表，无需权限即可访问的页面
-const whitePathList: PageEnum[] = [LOGIN_PATH, MOD_PWD_PAGE];
+// 页面访问白名单路由列表，无需权限即可访问的页面，使用完整匹配
+const whitePathList: string[] = [LOGIN_PATH, MOD_PWD_PATH];
 
 export function createPermissionGuard(router: Router) {
   const userStore = useUserStoreWithOut();
   const permissionStore = usePermissionStoreWithOut();
   router.beforeEach(async (to, from) => {
-    if (
-      from.path === ROOT_PATH &&
-      to.path === HOME_PATH &&
-      userStore.getUserInfo.homePath &&
-      userStore.getUserInfo.homePath !== HOME_PATH
-    ) {
-      return userStore.getUserInfo.homePath;
+    const homePath = userStore.getUserInfo.homePath;
+    if (from.path === ROOT_PATH && to.path === HOME_PATH && homePath && homePath !== HOME_PATH) {
+      return homePath;
     }
-
-    // const token = userStore.getToken;
-    const token = !userStore.getSessionTimeout;
 
     // Whitelist can be directly entered
     if (whitePathList.includes(to.path as PageEnum)) {
-      // if (to.path === LOGIN_PATH && token) {
-      //   const isSessionTimeout = userStore.getSessionTimeout;
-      //   try {
-      //     await userStore.afterLoginAction();
-      //     if (!isSessionTimeout) {
-      //       next((to.query?.redirect as string) || '/');
-      //       return;
-      //     }
-      //   } catch {}
-      // }
-      if (to.path === MOD_PWD_PAGE) {
+      if (to.path === MOD_PWD_PATH) {
         try {
           await userStore.getUserInfoAction();
         } catch (error: any) {
@@ -54,10 +36,13 @@ export function createPermissionGuard(router: Router) {
     // force modify password
     if (userStore.getPageCacheByKey('modifyPasswordMsg')) {
       return {
-        path: MOD_PWD_PAGE,
+        path: MOD_PWD_PATH,
         replace: true,
       };
     }
+
+    // const token = userStore.getToken;
+    const token = !userStore.getSessionTimeout;
 
     // token does not exist
     if (!token) {
@@ -83,13 +68,9 @@ export function createPermissionGuard(router: Router) {
     }
 
     // Jump to the 404 page after processing the login
-    if (
-      from.path === LOGIN_PATH &&
-      to.name === PAGE_NOT_FOUND_ROUTE.name &&
-      to.fullPath !== (userStore.getUserInfo.homePath || HOME_PATH)
-    ) {
+    if (from.path === LOGIN_PATH && to.name === PAGE_NOT_FOUND_ROUTE.name && to.fullPath !== (homePath || HOME_PATH)) {
       // 如果用户定义的 desktopUrl 是非法路径，就跳转到 404，防止无法进入系统
-      return '/404/' + (userStore.getUserInfo.homePath || HOME_PATH);
+      return '/404/' + (homePath || HOME_PATH);
     }
 
     // get userinfo while last fetch time is empty
@@ -147,9 +128,12 @@ export function createPermissionGuard(router: Router) {
         const targetQuery = Object.fromEntries(new URLSearchParams(redirectWithoutHash.substring(queryIndex + 1)));
         return { path: targetPath, query: targetQuery, hash: redirectHash, replace: true };
       }
-      const nextData =
-        to.path === redirectWithoutHash ? { ...to, replace: true } : { path: redirectWithoutHash, hash: redirectHash };
-      return nextData;
+      return to.path === redirectWithoutHash
+        ? { ...to, replace: true }
+        : {
+            path: redirectWithoutHash,
+            hash: redirectHash,
+          };
     }
   });
 }

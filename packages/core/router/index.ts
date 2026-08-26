@@ -13,7 +13,7 @@ import { encryptByMd5 } from '@jeesite/core/utils/cipher';
 import { useEmitter } from '@jeesite/core/store/modules/user';
 // import qs from 'qs';
 
-// 白名单应该包含基本静态路由
+// 重置路由的白名单应该包含基本静态路由
 const WHITE_NAME_LIST: string[] = [];
 const getRouteNames = (array: any[]) =>
   array.forEach((item) => {
