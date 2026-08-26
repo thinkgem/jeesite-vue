@@ -27,6 +27,13 @@ export default defineConfig(async ({ command, mode }: ConfigEnv) => {
     server: createServerOptions(viteEnv),
     build: createBuildOptions(viteEnv),
     css: createCSSOptions(),
+    optimizeDeps: {
+      rolldownOptions: {
+        external: (source: string) => {
+          return /^@jeesite\/.*$/.test(source);
+        },
+      },
+    },
     resolve: {
       alias: {
         '@jeesite/web': path.resolve(import.meta.dirname, './'),
