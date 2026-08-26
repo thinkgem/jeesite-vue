@@ -86,7 +86,7 @@
     }
 
     &__title {
-      font-size: 20px;
+      font-size: 22px;
       // font-weight: bold;
       font-family: Arial, 'Microsoft YaHei', sans-serif;
       transition: all 0.5s;
