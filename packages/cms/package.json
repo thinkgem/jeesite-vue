@@ -9,7 +9,7 @@
     "update": "ncu -u"
   },
   "dependencies": {
-    "@jeesite/cms-lib": "5.18.1-next-rc.1",
+    "@jeesite/framework-cms": "5.19.0-next-rc.1",
     "qs": "6.15.3"
   },
   "devDependencies": {

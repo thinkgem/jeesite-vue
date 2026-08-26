@@ -1,11 +1,13 @@
 <template>
   <PageWrapper :contentFullHeight="true">
-    <DDesigner :hiddenHeader="false" :formMode="true" />
+    <DfmDesigner ref="designerRef" :formMode="true" @save="handleSave" />
   </PageWrapper>
 </template>
-<script setup>
+<script lang="ts" setup name="ViewsDfmDesignerIndex">
   import { PageWrapper } from '@jeesite/core/components/Page';
-  import { DDesigner } from '@jeesite/dfm';
+  import { useMessage } from '@jeesite/core/hooks/web/useMessage';
+  import { DfmDesigner } from '@jeesite/dfm';
+
   // import { pluginManager } from '@jeesite/dfm';
   // import { onMounted } from 'vue';
   //
@@ -17,4 +19,11 @@
   //   pluginManager.component.registerComponent(componentConfig);
   //   pluginManager.component.removeComponent('input');
   // });
+
+  const { showMessage } = useMessage();
+
+  function handleSave(data: string) {
+    showMessage('在业务中实现.');
+    console.log(data);
+  }
 </script>

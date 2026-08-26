@@ -9,7 +9,7 @@
     "update": "ncu -u -x @uppy/core"
   },
   "dependencies": {
-    "@jeesite/core-lib": "5.18.1-next-rc.1",
+    "@jeesite/framework-core": "5.19.0-next-rc.1",
     "@uppy/core": "2.1.5",
     "@vueuse/core": "14.4.0",
     "@vueuse/shared": "14.4.0",

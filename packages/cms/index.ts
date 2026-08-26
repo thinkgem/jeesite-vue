@@ -1,2 +1,2 @@
-import '@jeesite/cms-lib/dist/style.css';
-export * from '@jeesite/cms-lib/dist';
+import '@jeesite/framework-cms/dist/style.css';
+export * from '@jeesite/framework-cms/dist';

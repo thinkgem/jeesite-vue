@@ -1,2 +1,2 @@
-import '@jeesite/dbm-lib/dist/style.css';
-export * from '@jeesite/dbm-lib/dist';
+import '@jeesite/framework-dbm/dist/style.css';
+export * from '@jeesite/framework-dbm/dist';

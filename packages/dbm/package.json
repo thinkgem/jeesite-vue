@@ -6,11 +6,11 @@
   "scripts": {
     "type:check": "vue-tsc --noEmit --skipLibCheck",
     "uninstall": "rimraf node_modules",
-    "update:lib": "pnpm store prune && pnpm rm @jeesite/dbm-lib && pnpm i @jeesite/dbm-lib@5.11.0 && pnpm run dev --force",
+    "update:lib": "pnpm store prune && pnpm rm @jeesite/framework-dbm-lib && pnpm i @jeesite/dbm@5.11.0 && pnpm run dev --force",
     "update": "ncu -u"
   },
   "dependencies": {
-    "@jeesite/dbm-lib": "5.18.1-next-rc.1",
+    "@jeesite/framework-dbm": "5.19.0-next-rc.1",
     "qs": "6.15.3"
   },
   "devDependencies": {

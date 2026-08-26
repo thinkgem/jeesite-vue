@@ -1,2 +1,2 @@
-import '@jeesite/core-lib/dist/style.css';
-export * from '@jeesite/core-lib/dist';
+import '@jeesite/framework-core/dist/style.css';
+export * from '@jeesite/framework-core/dist';
