@@ -6,6 +6,6 @@
 <template>
   <ViewsDbmTableIndex />
 </template>
-<script lang="ts" setup name="ViewsDbmTableIndex">
+<script lang="ts" setup name="ViewsDbmDbmTableIndex">
   import { ViewsDbmTableIndex } from '@jeesite/dbm';
 </script>

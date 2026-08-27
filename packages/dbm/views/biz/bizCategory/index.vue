@@ -19,7 +19,7 @@
     <ListView :treeCode="treeCode" />
   </PageWrapper>
 </template>
-<script lang="ts" setup name="ViewsBizCategoryIndex">
+<script lang="ts" setup name="ViewsBizBizCategoryIndex">
   import { ref } from 'vue';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { PageWrapper } from '@jeesite/core/components/Page';

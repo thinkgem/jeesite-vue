@@ -31,7 +31,7 @@
     <InputForm @register="registerModal" @success="handleSuccess" />
   </div>
 </template>
-<script lang="ts" setup name="ViewsBizCategoryList">
+<script lang="ts" setup name="ViewsBizBizCategoryList">
   import { unref, watch, nextTick } from 'vue';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { useMessage } from '@jeesite/core/hooks/web/useMessage';

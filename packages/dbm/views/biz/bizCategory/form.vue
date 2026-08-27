@@ -19,7 +19,7 @@
     <BasicForm @register="registerForm" />
   </BasicModal>
 </template>
-<script lang="ts" setup name="ViewsBizCategoryForm">
+<script lang="ts" setup name="ViewsBizBizCategoryForm">
   import { ref, unref, computed } from 'vue';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
   import { useMessage } from '@jeesite/core/hooks/web/useMessage';
