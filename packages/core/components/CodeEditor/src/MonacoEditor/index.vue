@@ -22,7 +22,6 @@
   import type { editor } from 'monaco-editor';
   import * as monaco from 'monaco-editor';
   import { Icon } from '@jeesite/core/components/Icon';
-  // import { useWindowSizeFn } from '@jeesite/core/hooks/event/useWindowSizeFn';
   import { useAppStore } from '@jeesite/core/store/modules/app';
   import { useI18n } from '@jeesite/core/hooks/web/useI18n';
 
@@ -51,7 +50,6 @@
     theme: 'vs-light',
     allowFullscreen: true,
     bordered: true,
-    height: 260,
   });
 
   const emit = defineEmits(['update:value', 'change']);
@@ -176,22 +174,13 @@
   });
 
   function showHideLineNumber() {
+    if (!props.height) return;
     const multiLine = props.height > 50;
     monacoEditor?.updateOptions({
       folding: multiLine,
       lineNumbers: multiLine ? 'on' : 'off',
     });
   }
-
-  // function redoEditorHeight() {
-  //   if (!editContainer.value) return;
-  //   let container = editContainer.value.parentElement as HTMLElement;
-  //   let newHeight = container.parentElement?.clientHeight;
-  //   container.style.height = newHeight + 'px';
-  //   monacoEditor?.layout();
-  // }
-  //
-  // useWindowSizeFn(redoEditorHeight);
 
   defineExpose({
     setLanguage,
