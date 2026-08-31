@@ -223,12 +223,6 @@
       ifShow: () => op.value === 'add' || op.value === 'edit',
     },
     {
-      label: t('员工姓名'),
-      field: 'employee.empName',
-      component: 'Input',
-      ifShow: () => op.value === 'add' || op.value === 'edit',
-    },
-    {
       label: t('所在岗位'),
       field: 'employee.employeePosts',
       component: 'Select',
