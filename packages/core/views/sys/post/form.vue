@@ -27,7 +27,7 @@
   import { Icon } from '@jeesite/core/components/Icon';
   import { BasicForm, FormSchema, useForm } from '@jeesite/core/components/Form';
   import { BasicDrawer, useDrawerInner } from '@jeesite/core/components/Drawer';
-  import { Post, postSave, postForm } from '@jeesite/core/api/sys/post';
+  import { Post, postSave, postForm, checkPostName } from '@jeesite/core/api/sys/post';
   import { roleTreeData } from '@jeesite/core/api/sys/role';
 
   const emit = defineEmits(['success', 'register']);
@@ -55,7 +55,21 @@
       componentProps: {
         maxlength: 100,
       },
-      required: true,
+      rules: [
+        { required: true },
+        { pattern: /^[\u0391-\uFFE5\w]+$/, message: t('不能输入特殊字符') },
+        {
+          validator(_rule, value) {
+            return new Promise<void>((resolve, reject) => {
+              if (!value || value === '') return resolve();
+              checkPostName(record.value.postName || '', value)
+                .then((res) => (res ? resolve() : reject(t('岗位名称已存在'))))
+                .catch((err) => reject(err.message || t('验证失败')));
+            });
+          },
+          trigger: 'blur',
+        },
+      ],
     },
     {
       label: t('岗位代码'),

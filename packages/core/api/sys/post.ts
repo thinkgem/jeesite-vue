@@ -31,6 +31,12 @@ export const postEnable = (params?: Post | any) => defHttp.get<Post>({ url: admi
 export const postSave = (params?: any, data?: Post | any) =>
   defHttp.postJson<Post>({ url: adminPath + '/sys/post/save', params, data });
 
+export const checkPostName = (oldPostName: string, postName: string) =>
+  defHttp.get<Post>({
+    url: adminPath + '/sys/post/checkPostName',
+    params: { oldPostName, postName },
+  });
+
 export const postDelete = (params?: Post | any) => defHttp.get<Post>({ url: adminPath + '/sys/post/delete', params });
 
 export const postTreeData = (params?: any) =>
