@@ -63,11 +63,10 @@ export function useTableScroll(
     }
 
     // if (!unref(getCanResize) || !unref(tableData) || tableData.length === 0) return;
-    if (!unref(getCanResize) || !unref(tableData)) return;
+    if (!unref(getCanResize)) return;
 
     // Add a delay to get the correct bottomIncludeBody paginationHeight footerHeight headerHeight
     const headEl = tableEl.querySelector('.ant-table-thead') as HTMLElement;
-
     if (!headEl) return;
 
     // Table height from bottom height-custom offset
@@ -153,7 +152,7 @@ export function useTableScroll(
     }
 
     // Set empty data height
-    if (tableData.length === 0) {
+    if (!tableData || tableData.length === 0) {
       const emptyDataEl = tableEl.querySelector('.ant-empty') as HTMLElement;
       if (!emptyDataEl) return;
 
@@ -240,7 +239,7 @@ export function useTableScroll(
     const tableData = unref(getDataSourceRef);
     return {
       x: canScrollX ? (canResize ? tableWidth : undefined) : tableWidth,
-      y: canResize && tableData.length > 0 ? unref(tableHeightRef) : undefined,
+      y: canResize && tableData && tableData.length > 0 ? unref(tableHeightRef) : undefined,
       scrollToFirstRowOnChange: true,
       ...scroll,
     };
