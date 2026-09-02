@@ -1,12 +1,13 @@
 {
   "name": "@jeesite/core",
-  "version": "5.19.0-dev",
+  "version": "5.19.0",
   "private": true,
   "type": "module",
   "scripts": {
     "type:check": "vue-tsc --noEmit --skipLibCheck",
     "uninstall": "rimraf node_modules",
-    "update": "ncu -u -x @uppy/core"
+    "update:lock": "pnpm update",
+    "update:ncu": "ncu -u -x @uppy/core"
   },
   "dependencies": {
     "@jeesite/framework-core": "5.19.0-next-rc.1",

@@ -1,13 +1,13 @@
 {
   "name": "@jeesite/dbm",
-  "version": "5.19.0-dev",
+  "version": "5.19.0",
   "private": true,
   "type": "module",
   "scripts": {
     "type:check": "vue-tsc --noEmit --skipLibCheck",
     "uninstall": "rimraf node_modules",
-    "update:lib": "pnpm store prune && pnpm rm @jeesite/framework-dbm-lib && pnpm i @jeesite/dbm@5.11.0 && pnpm run dev --force",
-    "update": "ncu -u"
+    "update:lock": "pnpm update",
+    "update:ncu": "ncu -u"
   },
   "dependencies": {
     "@jeesite/framework-dbm": "5.19.0-next-rc.1",

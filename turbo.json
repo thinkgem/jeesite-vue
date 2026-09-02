@@ -15,7 +15,7 @@
     "uninstall": {
       "cache": false
     },
-    "update": {
+    "update:ncu": {
       "cache": false
     }
   }

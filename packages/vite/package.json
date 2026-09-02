@@ -1,13 +1,14 @@
 {
   "name": "@jeesite/vite",
-  "version": "5.19.0-dev",
+  "version": "5.19.0",
   "private": true,
   "type": "module",
   "scripts": {
     "stub": "pnpm unbuild --stub",
     "type:check": "vue-tsc --noEmit --skipLibCheck",
     "uninstall": "rimraf node_modules",
-    "update": "ncu -u"
+    "update:lock": "pnpm update",
+    "update:ncu": "ncu -u"
   },
   "files": [
     "dist"

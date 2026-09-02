@@ -1,6 +1,6 @@
 {
   "name": "@jeesite/root",
-  "version": "5.19.0-dev",
+  "version": "5.19.0",
   "type": "module",
   "private": true,
   "scripts": {
@@ -18,9 +18,9 @@
     "lint:prettier": "prettier --ignore-unknown --check --cache --write \"./**/*.{vue,tsx,less,scss}\"",
     "lint:stylelint": "stylelint \"./**/*.{vue,less,scss,css}\" --fix --custom-syntax postcss-html --cache --cache-location node_modules/.cache/stylelint/",
     "lint:all": "pnpm bootstrap && pnpm type:check && pnpm lint:eslint && pnpm lint:prettier && pnpm lint:stylelint",
-    "reinstall:force": "rimraf pnpm-lock.yaml node_modules && pnpm store prune && pnpm i --force && pnpm run dev --force",
     "reinstall": "turbo uninstall --concurrency 20 && rimraf pnpm-lock.yaml node_modules && pnpm bootstrap",
-    "update": "turbo update --concurrency 20 && ncu -u -x typescript,monaco-editor && pnpm reinstall",
+    "reinstall:force": "rimraf pnpm-lock.yaml node_modules && pnpm store prune && pnpm i --force && pnpm run dev --force",
+    "update:ncu": "turbo update:ncu --concurrency 20 && ncu -u -x typescript,monaco-editor && pnpm reinstall",
     "postinstall": "pnpm -r run stub --if-present",
     "preinstall": "npx only-allow pnpm",
     "serve": "pnpm dev"

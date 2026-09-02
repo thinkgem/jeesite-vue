@@ -1,6 +1,6 @@
 {
   "name": "@jeesite/web",
-  "version": "5.19.0-dev",
+  "version": "5.19.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,8 @@
     "preview:dist": "vite preview --mode development --port 3100",
     "type:check": "vue-tsc --noEmit --skipLibCheck",
     "uninstall": "rimraf node_modules",
-    "update": "ncu -u"
+    "update:lock": "pnpm update",
+    "update:ncu": "ncu -u"
   },
   "homepage": "https://jeesite.com",
   "repository": {
