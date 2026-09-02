@@ -253,6 +253,8 @@ function createAxios(opt?: Partial<CreateAxiosOptions>) {
         // authenticationScheme: 'Bearer',
         authenticationHeader: 'x-token',
         authenticationScheme: '',
+        // 默认允许携带 Cookie
+        withCredentials: true,
         // 请求超时时间，默认3分钟
         timeout: 3 * 60 * 1000,
         // 基础接口地址
