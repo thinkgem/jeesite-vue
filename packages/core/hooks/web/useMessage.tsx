@@ -130,13 +130,13 @@ function showMessage(content: any, type?: string, duration?: number, onClose?: a
     content = {
       content: (
         <div style="position: relative;" onMouseout={() => setTimeout(messageRemove, 1000)}>
-          <div style="position: absolute; right: -6px; top: -20px;" onClick={() => messageRemove()}>
+          <div style="position: absolute; right: -10px; top: -13px;" onClick={() => messageRemove()}>
             <Icon icon="i-ant-design:close-outlined" color="#555" class="cursor-pointer" />
           </div>
           <div class="text-left" innerHTML={content.substring(8)}></div>
         </div>
       ),
-      duration,
+      duration: duration || 1000 * 60,
     };
   }
   if (type === 'error' || contains(content, t('sys.message.error'))) {
