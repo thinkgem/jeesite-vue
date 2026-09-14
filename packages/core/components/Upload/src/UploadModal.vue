@@ -43,7 +43,7 @@
         </a-button>
       </Upload>
     </div>
-    <div :class="listType === 'grid' ? 'overflow-y-auto' : 'overflow-x-auto'">
+    <div class="pb-2" :class="listType === 'grid' ? 'overflow-y-auto' : 'overflow-x-auto'">
       <FileList
         :dataSource="fileItemList"
         :columns="columns"
