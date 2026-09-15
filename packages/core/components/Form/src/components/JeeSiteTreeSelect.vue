@@ -119,6 +119,7 @@
           root: 'jeesite-tree-select-popup',
         },
       },
+      autoClearSearchValue: false,
       getPopupContainer: () => document.body,
       ...unref(attrs),
       ...props,

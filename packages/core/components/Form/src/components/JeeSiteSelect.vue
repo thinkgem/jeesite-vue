@@ -83,6 +83,7 @@
         value: 'value',
         label: 'label',
       },
+      autoClearSearchValue: false,
       ...unref(attrs),
       ...props,
       labelInValue: unref(labelInValue),
