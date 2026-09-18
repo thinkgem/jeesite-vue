@@ -35,7 +35,6 @@
       editComponentProps: {
         // addonBefore: t('前'),
         // addonAfter: t('后'),
-
       },
       editRule: true,
     },
