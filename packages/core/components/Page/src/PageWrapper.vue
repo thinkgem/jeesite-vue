@@ -151,6 +151,10 @@
     fixedHeight: propTypes.bool.def(true),
     upwardSpace: propTypes.oneOfType([propTypes.number, propTypes.string]).def(0),
 
+    // 左右侧栏开关：由设计器 props.sidebar / props.sidebarRight 实时控制（响应式）
+    sidebar: propTypes.bool,
+    sidebarRight: propTypes.bool,
+
     sidebarWidth: propTypes.number.def(230),
     sidebarResizer: propTypes.bool.def(true),
     sidebarMinWidth: propTypes.number.def(160),
@@ -169,11 +173,13 @@
   const footerRef = shallowRef(null);
 
   const collapsed = ref<boolean>(false);
-  const sidebar = !!slots.sidebar;
+  // 优先用响应式 prop（设计器动态开关），兼容直接提供 #sidebar 插槽的用法
+  // 注意：useSlots() 返回的对象非响应式，单独依赖 slots.sidebar 无法监听变化
+  const sidebar = computed(() => props.sidebar || !!slots.sidebar);
   const offsetXMoved = ref(0);
 
   const collapsedRight = ref<boolean>(false);
-  const sidebarRight = !!slots.sidebarRight;
+  const sidebarRight = computed(() => props.sidebarRight || !!slots.sidebarRight);
   const offsetXMovedRight = ref(0);
 
   provide(
@@ -182,7 +188,7 @@
   );
 
   const getIsContentFullHeight = computed(() => {
-    return props.contentFullHeight || sidebar || sidebarRight;
+    return props.contentFullHeight || sidebar.value || sidebarRight.value;
   });
 
   const getUpwardSpace = computed(() => props.upwardSpace);
@@ -199,7 +205,7 @@
     return [
       'jeesite-page-wrapper',
       {
-        ['jeesite-page-wrapper--dense']: props.dense || sidebar || sidebarRight,
+        ['jeesite-page-wrapper--dense']: props.dense || sidebar.value || sidebarRight.value,
       },
       attrs.class ?? {},
     ];
@@ -220,10 +226,10 @@
 
   const getContentStyle = computed((): CSSProperties => {
     const { contentFullHeight, contentMinHeight, contentStyle, fixedHeight } = props;
-    const h = (unref(contentHeight) || 800) - (!(sidebar || sidebarRight) ? -13 : 0);
+    const h = (unref(contentHeight) || 800) - (!(sidebar.value || sidebarRight.value) ? -13 : 0);
     const height = `${h < contentMinHeight ? contentMinHeight : h}px`;
 
-    if (sidebar || sidebarRight) {
+    if (sidebar.value || sidebarRight.value) {
       return {
         ...contentStyle,
         minHeight: height,
@@ -233,7 +239,7 @@
       return {
         ...contentStyle,
         minHeight: height,
-        ...(fixedHeight || sidebar || sidebarRight ? { height } : {}),
+        ...(fixedHeight || sidebar.value || sidebarRight.value ? { height } : {}),
         marginBottom: 0,
       };
     }
@@ -279,14 +285,12 @@
     sidebarContentHeight.value = height;
   }
 
-  if (sidebar || sidebarRight) {
-    onBeforeMount(() => {
-      emitter.on('on-page-wrapper-resize', () => {
-        setTimeout(calcSidebarContentHeight, 500);
-      });
+  onBeforeMount(() => {
+    emitter.on('on-page-wrapper-resize', () => {
+      setTimeout(calcSidebarContentHeight, 500);
     });
-    onUpdated(useDebounceFn(calcSidebarContentHeight, 300));
-  }
+  });
+  onUpdated(useDebounceFn(calcSidebarContentHeight, 300));
 
   const getContentClass = computed(() => {
     const { contentBackground, contentClass } = props;
@@ -294,13 +298,13 @@
       'jeesite-page-wrapper-content',
       contentClass,
       {
-        ['jeesite-page-wrapper-content-bg']: contentBackground && !(sidebar || sidebarRight),
+        ['jeesite-page-wrapper-content-bg']: contentBackground && !(sidebar.value || sidebarRight.value),
       },
     ];
   });
 
   watch(
-    () => [getShowFooter.value],
+    () => [getShowFooter.value, sidebar.value, sidebarRight.value],
     () => {
       redoHeight();
     },
