@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@jeesite/framework-dbm": "5.19.1-next-rc.1",
-    "qs": "6.15.3"
+    "qs": "6.16.0"
   },
   "devDependencies": {
     "@types/qs": "6.15.1"

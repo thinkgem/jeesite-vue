@@ -10,7 +10,7 @@
     "update:ncu": "ncu -u"
   },
   "dependencies": {
-    "qs": "6.15.3"
+    "qs": "6.16.0"
   },
   "devDependencies": {
     "@types/qs": "6.15.1"
