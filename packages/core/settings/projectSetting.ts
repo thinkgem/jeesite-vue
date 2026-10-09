@@ -122,7 +122,7 @@ const setting: ProjectConfig = {
     // Turn on
     show: true,
     // Tabs style, Optional value: 1、2、3、4、5
-    style: '5',
+    style: '4',
     // Is it possible to drag and drop sorting tabs
     canDrag: true,
     // Turn on quick actions

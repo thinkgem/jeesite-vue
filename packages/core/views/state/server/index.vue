@@ -4,9 +4,9 @@
  * @author ThinkGem
 -->
 <template>
-  <div class="jeesite-state-server">
+  <div class="jeesite-state-server m-0">
     <!-- CPU / 内存 / 堆非堆 -->
-    <Row :gutter="[16, 16]">
+    <Row :gutter="[5, 5]">
       <Col :xs="24" :sm="24" :md="8">
         <Card :loading="rtLoading" variant="borderless">
           <template #title>
@@ -76,7 +76,10 @@
           </template>
           <template #extra>
             <Button size="small" :loading="gcLoading" @click="handleGc">
-              <Icon icon="icon-eraser" class="pr-1 text-primary" /> {{ t('执行GC') }}
+              <template #icon>
+                <Icon icon="i-ant-design:clear-outlined" class="pr-1 text-primary" />
+              </template>
+              {{ t('执行GC') }}
             </Button>
           </template>
           <BasicTable
@@ -99,7 +102,7 @@
     </Row>
 
     <!-- 服务器信息 -->
-    <Card variant="borderless" class="mt-4" :loading="infoLoading">
+    <Card variant="borderless" class="mt-1" :loading="infoLoading">
       <template #title>
         <Icon icon="icon-screen-tablet" class="pr-1 text-primary" />
         <span>{{ t('服务器信息') }}</span>
@@ -119,7 +122,7 @@
     </Card>
 
     <!-- Java虚拟机信息 -->
-    <Card variant="borderless" class="mt-4" :loading="infoLoading">
+    <Card variant="borderless" class="mt-1" :loading="infoLoading">
       <template #title>
         <Icon icon="icon-cup" class="pr-1 text-primary" />
         <span>{{ t('Java虚拟机信息') }}</span>
@@ -150,7 +153,7 @@
     </Card>
 
     <!-- 平台参数 -->
-    <Card variant="borderless" class="mt-4" :loading="infoLoading">
+    <Card variant="borderless" class="mt-1" :loading="infoLoading">
       <template #title>
         <Icon icon="icon-eyeglass" class="pr-1 text-primary" />
         <span>{{ t('平台参数') }}</span>
@@ -178,7 +181,7 @@
     </Card>
 
     <!-- 磁盘状态 -->
-    <Card variant="borderless" class="mt-4" :loading="infoLoading">
+    <Card variant="borderless" class="mt-1" :loading="infoLoading">
       <template #title>
         <Icon icon="icon-drawer" class="pr-1 text-primary" />
         <span>{{ t('磁盘状态') }}</span>
@@ -446,17 +449,20 @@
 
 <style lang="less">
   .jeesite-state-server {
-    margin-bottom: 15px;
-
     .ant-card {
+      border-radius: 10px;
+      box-shadow: none;
+
       .ant-card-head {
         min-height: 45px;
         padding: 0 15px;
+        border-radius: 10px 10px 0 0;
       }
 
       .ant-card-body {
         border-top: 1px solid #f0f0f0;
         padding: 0;
+        border-radius: 0 0 10px 10px;
       }
     }
     // 仅显示表格行线，无外框和竖线，末尾行圆角
@@ -470,6 +476,7 @@
       .ant-table-thead > tr > th {
         border-inline-end: none;
         background: #fafafa;
+        border-radius: 0 !important;
       }
 
       .ant-table-tbody > tr > td {
@@ -507,6 +514,10 @@
         .ant-table-tbody > tr > td {
           border-bottom-color: #303030;
         }
+      }
+
+      .ant-table.ant-table-small .ant-table-container {
+        border: none !important;
       }
     }
   }

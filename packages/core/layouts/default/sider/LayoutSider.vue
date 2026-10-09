@@ -130,8 +130,12 @@
     }
 
     &:not(.ant-layout-sider-dark) {
+      .ant-layout-sider-children {
+        border-top: 1px solid @header-light-bottom-border-color;
+      }
+
       .ant-layout-sider-trigger {
-        color: @text-color-base;
+        color: rgb(0 0 0 / 65%);
         border-top: 1px solid @header-light-bottom-border-color;
       }
     }

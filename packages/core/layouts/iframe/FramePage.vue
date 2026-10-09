@@ -116,7 +116,7 @@
     },
   );
 
-  const padding = 12; // jee site default padding
+  const padding = 6; // jee site default padding
 
   const getWrapStyle = computed((): CSSProperties => {
     return {

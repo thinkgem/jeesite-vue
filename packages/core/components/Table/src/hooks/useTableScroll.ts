@@ -70,7 +70,7 @@ export function useTableScroll(
     if (!headEl) return;
 
     // Table height from bottom height-custom offset
-    let paddingHeight = 15;
+    let paddingHeight = 9;
     if (tableEl.closest('.jeesite-layout-content')) {
       paddingHeight += 11;
     }
@@ -158,7 +158,7 @@ export function useTableScroll(
 
       const contentEl = tableEl.querySelector('.ant-table-content') as HTMLElement;
       const hasScrollBarX = contentEl ? contentEl.scrollWidth > contentEl.clientWidth : false;
-      const emptyOffset = (titleIncluded ? 0 : titleHeight) + (hasScrollBarX ? 10 : 0) + 50;
+      const emptyOffset = (titleIncluded ? 0 : titleHeight) + (hasScrollBarX ? 10 : 0) + 55;
       emptyDataEl.style.height = `${height - emptyOffset}px`;
 
       const td = emptyDataEl.parentElement as HTMLElement;

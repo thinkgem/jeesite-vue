@@ -1,12 +1,12 @@
 <template>
-  <div class="md:flex">
+  <div class="md:flex mt-0.3">
     <template v-for="(item, index) in growCardList" :key="item.title">
       <Card
         size="small"
         :loading="loading"
         :title="item.title"
-        class="w-full cursor-pointer !mt-4 md:w-1/4 !md:mt-0"
-        :class="[index + 1 < 4 && '!md:mr-4']"
+        class="w-full cursor-pointer !mt-1.5 md:w-1/4 !md:mt-0"
+        :class="[index + 1 < 4 && '!md:mr-1.5']"
         :canExpan="false"
         @click="navPage(item.url)"
       >
@@ -14,7 +14,7 @@
           <Tag :color="item.color">{{ item.action }}</Tag>
         </template>
 
-        <div class="flex justify-between px-4 py-4">
+        <div class="flex justify-between px-2 py-2">
           <CountTo prefix="" :startVal="1" :endVal="item.value" class="text-2xl" />
           <Icon :icon="item.icon" :size="40" />
         </div>

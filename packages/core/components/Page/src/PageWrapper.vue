@@ -260,7 +260,7 @@
   function calcSidebarContentHeight() {
     const { contentFullHeight, contentMinHeight } = props;
     if (contentFullHeight && contentHeight.value) {
-      const height = contentHeight.value - 10;
+      const height = contentHeight.value - 4;
       sidebarContentHeight.value = height < contentMinHeight ? contentMinHeight : height;
       return;
     }
@@ -279,7 +279,7 @@
     }
     const mainContentHeight = contentHeight.value || 0;
     if (height < mainContentHeight) {
-      height = mainContentHeight - 10;
+      height = mainContentHeight - 4;
     }
     // console.log('calcSidebarContentHeight', height);
     sidebarContentHeight.value = height;
@@ -384,14 +384,14 @@
     .jeesite-page-wrapper-content {
       // margin: 16px;
       padding: 12px;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
       border-radius: 10px;
       color: @text-color-base;
       overflow-y: auto;
     }
 
     .page-header {
-      margin-bottom: 12px;
+      margin-bottom: 5px;
       padding: 4px 16px;
       border-radius: 10px;
       background-color: @component-background;

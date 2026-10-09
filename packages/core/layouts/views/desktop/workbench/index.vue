@@ -2,15 +2,15 @@
   <PageWrapper>
     <template #headerContent> <WorkbenchHeader /> </template>
     <div class="lg:flex">
-      <div class="enter-y w-full !mr-4 lg:w-7/10">
+      <div class="enter-y w-full !mr-3 lg:w-7/10">
         <ProjectCard :loading="loading" class="enter-y" />
-        <DynamicInfo :loading="loading" class="enter-y !my-4" />
+        <DynamicInfo :loading="loading" class="enter-y !my-3" />
       </div>
       <div class="enter-y w-full lg:w-3/10">
         <QuickNav :loading="loading" class="enter-y" />
 
-        <Card class="enter-y !my-4" :loading="loading">
-          <img class="mx-auto h-30 xl:h-50" src="@jeesite/assets/svg/illustration.svg" />
+        <Card class="enter-y !my-3" :loading="loading">
+          <img class="mx-auto h-30 w-full" src="@jeesite/assets/svg/illustration.svg" />
         </Card>
 
         <SaleRadar :loading="loading" class="enter-y" />

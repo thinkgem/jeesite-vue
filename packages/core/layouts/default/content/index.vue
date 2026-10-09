@@ -19,7 +19,7 @@
     position: relative;
     flex: 1 1 auto;
     min-height: 0;
-    padding: 12px 12px 0;
+    padding: 5px 6px 0 6px;
     background-color: @content-bg;
 
     &.fixed {

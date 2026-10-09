@@ -20,8 +20,8 @@
   import { useMultipleTabStore } from '@jeesite/core/store/modules/multipleTab';
 
   const HEADER_HEIGHT = 48;
-  const TABS_HEIGHT = 32;
-  const TABS_HEIGHT_LARGE = 37;
+  const TABS_HEIGHT = 28;
+  const TABS_HEIGHT_LARGE = 34;
 
   const { setHeaderHeight } = useLayoutHeight();
 

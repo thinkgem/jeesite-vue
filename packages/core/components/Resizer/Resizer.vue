@@ -77,7 +77,7 @@
     if (isCollapsed.value && props.position == 'right') {
       return 'i-ant-design:caret-left-outlined';
     }
-    return 'i-ant-design:caret-right-outlined';
+    return 'i-ant-design:holder-outlined';
   });
 
   useEventListener({
@@ -122,21 +122,27 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    //padding: 1px;
+    width: 6px;
+    overflow: hidden;
 
     .resiezer-toggler {
       cursor: pointer;
+      width: 6px;
+      position: relative;
 
       .resizer-content {
-        padding: 15px 1px;
-        font-size: 10px;
+        padding: 15px 0;
+        font-size: 9px;
         color: @text-color-secondary;
         user-select: none;
+        position: absolute;
+        left: -1.5px;
       }
 
       :hover {
         background-color: @border-color-base;
-        border-radius: @border-radius-base;
+        //border-radius: @border-radius-base;
+        border-radius: 45%;
       }
 
       .anticon span:hover {

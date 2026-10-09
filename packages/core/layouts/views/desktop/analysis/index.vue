@@ -1,10 +1,10 @@
 <template>
-  <div class="mb-4 jeesite-analysis">
+  <div class="jeesite-analysis m-0">
     <GrowCard class="enter-y" />
-    <SiteAnalysis class="enter-y !my-4" />
+    <SiteAnalysis class="enter-y !my-1.5" />
     <div class="enter-y md:flex">
       <VisitRadar class="w-full md:w-1/3" />
-      <VisitSource class="w-full !my-4 md:w-1/3 !md:mx-4 !md:my-0" />
+      <VisitSource class="w-full !my-1.5 md:w-1/3 !md:mx-1.5 !md:my-0" />
       <SalesProductPie class="w-full md:w-1/3" />
     </div>
   </div>
