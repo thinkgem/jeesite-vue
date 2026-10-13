@@ -32,7 +32,7 @@ export function baseHandler(event: HandlerEnum, value: any) {
   const appStore = useAppStore();
   const config = handler(event, value);
   appStore.setProjectConfig(config);
-  if (event === HandlerEnum.CHANGE_LAYOUT) {
+  if (event === HandlerEnum.CHANGE_LAYOUT && getDarkMode.value !== ThemeEnum.DARK) {
     if (value.type === MenuTypeEnum.MIX || value.type === MenuTypeEnum.TOP_MENU) {
       baseHandler(HandlerEnum.MENU_THEME, SIDE_BAR_BG_COLOR_LIST[0]);
       baseHandler(HandlerEnum.HEADER_THEME, HEADER_PRESET_BG_COLOR_LIST[0]);
