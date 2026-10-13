@@ -132,6 +132,7 @@
 
       .resizer-content {
         padding: 15px 0;
+        margin-top: -30px;
         font-size: 9px;
         color: @text-color-secondary;
         user-select: none;

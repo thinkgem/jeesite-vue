@@ -30,7 +30,7 @@
     <div :class="getContentClass" :style="getContentStyle" ref="contentRef">
       <Layout v-if="sidebar || sidebarRight" :style="getSidebarContentStyle">
         <LayoutSider
-          v-if="sidebar"
+          v-if="sidebar && !isMobileDrawer"
           class="sidebar"
           v-model:collapsed="collapsed"
           :collapsedWidth="0"
@@ -52,11 +52,11 @@
             </div>
           </template>
         </LayoutSider>
-        <template v-if="sidebar && sidebarResizer">
+        <template v-if="sidebar && !isMobileDrawer && sidebarResizer">
           <Resizer position="left" v-model:collapsed="collapsed" @move="onSidebarMove" />
         </template>
-        <template v-if="sidebar && !sidebarResizer">
-          <div v-if="!collapsed" style="margin-right: 12px"></div>
+        <template v-if="sidebar && !isMobileDrawer && !sidebarResizer">
+          <div v-if="!collapsed" style="margin-right: 6px"></div>
         </template>
         <LayoutContent>
           <slot></slot>
@@ -65,7 +65,7 @@
           <Resizer position="right" v-model:collapsed="collapsedRight" @move="onSidebarMoveRight" />
         </template>
         <template v-if="sidebarRight && !sidebarResizerRight">
-          <div v-if="!collapsedRight" style="margin-left: 12px"></div>
+          <div v-if="!collapsedRight" style="margin-left: 6px"></div>
         </template>
         <LayoutSider
           v-if="sidebarRight"
@@ -94,6 +94,24 @@
       </Layout>
       <slot v-else></slot>
     </div>
+    <!-- 小窗口下，侧栏以抽屉方式展现 -->
+    <Drawer
+      v-if="isMobileDrawer"
+      placement="left"
+      class="sidebar-drawer"
+      :width="getSidebarWidth"
+      :getContainer="false"
+      :open="!collapsed"
+      :closable="false"
+      @close="collapsed = true"
+    >
+      <div class="sidebar-content">
+        <slot name="sidebar"></slot>
+      </div>
+    </Drawer>
+    <div v-if="isMobileDrawer && collapsed" class="sidebar-open mobile" @click="collapsed = false">
+      <Icon icon="i-fa:angle-left" style="transform: rotate(180deg)" />
+    </div>
     <PageFooter v-if="getShowFooter" ref="footerRef">
       <template #left>
         <slot name="leftFooter"></slot>
@@ -110,6 +128,7 @@
     CSSProperties,
     PropType,
     provide,
+    inject,
     onBeforeMount,
     onUpdated,
     useSlots,
@@ -125,9 +144,10 @@
   import { useEmitter } from '@jeesite/core/store/modules/user';
   import { propTypes } from '@jeesite/core/utils/propTypes';
   import { omit } from 'lodash-es';
-  import { Layout, LayoutSider, LayoutContent } from 'antdv-next';
+  import { Layout, LayoutSider, LayoutContent, Drawer } from 'antdv-next';
   import { useContentHeight } from '@jeesite/core/hooks/web/useContentHeight';
-  import { PageWrapperFixedHeightKey } from '..';
+  import { useAppInject } from '@jeesite/core/hooks/web/useAppInject';
+  import { PageWrapperFixedHeightKey, PageWrapperMobileDrawerKey } from '..';
   import { Icon } from '@jeesite/core/components/Icon';
   import { Resizer } from '@jeesite/core/components/Resizer';
 
@@ -152,8 +172,8 @@
     upwardSpace: propTypes.oneOfType([propTypes.number, propTypes.string]).def(0),
 
     // 左右侧栏开关：由设计器 props.sidebar / props.sidebarRight 实时控制（响应式）
-    sidebar: propTypes.bool,
-    sidebarRight: propTypes.bool,
+    sidebar: propTypes.bool.def(false),
+    sidebarRight: propTypes.bool.def(false),
 
     sidebarWidth: propTypes.number.def(230),
     sidebarResizer: propTypes.bool.def(true),
@@ -167,6 +187,7 @@
   const slots = useSlots();
   const attrs = useAttrs();
   const emitter = useEmitter();
+  const { getIsMobile } = useAppInject();
   const wrapperRef = shallowRef(null);
   const headerRef = shallowRef(null);
   const contentRef = shallowRef(null);
@@ -185,6 +206,15 @@
   provide(
     PageWrapperFixedHeightKey,
     computed(() => props.fixedHeight),
+  );
+
+  // 小窗口下侧栏以抽屉方式展现：PageWrapper 嵌套时，只有最外层有侧栏的使用抽屉，
+  // 内层（含祖先已占用抽屉的）保持原有的内联侧栏方式，避免多层抽屉叠加
+  const parentMobileDrawer = inject(PageWrapperMobileDrawerKey, ref(false));
+  const isMobileDrawer = computed(() => getIsMobile.value && sidebar.value && !unref(parentMobileDrawer));
+  provide(
+    PageWrapperMobileDrawerKey,
+    computed(() => unref(parentMobileDrawer) || isMobileDrawer.value),
   );
 
   const getIsContentFullHeight = computed(() => {
@@ -304,12 +334,29 @@
   });
 
   watch(
-    () => [getShowFooter.value, sidebar.value, sidebarRight.value],
+    () => [getShowFooter.value, sidebar.value, sidebarRight.value, getIsMobile.value],
     () => {
       redoHeight();
     },
     {
       flush: 'post',
+      immediate: true,
+    },
+  );
+
+  // 使用抽屉的层：小窗口下默认收起（抽屉关闭）；切回内联方式时还原原有状态
+  let collapsedBeforeMobile = collapsed.value;
+  watch(
+    isMobileDrawer,
+    (isDrawer) => {
+      if (isDrawer) {
+        collapsedBeforeMobile = collapsed.value;
+        collapsed.value = true;
+      } else {
+        collapsed.value = collapsedBeforeMobile;
+      }
+    },
+    {
       immediate: true,
     },
   );
@@ -465,49 +512,6 @@
             }
           }
         }
-
-        &-open,
-        &-close {
-          cursor: pointer;
-          background: #fff;
-          position: absolute;
-          z-index: 100;
-          top: 54px;
-          width: 24px;
-          height: 24px;
-          text-align: center;
-          transition: transform 0.3s;
-          color: rgb(0 0 0 / 50%);
-          border-radius: 40px;
-          box-shadow:
-            0 2px 8px -2px rgb(0 0 0 / 5%),
-            0 1px 4px -1px rgb(25 15 15 / 7%),
-            0 0 1px 0 rgb(0 0 0 / 8%);
-
-          &:hover {
-            color: rgb(0 0 0 / 80%);
-          }
-
-          svg {
-            font-size: 12px;
-          }
-        }
-
-        &-open {
-          left: -12px;
-
-          &.right {
-            right: -12px;
-          }
-        }
-
-        &-close {
-          right: -12px;
-
-          &.right {
-            left: -12px;
-          }
-        }
       }
 
       //&-content {
@@ -515,6 +519,71 @@
       //    height: calc(100% - 12px);
       //  }
       //}
+    }
+
+    // 侧栏展开、收起按钮（含小窗口下抽屉的打开按钮）
+    .sidebar-open,
+    .sidebar-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #fff;
+      position: absolute;
+      z-index: 100;
+      top: 35px;
+      width: 24px;
+      height: 24px;
+      line-height: 1;
+      transition: transform 0.3s;
+      color: rgb(0 0 0 / 50%);
+      border-radius: 40px;
+      box-shadow:
+        0 2px 8px -2px rgb(0 0 0 / 5%),
+        0 1px 4px -1px rgb(25 15 15 / 7%),
+        0 0 1px 0 rgb(0 0 0 / 8%);
+
+      &:hover {
+        color: rgb(0 0 0 / 80%);
+      }
+
+      svg {
+        font-size: 12px;
+      }
+    }
+
+    .sidebar-open {
+      left: -6px;
+
+      &.right {
+        right: -6px;
+      }
+
+      // 小窗口下，抽屉方式展现，打开按钮紧贴左侧（保持圆形）
+      &.mobile {
+        left: -6px;
+      }
+    }
+
+    .sidebar-close {
+      right: -16px;
+
+      &.right {
+        left: -16px;
+      }
+    }
+
+    // 小窗口下侧栏抽屉
+    .sidebar-drawer {
+      .ant-drawer-body {
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .sidebar-content {
+        height: 100%;
+        overflow: hidden;
+      }
     }
   }
 
@@ -528,27 +597,23 @@
         color: #bbb;
       }
 
-      .sidebar {
-        // background: #000 !important;
+      .sidebar-open,
+      .sidebar-close {
+        border: 1px solid #555;
+        background: transparent;
+        color: rgb(255 255 255 / 50%);
 
-        &-open,
-        &-close {
-          border: 1px solid #555;
-          background: transparent;
-          color: rgb(255 255 255 / 50%);
-
-          &:hover {
-            color: rgb(255 255 255 / 80%);
-          }
+        &:hover {
+          color: rgb(255 255 255 / 80%);
         }
+      }
 
-        &-open {
-          border-left-width: 0;
-        }
+      .sidebar-open {
+        border-left-width: 0;
+      }
 
-        &-close {
-          border-right-width: 0;
-        }
+      .sidebar-close {
+        border-right-width: 0;
       }
     }
   }
