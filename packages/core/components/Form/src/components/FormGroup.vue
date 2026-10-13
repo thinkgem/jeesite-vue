@@ -65,5 +65,15 @@
       background-color: fade(@primary-color, 80%);
       border-radius: 4px;
     }
+
+    @media (max-width: @screen-sm) {
+      .title {
+        margin-left: 0;
+      }
+
+      &::before {
+        left: 0;
+      }
+    }
   }
 </style>
