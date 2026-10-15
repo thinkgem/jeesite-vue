@@ -28,9 +28,6 @@ function handleItem(item: BasicColumn, ellipsis: boolean, columnResizable: boole
       });
     }
   }
-  if (columnResizable && item.resizable == undefined) {
-    item.resizable = true;
-  }
   if (dataIndex && isString(dataIndex) && dataIndex.indexOf('.') != -1) {
     item.dataIndex = dataIndex.split('.');
     item.dataIndex_ = dataIndex;
@@ -38,6 +35,19 @@ function handleItem(item: BasicColumn, ellipsis: boolean, columnResizable: boole
     item.dataIndex_ = dataIndex.join('.');
   } else {
     item.dataIndex_ = dataIndex?.toString() || '';
+  }
+  const isGroupColumn = !!children?.length;
+  if (isGroupColumn) {
+    // 分组表头不支持列宽调整，需对其叶子列设置
+    Reflect.deleteProperty(item, 'resizable');
+  } else {
+    // 表格自带的列宽调整：列宽按 key 跟踪，仅有 width 的列可拖动
+    if (columnResizable && item.resizable == undefined) {
+      item.resizable = !!item.width;
+    }
+    if (item.resizable && !item.key && item.dataIndex_) {
+      item.key = item.dataIndex_;
+    }
   }
   if (children && children.length) {
     handleChildren(children, ellipsis, columnResizable, dictTypes);
@@ -264,7 +274,7 @@ export function useColumns(
         .filter((column) => {
           return hasPermission(column.auth) && isIfShow(column);
         })
-        .map((column, index) => {
+        .map((column) => {
           if (column.children) {
             buildColumns(column.children);
           }
@@ -296,22 +306,27 @@ export function useColumns(
           //   };
           // }
 
-          column.onHeaderCell = (data: any) =>
-            ({
-              column: data,
-              onResize: (_event: MouseEvent, { size }: any) => {
-                // column.width = size.width;
-                // data.width = size.width;
-                getViewColumns.value = getViewColumns.value.map((col, colIndex) =>
-                  colIndex === index ? { ...col, width: size.width } : col,
-                );
-              },
-            }) as any;
-
           return column;
         });
     }
     getViewColumns.value = buildColumns(columns) as unknown as BasicColumn[];
+  }
+
+  /**
+   * 更新列的宽度（配合表格自带的列宽调整事件 resizeColumn 使用）
+   * @param columnKey 列的 key（列未设置 key 时，为列的 dataIndex）
+   * @param width 新列宽
+   */
+  function updateColumnWidth(columnKey: string | number, width: number) {
+    function update(columns: BasicColumn[]): BasicColumn[] {
+      return columns.map((column) => {
+        if (column.children?.length) {
+          return { ...column, children: update(column.children) };
+        }
+        return (column.key ?? column.dataIndex_) === columnKey ? { ...column, width } : column;
+      });
+    }
+    getViewColumns.value = update(unref(getViewColumns));
   }
 
   watch(
@@ -437,6 +452,7 @@ export function useColumns(
     getColumns,
     setColumns,
     updateColumn,
+    updateColumnWidth,
     getViewColumns,
     // setCacheColumnsByField,
     dictTypesRef,

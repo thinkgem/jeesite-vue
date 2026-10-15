@@ -94,7 +94,6 @@
   import { PageWrapperFixedHeightKey } from '@jeesite/core/components/Page';
   import expandIcon from './components/ExpandIcon';
   import HeaderCell from './components/HeaderCell.vue';
-  import ResizableTitle from './components/ResizableTitle.vue';
   import TableAction from './components/TableAction.vue';
   import TableHeader from './components/TableHeader.vue';
   import { InnerHandlers } from './types/table';
@@ -208,6 +207,7 @@
     // setCacheColumnsByField,
     setColumns,
     updateColumn,
+    updateColumnWidth,
     getColumnsRef,
     getCacheColumns,
     dictTypesRef,
@@ -257,6 +257,14 @@
     // 解决通过useTable注册onExpand时不起作用的问题
     const { onExpand } = unref(getProps);
     onExpand && isFunction(onExpand) && onExpand(expanded, record);
+  }
+
+  // 表格自带的列宽调整拖动结束时触发
+  function handleResizeColumn(width: number, column: any, columnKey: string | number) {
+    updateColumnWidth(columnKey, width);
+    // 兼容外部监听 resize-column 事件
+    const onResizeColumn = unref(attrs)?.onResizeColumn;
+    onResizeColumn && isFunction(onResizeColumn) && onResizeColumn(width, column, columnKey);
   }
 
   const { getScrollRef, redoHeight } = useTableScroll(
@@ -325,7 +333,6 @@
       size: 'middle',
       showSorterTooltip: false,
       tableLayout: 'fixed',
-      bordered: true,
       ...attrs,
       ...unref(getProps),
       onRow: customRow,
@@ -340,9 +347,8 @@
       footer: unref(getFooterProps),
       ...unref(getExpandOption),
       onExpand: handleTableExpand,
-      components: {
-        header: { cell: ResizableTitle },
-      },
+      // 表格自带的列宽调整（列的 resizable 属性）
+      onResizeColumn: handleResizeColumn,
     };
     if (propsData.isTreeTable || slots.expandIcon) {
       propsData.expandIcon = expandIcon(expandCollapse, handleTableExpand, !!slots.expandedRowRender);
@@ -505,6 +511,12 @@
       background-color: @component-background;
       border-radius: 10px;
 
+      // 修复：未启用 sticky 时 --columns-count 未定义，拖拽代理线的层级（默认 4）
+      // 会低于锁定列的层级（calc(var(--z-offset-reverse) + 2)，随列数增大），导致拖到锁定列上时看不见
+      .ant-table-resize-proxy {
+        z-index: calc(var(--columns-count, 0) * 2 + 999) !important;
+      }
+
       .ant-table {
         .ant-table-container {
           border-bottom-left-radius: 8px !important;
@@ -513,6 +525,10 @@
 
           .ant-table-thead > tr > th {
             font-weight: normal;
+          }
+
+          .ant-table-thead .ant-table-resize-handle {
+            width: calc(var(--ant-line-width) * 5);
           }
         }
 
@@ -523,7 +539,7 @@
         }
 
         .ant-table-column-sorter {
-          margin: 0 -4px 0 -1px;
+          margin: 0 -2px 0 -5px;
         }
 
         .ant-table-filter-column {
