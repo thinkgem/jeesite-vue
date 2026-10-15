@@ -1,6 +1,6 @@
 html[data-theme='dark'] body,
 html[data-theme='dark'] .app-loading {
-  background-color: #2c344a;
+  background-color: #000;
 }
 
 html[data-theme='dark'] .app-loading .app-loading-title {
@@ -9,7 +9,7 @@ html[data-theme='dark'] .app-loading .app-loading-title {
 
 body,
 .app-loading {
-  background-color: #f4f7f9;
+  background-color: #f0f2f5;
 }
 
 .app-loading {

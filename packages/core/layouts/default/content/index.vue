@@ -22,6 +22,11 @@
     padding: 5px 6px 0 6px;
     background-color: @content-bg;
 
+    // 阻止页卡底部外边距向外折叠逃逸
+    > div {
+      display: flow-root;
+    }
+
     &.fixed {
       width: 1200px;
       margin: 0 auto;

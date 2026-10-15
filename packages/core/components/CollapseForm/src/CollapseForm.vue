@@ -76,7 +76,7 @@
         headerHeightRef.value -
         (tabsElement?.scrollHeight || 0) -
         actionsElement.scrollHeight -
-        25;
+        12;
       if (headerElement) {
         height -= headerElement.scrollHeight;
       }

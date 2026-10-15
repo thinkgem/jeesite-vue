@@ -1,24 +1,10 @@
 <template>
   <RouterView>
     <template #default="{ Component, route }">
-      <!--<transition
-        :name="
-          getTransitionName({
-            route,
-            openCache,
-            enableTransition: getEnableTransition,
-            cacheTabs: getCaches,
-            def: getBasicTransition,
-          })
-        "
-        mode="out-in"
-        appear
-      >-->
       <keep-alive v-if="openCache" :include="getCaches">
         <component :is="Component" :key="route.fullPath" />
       </keep-alive>
       <component v-else :is="Component" :key="route.fullPath" />
-      <!--</transition>-->
     </template>
   </RouterView>
   <FrameLayout v-if="getCanEmbedIFramePage" />
@@ -33,7 +19,22 @@
 
   import { useTransitionSetting } from '@jeesite/core/hooks/setting/useTransitionSetting';
   import { useMultipleTabSetting } from '@jeesite/core/hooks/setting/useMultipleTabSetting';
-  import { getTransitionName } from './transition';
+
+  /*<transition
+    :name="
+      getTransitionName({
+        route,
+        openCache,
+        enableTransition: getEnableTransition,
+        cacheTabs: getCaches,
+        def: getBasicTransition,
+      })
+    "
+    mode="out-in"
+    appear
+  >
+  </transition>
+  import { getTransitionName } from './transition';*/
 
   import { useMultipleTabStore } from '@jeesite/core/store/modules/multipleTab';
 
