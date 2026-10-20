@@ -8,7 +8,7 @@
 
     <div class="relative mx-auto h-full py-2 container">
       <div class="h-full flex">
-        <div class="mr-4 min-h-full pl-4 md:hidden lg:w-[54.17%] lg:flex lg:flex-col">
+        <div class="login-banner min-h-full pl-4 md:hidden lg:w-[54.17%] lg:flex lg:flex-col">
           <div class="my-auto">
             <AppLogo class="-enter-x logo" />
             <img :alt="title" src="@jeesite/assets/svg/login-box-bg.svg" class="-enter-x w-1/2" />
@@ -23,7 +23,9 @@
             </div>
           </div>
         </div>
-        <div class="h-full w-full flex overflow-y-auto overflow-x-hidden py-5 lg:my-0 lg:h-auto lg:w-[45.83%] lg:py-0">
+        <div
+          class="login-form-col h-full w-full flex overflow-y-auto overflow-x-hidden py-5 lg:h-auto lg:w-[45.83%] lg:py-0"
+        >
           <div
             class="jeesite-login-form enter-x relative mx-auto my-auto w-full px-5 py-8 shadow-md lg:ml-16 lg:w-1/2 lg:w-auto sm:w-3/4 lg:px-10 lg:py-9 sm:px-8"
           >
@@ -155,6 +157,20 @@
             }
           }
         }
+      }
+    }
+
+    .login-banner {
+      margin-top: 10px;
+      @media (min-width: @screen-lg) {
+        margin: 10px -40px 0 40px;
+      }
+    }
+
+    .login-form-col {
+      margin-top: -40px;
+      @media (min-width: @screen-lg) {
+        margin: -40px 0 0 -10px;
       }
     }
 
