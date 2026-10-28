@@ -26,7 +26,7 @@
       />
       <Button
         class="jeesite-listselect-search"
-        :disabled="readonly"
+        :disabled="isReadonly"
         htmlType="button"
         title="打开列表选择"
         @click="handleInputSelect"
@@ -40,7 +40,7 @@
       <Input v-bind="getAttrs" v-model:value="labelValueRef" @click="handleInputClick" @input="handleInput" />
       <Button
         class="jeesite-listselect-search"
-        :disabled="readonly"
+        :disabled="isReadonly"
         htmlType="button"
         title="打开列表选择"
         @click="handleInputSelect"
@@ -111,6 +111,8 @@
   const emit = defineEmits(['change', 'update:value', 'update:labelValue', 'select', 'click']);
 
   const attrs = useAttrs();
+  // 只读或禁用（disabled 未声明为 prop，由 form 的 dynamicDisabled 通过 attrs 传入）
+  const isReadonly = computed(() => Boolean(props.readonly || unref(attrs).disabled));
   // 动态表单绑定 labelValue 时初始值可能为 undefined，需结合 labelInValue 判断是否启用标签字段。
   const hasLabelValue = computed(() => props.labelValue !== undefined || unref(attrs).labelInValue === true);
   const valueRef = ref<string>(props.value);
@@ -152,7 +154,7 @@
     delete selectAttrs.labelInValue;
     return {
       ...selectAttrs,
-      disabled: Boolean(unref(attrs).disabled || props.readonly),
+      disabled: isReadonly.value,
     };
   });
 
@@ -227,7 +229,7 @@
   });
 
   function openSelectModal() {
-    if (!props.openCheck) {
+    if (!props.openCheck || isReadonly.value) {
       return;
     }
     let selectList: Recordable[];
@@ -244,7 +246,7 @@
     if (target?.closest('.ant-select-selection-item-remove, .ant-select-clear')) {
       return;
     }
-    if (!props.readonly && !props.allowInput) {
+    if (!isReadonly.value && !props.allowInput) {
       openSelectModal();
     }
     emit('click');
@@ -257,7 +259,7 @@
   }
 
   async function handleInputSelect() {
-    if (!props.readonly) {
+    if (!isReadonly.value) {
       openSelectModal();
     }
     emit('click');
@@ -364,6 +366,9 @@
   }
 
   function handleInput(event: any) {
+    if (isReadonly.value) {
+      return;
+    }
     valueRef.value = labelValueRef.value = event.target?.value;
     emit('update:value', valueRef.value);
     emit('update:labelValue', labelValueRef.value);
@@ -391,6 +396,14 @@
 
     &-search.ant-btn {
       flex: 0 0 auto;
+
+      &[disabled] {
+        background-color: #fafafa;
+      }
+
+      html[data-theme='dark'] &[disabled] {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
     }
 
     &-multiple > &-search.ant-btn {
