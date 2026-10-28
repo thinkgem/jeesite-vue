@@ -7,7 +7,7 @@ import type { ComputedRef, Ref } from 'vue';
 import type { BasicTableProps } from '../types/table';
 import { computed, unref, ref, toRaw } from 'vue';
 import { ROW_KEY } from '../const';
-import { isEmpty, isFunction } from '@jeesite/core/utils/is';
+import { isArray, isEmpty, isFunction } from '@jeesite/core/utils/is';
 
 export function useTableExpand(
   propsRef: ComputedRef<BasicTableProps>,
@@ -75,7 +75,8 @@ export function useTableExpand(
     // use row ID expands the specified table row
     const { isTreeTable } = unref(propsRef);
     if (!isTreeTable) return;
-    expandedRowKeys.value = [...expandedRowKeys.value, ...keys];
+    // 去重：重复展开同一行时不产生重复的展开键
+    expandedRowKeys.value = Array.from(new Set([...expandedRowKeys.value, ...keys]));
   }
 
   function getAllKeys(data?: Recordable[]) {
@@ -113,7 +114,7 @@ export function useTableExpand(
     const treeLeaf = record.treeLeaf && record.treeLeaf === '1';
     if ((!treeLeaf && isEmpty(record[unref(getChildrenColumnName)])) || forceLoad) {
       record.isLoading = true;
-      const { api, pagination, beforeChildFetch, afterChildFetch } = unref(propsRef);
+      const { api, beforeChildFetch, afterChildFetch } = unref(propsRef);
       if (!api || !isFunction(api)) return;
       const rowKey = unref(getRowKey) as string;
       let params = {
@@ -124,17 +125,21 @@ export function useTableExpand(
         params = (await beforeChildFetch(params)) || params;
       }
       let list = await api(params);
-      if (pagination && list.list) {
+      // 接口返回 {@code { list: [...] }} 包装时取 list；
+      // 树表不分页（pagination = false）时接口仍返回包装结构，不能依赖分页开关判断
+      if (list && !isArray(list) && isArray(list.list)) {
         list = list.list;
       }
       if (afterChildFetch && isFunction(afterChildFetch)) {
         list = (await afterChildFetch(list)) || list;
       }
-      if (list && list.length > 0) {
-        record.childList = list;
+      // 子节点挂到表格配置的子节点字段上（childrenColumnName，默认 childList）
+      const childrenColumnName = unref(getChildrenColumnName);
+      if (isArray(list) && list.length > 0) {
+        record[childrenColumnName] = list;
         record.treeLeaf = '0';
       } else {
-        record.childList = [];
+        record[childrenColumnName] = [];
         record.treeLeaf = '1';
       }
       record.isLoading = false;
@@ -153,7 +158,10 @@ export function useTableExpand(
         expanded = true;
       }
       if (expanded) {
-        expandedRowKeys.value.push(record[unref(getRowKey) as string]);
+        // 去重：重复刷新同一节点（如停用、启用后刷新当前节点）时不产生重复的展开键
+        expandedRowKeys.value = Array.from(
+          new Set([...expandedRowKeys.value, record[unref(getRowKey) as string]]),
+        );
       }
       return expanded;
     }

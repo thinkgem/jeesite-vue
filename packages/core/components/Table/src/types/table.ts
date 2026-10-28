@@ -127,7 +127,13 @@ export interface TableActionType {
   expandAll: () => void;
   expandRows: (keys: string[]) => void;
   collapseAll: () => void;
-  expandCollapse: (record: Recordable) => void;
+  /**
+   * 展开/折叠行（树表）
+   * @param record 行数据
+   * @param onlyLoadData 仅加载子节点数据，不改变展开状态
+   * @param forceLoad 强制重新加载子节点数据
+   */
+  expandCollapse: (record: Recordable, onlyLoadData?: boolean, forceLoad?: boolean) => void;
 }
 
 export interface FetchSetting {

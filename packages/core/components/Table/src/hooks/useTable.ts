@@ -177,8 +177,8 @@ export function useTable<T = Recordable>(
     collapseAll: () => {
       getTableInstance().collapseAll();
     },
-    expandCollapse: (record: Recordable) => {
-      getTableInstance().expandCollapse(record);
+    expandCollapse: (record: Recordable, onlyLoadData?: boolean, forceLoad?: boolean) => {
+      getTableInstance().expandCollapse(record, onlyLoadData, forceLoad);
     },
 
     getForm: () => {

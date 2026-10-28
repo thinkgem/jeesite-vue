@@ -376,35 +376,50 @@ export function useDataSource(
     return rawDataSourceRef.value as T;
   }
 
+  /**
+   * 重载表格数据
+   * <p>
+   * 1. 树表：传入行数据（record）时，只刷新该行所在的节点（即其父节点下的子数据），其它节点数据不动；
+   *    兼容移动父节点的场景（oldParentCode），原父节点与新父节点都刷新；
+   * 2. 非树表、一级数据（父级为空或 0）、父节点不在已加载数据中：刷新当前列表。
+   * </p>
+   * @param opt 刷新参数（record：当前行数据；parentCode：兼容旧版调用）
+   */
   async function reload(opt?: FetchParams) {
     const { clearSelectedOnReload } = unref(propsRef);
     if (clearSelectedOnReload) {
       clearSelectedRowKeys();
     }
-    // 如果是树表，则刷新上一个父节点和要转移到目标的父节点下的数据 v5.6.0+
-    if (unref(propsRef).isTreeTable && opt?.record && opt?.record.parentCode && opt?.record.parentCode != '0') {
-      // 刷新移动前的父节点 v5.6.0+
-      if (opt?.record.oldParentCode && opt?.record.oldParentCode != '0') {
-        const row = findTableDataRecord(opt?.record.oldParentCode);
-        if (row) await expandCollapse(row, false, true);
-      } else {
-        await fetch(opt);
+    // 树表：只刷新当前行所在的节点（父节点），其它节点数据不动
+    if (unref(propsRef).isTreeTable && (await refreshParentNodes(opt))) {
+      return;
+    }
+    // 重载表格数据（非树表、一级数据、父节点未加载时刷新当前列表）
+    await fetch(opt);
+  }
+
+  /**
+   * 树表：刷新行数据所在的父节点（移动节点时含原父节点），返回是否已刷新
+   * <p>
+   * 父节点不在已加载数据中（如列表只显示某个树节点的子数据）时返回 false，
+   * 由调用方退回刷新当前列表，避免出现「只刷新当前节点」却什么都没刷新的情况。
+   * </p>
+   */
+  async function refreshParentNodes(opt?: FetchParams) {
+    const codes = [opt?.record?.oldParentCode, opt?.record?.parentCode, opt?.parentCode]
+      .filter((code) => code != null && code != '' && code != '0')
+      .map((code) => String(code));
+    let refreshed = false;
+    for (const code of Array.from(new Set(codes))) {
+      const row = findTableDataRecord(code);
+      if (!row) {
+        continue;
       }
-      // 刷新移动后的父节点 v5.6.0+
-      if (opt?.record.oldParentCode != opt?.record.parentCode) {
-        const row = findTableDataRecord(opt?.record.parentCode);
-        if (row) await expandCollapse(row, false, true);
-      }
+      // 强制重新加载该节点下的子数据，并保持该节点展开
+      await expandCollapse(row, false, true);
+      refreshed = true;
     }
-    // 旧版兼容，建议使用 record 参数替换 v5.6.0 之前
-    else if (opt?.parentCode && opt?.parentCode != '0') {
-      const row = findTableDataRecord(opt.parentCode);
-      if (row) await expandCollapse(row, false, true);
-    }
-    // 重载表格数据
-    else {
-      await fetch(opt);
-    }
+    return refreshed;
   }
 
   onMounted(() => {
