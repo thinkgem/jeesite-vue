@@ -13,6 +13,7 @@ export interface Menu extends TreeModel<Menu> {
   menuCode?: string; // 菜单编码
   menuNameRaw?: string; // 菜单名称
   menuType?: string; // 菜单类型（1菜单 2权限）
+  menuHref?: string; // 菜单链接（路由地址）
   menuUrl?: string; // 菜单链接
   menuTarget?: string; // 目标窗口
   menuIcon?: string; // 菜单图标
