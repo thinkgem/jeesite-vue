@@ -3,7 +3,7 @@
     v-if="getIsMobile"
     placement="left"
     class="jeesite-layout-sider-wrapper"
-    :width="getMenuWidth"
+    :size="getMenuWidth"
     :getContainer="false"
     :open="!getCollapsed"
     @close="handleClose"

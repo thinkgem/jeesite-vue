@@ -99,7 +99,7 @@
       v-if="isMobileDrawer"
       placement="left"
       class="sidebar-drawer"
-      :width="getSidebarWidth"
+      :size="getSidebarWidth"
       :getContainer="false"
       :open="!collapsed"
       :closable="false"
