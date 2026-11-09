@@ -126,11 +126,20 @@ export function retranslateConfig(config: any): any {
   return result;
 }
 
+// 仅克隆普通对象，Promise（如 configFile: import(...)）、Date、Map、组件实例等保持原引用，
+// 否则会被克隆成空对象 {}，导致 ListSelect 等组件读取配置失败。
+function isPlainObject(obj: any): boolean {
+  if (Object.prototype.toString.call(obj) !== '[object Object]') return false;
+  const proto = Object.getPrototypeOf(obj);
+  return proto === null || proto === Object.prototype;
+}
+
 function deepCloneWithTranslatable(obj: any): any {
   if (obj === null || obj === undefined) return obj;
   if (isTranslatableString(obj)) return obj;
   if (typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(deepCloneWithTranslatable);
+  if (!isPlainObject(obj)) return obj;
   const result: any = {};
   for (const key of Object.keys(obj)) {
     result[key] = deepCloneWithTranslatable(obj[key]);
