@@ -8,7 +8,7 @@
   <BasicModal
     v-bind="$attrs"
     wrapClassName="jeesite-listselect"
-    :title="props.config.modalProps?.title || t('数据选择')"
+    :title="props.config?.modalProps?.title || t('数据选择')"
     :canFullscreen="false"
     @register="registerModal"
     @ok="handleSubmit"

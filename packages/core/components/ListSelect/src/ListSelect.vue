@@ -208,28 +208,58 @@
     labelValueRef.value = hasLabelValue.value ? names.join(',') : valueRef.value;
   }
 
+  let configPromise: Promise<void> | null = null;
+
+  // 加载选择配置，重复调用复用同一次加载
+  function loadConfig() {
+    if (!configPromise) {
+      configPromise = initConfig();
+    }
+    return configPromise;
+  }
+
+  async function initConfig() {
+    try {
+      let configModule: any;
+      if (props.config) {
+        configModule = props.config;
+      } else if (props.configFile) {
+        const fileModule: any = await props.configFile;
+        configModule = fileModule?.default ?? fileModule;
+      } else {
+        configModule = (await import(`./selectType/${props.selectType}.ts`)).default as any;
+      }
+      const resolved = typeof configModule === 'function' ? configModule() : configModule;
+      if (!resolved) {
+        console.warn('[JeeSiteListSelect] 选择配置加载失败：', props.configFile ?? props.selectType);
+        return;
+      }
+      configRef.value = retranslateConfig(resolved);
+      if (!itemCode.value) {
+        itemCode.value = configRef.value.itemCode;
+      }
+      if (!itemName.value) {
+        itemName.value = configRef.value.itemName;
+      }
+    } catch (e) {
+      console.warn('[JeeSiteListSelect] 选择配置加载出错：', e);
+    }
+  }
+
   onMounted(async () => {
-    let configModule: any;
-    if (props.config) {
-      configModule = props.config;
-    } else if (props.configFile) {
-      configModule = (await props.configFile).default as any;
-    } else {
-      configModule = (await import(`./selectType/${props.selectType}.ts`)).default as any;
-    }
-    const resolved = typeof configModule === 'function' ? configModule() : configModule;
-    configRef.value = retranslateConfig(resolved);
     modalComponent.value = createAsyncComponent(() => import('./ListSelectModal.vue'));
-    if (!itemCode.value) {
-      itemCode.value = configRef.value.itemCode;
-    }
-    if (!itemName.value) {
-      itemName.value = configRef.value.itemName;
-    }
+    await loadConfig();
   });
 
-  function openSelectModal() {
+  async function openSelectModal() {
     if (!props.openCheck || isReadonly.value) {
+      return;
+    }
+    // 配置尚未加载完成时先等待，避免弹窗读取到 undefined 配置
+    if (!configRef.value) {
+      await loadConfig();
+    }
+    if (!configRef.value) {
       return;
     }
     let selectList: Recordable[];
