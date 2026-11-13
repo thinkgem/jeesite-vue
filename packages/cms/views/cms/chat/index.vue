@@ -74,12 +74,31 @@
         :inputMessage="inputMessageRef?.value"
         v-model:loading="loading"
       />
-      <div class="pl-14 pr-16 w-full flex justify-end mt-3">
+      <div class="pl-14 pr-16 w-full mt-3">
+        <!-- 已上传图片预览，支持 Ctrl+V 粘贴上传 -->
+        <div v-if="uploadFileList.length > 0" class="flex flex-wrap items-center gap-2 mb-2">
+          <div v-for="file in uploadFileList" :key="file.id" class="relative">
+            <img
+              :src="getImageUrl(file)"
+              :title="file.fileName"
+              class="w-14 h-14 rounded-2 object-cover border border-gray-2 bg-white"
+            />
+            <Icon
+              icon="i-ant-design:close-circle-filled"
+              class="absolute -top-2 -right-2 bg-white rounded-full c-gray-5 cursor-pointer"
+              :size="16"
+              :title="t('删除')"
+              @click="handleRemoveUpload(file)"
+            />
+          </div>
+        </div>
         <div class="flex items-end flex-1 rounded-2 p-2 bg-white text-[15px] leading-7">
           <BasicUpload
+            ref="uploadRef"
             v-model:value="uploadDataMap"
             :bizKey="conversationIds[0]"
             bizType="cms-chat"
+            :loadTime="uploadLoadTime"
             class="mb-0.5"
             size="small"
             uploadType="image"
@@ -90,6 +109,7 @@
             :accept="['jpg', 'jpeg', 'png']"
             @click="handleUploadClick"
             @change="handleUploadChange"
+            @delete="handleUploadDelete"
           />
           <textarea
             ref="inputMessageRef"
@@ -98,6 +118,7 @@
             :placeholder="t('你有什么想知道的，快来问问我，Shift+Enter 换行，Enter 发送。')"
             @input="handleInput"
             @keypress="handleEnter"
+            @paste="handlePaste"
           ></textarea>
           <a-button
             class="ml-2 shrink-0"
@@ -139,11 +160,13 @@
     cmsChatSave,
     cmsChatCompletions,
   } from '@jeesite/cms/api/cms/chat';
-  import { BasicUpload } from '@jeesite/core/components/Upload';
+  import { BasicUpload, getClipboardImageFiles } from '@jeesite/core/components/Upload';
+  import { useGlobSetting } from '@jeesite/core/hooks/setting';
   import { ChatMessage } from '@jeesite/cms';
 
   const { t } = useI18n('cms.chat');
   const { showMessage } = useMessage();
+  const { ctxPath } = useGlobSetting();
   const conversationIds = ref<string[]>([]);
   const conversationTitle = ref<string>('');
   const userStore = useUserStore();
@@ -152,13 +175,16 @@
   const chatListRef = shallowRef<InstanceType<typeof ScrollContainer>>();
   const chatList = ref<Recordable[]>([]);
   const messageRef = shallowRef<InstanceType<typeof ChatMessage>>();
+  const uploadRef = shallowRef<InstanceType<typeof BasicUpload>>();
   const inputMessageRef = ref<HTMLTextAreaElement>();
   const messages = ref<Recordable[]>([]);
+  const editInputRefs = ref<Recordable>({});
   // 识图上传：上传的图片以会话ID为业务主键、cms-chat 为业务类型，供后端多模态识图读取
   const uploadDataMap = ref<Recordable>({});
-  // 上传组件当前的文件列表，用于判断是否出现新上传的图片
+  // 上传组件当前的文件列表，用于预览展示及判断是否出现新上传的图片
   const uploadFileList = ref<Recordable[]>([]);
-  const editInputRefs = ref<Recordable>({});
+  // 上传列表重新加载标识：上传组件内部上传图片后更新，触发文件列表刷新
+  const uploadLoadTime = ref(0);
   // 发送按钮的悬停状态，AI 输出中悬停时切换为停止按钮
   const sendBtnHover = ref(false);
 
@@ -180,14 +206,64 @@
     await handleSelect(chatList.value[0]);
   }
 
-  // 上传图片前，若还没有会话则先创建，保证图片关联到会话ID，供后端多模态识图读取
-  async function handleUploadClick() {
-    if (conversationIds.value[0]) {
-      return;
+  // 确保存在会话：没有则复用最近会话或新建，保证图片关联到会话ID，供后端多模态识图读取
+  // requireNew 为 true 时（粘贴图片），当前会话已有消息则新建一个会话，避免图片关联到旧会话
+  async function ensureConversation(requireNew = false) {
+    const currentId = conversationIds.value[0];
+    if (currentId) {
+      if (!requireNew || messages.value.length == 0) {
+        return currentId;
+      }
+    } else if (chatList.value.length > 0) {
+      await handleSelect(chatList.value[0]);
+      if (conversationIds.value[0] && (!requireNew || messages.value.length == 0)) {
+        return conversationIds.value[0];
+      }
     }
     const res = await cmsChatSave();
     chatList.value.unshift(res);
     await handleSelect(chatList.value[0]);
+    return conversationIds.value[0];
+  }
+
+  // 上传图片前，若还没有会话则先创建，保证图片关联到会话ID，供后端多模态识图读取
+  async function handleUploadClick() {
+    await ensureConversation();
+  }
+
+  // 输入框粘贴：粘贴前若当前不是新会话则新建一个，再调用上传组件的上传逻辑
+  async function handlePaste(event: ClipboardEvent) {
+    const files = getClipboardImageFiles(event);
+    if (files.length == 0) {
+      return;
+    }
+    event.preventDefault();
+    await ensureConversation(true);
+    await uploadRef.value?.uploadFiles(files);
+  }
+
+  // 图片地址：上传组件返回的是相对地址，需拼接应用上下文路径
+  function getImageUrl(file: Recordable) {
+    const url = file?.fileUrl || '';
+    if (!url || url.startsWith('data:') || url.indexOf('://') > -1) {
+      return url;
+    }
+    return ctxPath + url;
+  }
+
+  // 删除本地预览的图片（同时解除与会话的关联）
+  async function handleRemoveUpload(file: Recordable) {
+    const conversationId = conversationIds.value[0];
+    if (conversationId && file.id) {
+      await cmsChatFileSave({ id: conversationId, delFileUploadIds: file.id });
+    }
+    uploadFileList.value = uploadFileList.value.filter((item) => item.id !== file.id);
+    uploadLoadTime.value = new Date().getTime();
+  }
+
+  // 上传组件内删除图片时，同步移除本地预览
+  function handleUploadDelete(record: Recordable) {
+    uploadFileList.value = uploadFileList.value.filter((item) => item.id !== record.id);
   }
 
   // 上传图片保存后，将图片与当前会话建立关联，供后端多模态识图读取、以及切换会话时回显
@@ -215,7 +291,10 @@
   async function handleSelect(item: Recordable) {
     conversationIds.value = [item.id];
     conversationTitle.value = item.title;
-    messages.value = await cmsChatMessage({ id: item.id });
+    // 切换会话时重置图片预览，由上传组件按新会话ID重新加载
+    uploadFileList.value = [];
+    uploadDataMap.value = {};
+    messages.value = (await cmsChatMessage({ id: item.id })) || [];
     messageRef.value?.scrollBottom();
   }
 
@@ -255,6 +334,8 @@
     conversationIds.value = [''];
     conversationTitle.value = '';
     messages.value = [];
+    uploadFileList.value = [];
+    uploadDataMap.value = {};
   }
 
   function handleInput() {

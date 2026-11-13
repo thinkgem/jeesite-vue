@@ -82,6 +82,16 @@
       beforeUpload(file);
     }
   }
+
+  // 粘贴上传：与点击「选择文件」走同一上传逻辑，不单独实现上传
+  function addFiles(files: File[]) {
+    if (props.readonly || props.disabled || !files?.length) return;
+    for (const file of files) {
+      beforeUpload(file);
+    }
+  }
+
+  defineExpose({ addFiles });
 </script>
 <style lang="less">
   .upload-preview {
