@@ -60,8 +60,7 @@ export function useOpenKeys(
   const getOpenKeys = computed(() => {
     // 横向（顶部）菜单不存在折叠状态，折叠时也要使用 openKeys，
     // 否则窗口缩小后再放大（例如移动端关闭侧栏时 collapsed 被置为 true 并持久化）顶部菜单无法展开
-    const collapse =
-      unref(getIsMixSidebar) || unref(mode) === MenuModeEnum.HORIZONTAL ? false : unref(getCollapsed);
+    const collapse = unref(getIsMixSidebar) || unref(mode) === MenuModeEnum.HORIZONTAL ? false : unref(getCollapsed);
 
     return collapse ? menuState.collapsedOpenKeys : menuState.openKeys;
   });

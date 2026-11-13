@@ -159,9 +159,7 @@ export function useTableExpand(
       }
       if (expanded) {
         // 去重：重复刷新同一节点（如停用、启用后刷新当前节点）时不产生重复的展开键
-        expandedRowKeys.value = Array.from(
-          new Set([...expandedRowKeys.value, record[unref(getRowKey) as string]]),
-        );
+        expandedRowKeys.value = Array.from(new Set([...expandedRowKeys.value, record[unref(getRowKey) as string]]));
       }
       return expanded;
     }
